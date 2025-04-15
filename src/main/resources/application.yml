@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: pinnol-be
+  data:
+    mongodb:
+      uri: mongodb+srv://cherrykang2003:minseo1224%2A@mycluster.sv1ngnv.mongodb.net/pinnol?retryWrites=true&w=majority&appName=myCluster
