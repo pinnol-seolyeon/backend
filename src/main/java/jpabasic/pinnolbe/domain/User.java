@@ -1,15 +1,15 @@
 package jpabasic.pinnolbe.domain;
 
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="user")
 @RequiredArgsConstructor
 @Setter
+@Getter
 @Builder
+@AllArgsConstructor
 public class User {
     @Id
     private String id;
@@ -20,11 +20,9 @@ public class User {
 
     private String email;
 
-    //카카오 로그인
-    private String accessToken;
+    private String role;
 
-    private String refreshToken;
-
+    private String name;
 
 
 
@@ -33,9 +31,9 @@ public class User {
         this.age=age;
     }
 
-    public User(String email,String username,String accessToken){
-        this.username=username;
-        this.accessToken=accessToken;
-        this.email=email;
-    }
+//    public User(String email,String username,String accessToken){
+//        this.username=username;
+//        this.accessToken=accessToken;
+//        this.email=email;
+//    }
 }

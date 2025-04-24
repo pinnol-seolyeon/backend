@@ -5,6 +5,8 @@ import jpabasic.pinnolbe.dto.login.KakaoUserDto;
 import jpabasic.pinnolbe.service.login.KaKaoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,32 +36,39 @@ public class LoginController {
 //    }
 
     /// code -> access token & user정보 받아오기 -> jwt 발급 (프론트에 전달)
-    @PostMapping("/oauth/kakao")
-    public ResponseEntity<?> kakaoLogin(@RequestBody Map<String,String> body) {
-        String code = null;
-        try {
-            code = body.get("code");
-        } catch (Exception e) {
-            log.error("🤨" + e.getMessage());
-        }
+//    @PostMapping("/oauth/kakao")
+//    public ResponseEntity<?> kakaoLogin(@RequestBody Map<String,String> body) {
+//        String code = null;
+//        try {
+//            code = body.get("code");
+//        } catch (Exception e) {
+//            log.error("🤨" + e.getMessage());
+//        }
+//
+//
+//        /// access token 받아오기
+//        String accessToken = kaKaoService.getAccessTokenFromKakao(code);
+//        log.info("✅accessToken:{}", accessToken);
+//
+//        /// 사용자 정보 가져오기
+//        KakaoUserDto userInfo=kaKaoService.getUserInfoFromKakao(accessToken);
+//        log.info("✅userInfo:{}", userInfo);
+//
+//        /// 로그인 + 회원 가입
+//        // 서비스에 가입되어 있는지 확인 -> 있으면 로그인, 없으면 회원가입
+//        User user=kaKaoService.ifIsMember(userInfo);
+//
+//
+//        return ResponseEntity.ok(user);
+//
+//    }
 
-
-        /// access token 받아오기
-        String accessToken = kaKaoService.getAccessTokenFromKakao(code);
-        log.info("✅accessToken:{}", accessToken);
-
-        /// 사용자 정보 가져오기
-        KakaoUserDto userInfo=kaKaoService.getUserInfoFromKakao(accessToken);
-        log.info("✅userInfo:{}", userInfo);
-
-        /// 로그인 + 회원 가입
-        // 서비스에 가입되어 있는지 확인 -> 있으면 로그인, 없으면 회원가입
-        User user=kaKaoService.ifIsMember(userInfo);
-
-
-        return ResponseEntity.ok(user);
-
-
+    @GetMapping("/my")
+    @ResponseBody
+    public String myInfo() {
+        System.out.println("myroute");
+        return "개힘들어";
     }
+
 
 }
