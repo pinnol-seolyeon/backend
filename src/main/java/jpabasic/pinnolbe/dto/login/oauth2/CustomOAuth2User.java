@@ -45,4 +45,9 @@ public class CustomOAuth2User implements OAuth2User {
     public String getUsername(){
         return userDto.getUsername();
     }
+
+    //첫 로그인인지 확인
+    public boolean isFirstLogin(){
+        return userDto.getChildName()==null;
+    }
 }

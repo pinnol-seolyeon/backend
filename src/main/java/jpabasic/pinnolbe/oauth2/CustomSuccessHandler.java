@@ -30,6 +30,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
 
+
         //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -46,7 +47,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트
         response.addCookie(createCookie("Authorization",token));
-        response.sendRedirect("http://localhost:3000/");
+
+        //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
+        boolean isFirstLogin=customUserDetails.isFirstLogin();
+        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/";
+
+        response.sendRedirect(targetUrl);
 
     }
 

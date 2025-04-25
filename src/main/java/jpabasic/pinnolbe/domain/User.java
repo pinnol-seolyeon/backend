@@ -26,7 +26,7 @@ public class User {
     //별도로 입력받아야 할 자녀 정보
     private String childName;
     //자녀 나이
-    private Long childAge;
+    private int childAge;
 
 
 

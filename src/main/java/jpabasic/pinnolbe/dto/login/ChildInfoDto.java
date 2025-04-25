@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class ChildInfoDto {
     String childName;
-    Long childAge;
+    int childAge;
 }

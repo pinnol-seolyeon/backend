@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 
 //DefaultOAuth2UserService -> user 정보를 가져오는 걸 포함하는 클래스
+// CustomOAuth2User 생성 -> SecurityContext에 저장
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
@@ -53,6 +54,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDto.setName(oAuth2Response.getName());
             userDto.setRole("ROLE_USER");
 
+            userDto.setChildName(null);
+
             return new CustomOAuth2User(userDto);
 
         }
@@ -67,6 +70,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDto.setUsername(existData.getUsername());
             userDto.setName(oAuth2Response.getName());
             userDto.setRole(existData.getRole());
+
+            userDto.setChildName(existData.getChildName());
 
             return new CustomOAuth2User(userDto);
 
