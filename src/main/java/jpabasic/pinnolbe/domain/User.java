@@ -22,6 +22,8 @@ public class User {
     //가입자(부모)의 이름
     private String name;
 
+    private String accessToken;
+
 
     //별도로 입력받아야 할 자녀 정보
     private String childName;
