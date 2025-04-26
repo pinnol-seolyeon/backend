@@ -1,7 +1,9 @@
 package jpabasic.pinnolbe.controller;
 
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.User.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.ChildInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.repository.UserRepository;
@@ -13,10 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -39,8 +38,16 @@ public class UserController {
 
         //자녀 정보 업데이트
         userService.inputUserInfo(user,dto);
-
         return ResponseEntity.ok(user);
+    }
 
+    //유저 정보 가져오기(헤더용)
+    @GetMapping
+    public ResponseEntity<UserInfoDto> getUserInfoDto() {
+
+        User user=userService.getUserInfo();
+        //SecurityContextHolder에서 유저 정보 가져오기
+        UserInfoDto userInfo=userService.getUserInfoDto(user);
+        return ResponseEntity.ok(userInfo);
     }
 }

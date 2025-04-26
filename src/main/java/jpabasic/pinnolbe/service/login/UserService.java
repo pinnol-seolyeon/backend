@@ -1,8 +1,11 @@
 package jpabasic.pinnolbe.service.login;
 
+import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.User.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.ChildInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
+import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,8 +15,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
+    private final RewardRepository rewardRepository;
+
+    public UserService(UserRepository userRepository, RewardRepository rewardRepository) {
         this.userRepository = userRepository;
+        this.rewardRepository = rewardRepository;
     }
 
 
@@ -48,6 +54,20 @@ public class UserService {
         }catch(Exception e){
             throw new RuntimeException("유저 자녀 정보를 저장하는 중 오류 발생");
         }
+    }
 
+
+    //유저 정보 받아오기
+    public UserInfoDto getUserInfoDto(User user){
+        String userId=user.getId();
+        Reward reward=rewardRepository.findByUserId(userId);
+
+        Long coin=reward.getCoin();
+
+        return new UserInfoDto(
+                user.getUsername(),
+                user.getChildName(),
+                coin
+        );
     }
 }
