@@ -49,6 +49,7 @@ public class UserService {
         try {
             user.setChildAge(dto.getChildAge());
             user.setChildName(dto.getChildName());
+            user.setPhoneNumber(dto.getPhoneNumber());
 
             userRepository.save(user);
         }catch(Exception e){

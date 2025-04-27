@@ -50,7 +50,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
         boolean isFirstLogin=customUserDetails.isFirstLogin();
-        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/";
+        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/main";
 
         response.sendRedirect(targetUrl);
 
