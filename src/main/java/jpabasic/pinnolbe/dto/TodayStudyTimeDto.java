@@ -1,0 +1,13 @@
+package jpabasic.pinnolbe.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class TodayStudyTimeDto {
+    private int hours;
+    private int minutes;
+}
