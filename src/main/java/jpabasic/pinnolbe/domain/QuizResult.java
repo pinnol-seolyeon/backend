@@ -17,7 +17,6 @@ import java.time.LocalDate;
         private String id;
         private String userId;
         private LocalDate date;
-        private int correct;
+        private int questionMark;
         private int wrong;
-        private int score;
     }

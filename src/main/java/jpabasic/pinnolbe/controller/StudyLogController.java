@@ -3,15 +3,15 @@ package jpabasic.pinnolbe.controller;
 import jpabasic.pinnolbe.domain.StudyLog;
 import jpabasic.pinnolbe.dto.AttendanceDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
+import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -37,6 +37,22 @@ public class StudyLogController {
         AttendanceDto dto = studyLogService.getAttendanceForMonth(userId, targetMonth);
         return ResponseEntity.ok(dto);
     }
+
+//    @GetMapping("/today/{userId}")
+//    public TodayStudyTypeResponse getTodayStudyInfo(@PathVariable String userId) {
+//        LocalDate today = LocalDate.now();
+//        List<StudyLog> logs = studyLogService.getTodayStudyType(userId);
+//
+//        Duration total = logs.stream()
+//                .map(log -> Duration.between(log.getStartTime(), log.getEndTime()))
+//                .reduce(Duration.ZERO, Duration::plus);
+//
+//        int hours = (int) total.toHours();
+//        int minutes = total.toMinutesPart();
+//
+//        String type = studyLogService.getTodayStudyType(userId);
+//        return new TodayStudyTypeResponse(hours, minutes, type);
+//    }
 
 
 }

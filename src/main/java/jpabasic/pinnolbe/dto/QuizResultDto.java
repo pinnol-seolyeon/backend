@@ -10,5 +10,5 @@ import lombok.Setter;
 public class QuizResultDto {
     private String date;
     private int wrong;
-    private int score;
+    private int questionMark;
 }

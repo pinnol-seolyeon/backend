@@ -19,7 +19,7 @@ public class QuizResultService {
                 .map(result -> new QuizResultDto(
                         result.getDate().toString(),
                         result.getWrong(),
-                        result.getScore()
+                        result.getQuestionMark()
                 )).collect(Collectors.toList());
     }
 }
