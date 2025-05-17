@@ -1,5 +1,7 @@
 package jpabasic.pinnolbe.domain;
 
+import com.mongodb.lang.Nullable;
+import jpabasic.pinnolbe.domain.study.Study;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,6 +26,9 @@ public class User {
 
     private String accessToken;
 
+    @Nullable
+    private Study study;
+
 
     //별도로 입력받아야 할 자녀 정보
     private String childName;
@@ -31,6 +36,8 @@ public class User {
     private int childAge;
     //부모 전화번호
     private String phoneNumber;
+
+
 
 
 

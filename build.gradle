@@ -44,6 +44,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
 	implementation 'net.nurigo:sdk:4.3.2'
+
 }
 
 tasks.named('test') {

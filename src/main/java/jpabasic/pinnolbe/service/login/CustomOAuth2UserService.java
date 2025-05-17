@@ -30,10 +30,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     @Override
+    //OAuth2UserRequest : 리소스서버에서 제공하는 유저 정보
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
 
-        OAuth2User oAuth2User=super.loadUser(userRequest);
-        System.out.println(oAuth2User);
+        OAuth2User oAuth2User=super.loadUser(userRequest); //생성자를 부름 -> 유저 정보 가져옴
+        System.out.println("✏️✏️"+oAuth2User);
 
         // 추후 작성
         OAuth2Response oAuth2Response=new KakaoResponse(oAuth2User.getAttributes());
