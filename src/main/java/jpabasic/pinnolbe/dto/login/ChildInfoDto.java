@@ -8,4 +8,5 @@ import lombok.Setter;
 public class ChildInfoDto {
     String childName;
     int childAge;
+    String phoneNumber;
 }

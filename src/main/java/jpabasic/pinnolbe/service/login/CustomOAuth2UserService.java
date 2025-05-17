@@ -1,10 +1,13 @@
 package jpabasic.pinnolbe.service.login;
 
+import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.KakaoResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.OAuth2Response;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
+import jpabasic.pinnolbe.dto.reward.RewardDto;
+import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -19,9 +22,11 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final RewardRepository rewardRepository;
 
-    public CustomOAuth2UserService(final UserRepository userRepository) {
+    public CustomOAuth2UserService(UserRepository userRepository,RewardRepository rewardRepository) {
         this.userRepository = userRepository;
+        this.rewardRepository = rewardRepository;
     }
 
     @Override
@@ -55,6 +60,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDto.setRole("ROLE_USER");
 
             userDto.setChildName(null);
+
+
+            Reward reward=new Reward();
+            reward.setUserId(user.getId());
+            reward.setCoin(0L);
+            rewardRepository.save(reward);
+
+
+            RewardDto rewardDto=new RewardDto();
+            rewardDto.setUserId(user.getId());
 
             return new CustomOAuth2User(userDto);
 
