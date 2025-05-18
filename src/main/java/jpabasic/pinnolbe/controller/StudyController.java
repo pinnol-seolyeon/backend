@@ -45,7 +45,7 @@ public class StudyController {
     // 어떤 책으로 공부할지 선택
     @GetMapping("")
     @Operation(summary="새로운 책의 학습 시작")
-    public ResponseEntity<List<String>> startBook(@RequestParam int bookId){
+    public ResponseEntity<List<String>> startBook(@RequestParam String bookId){
         User user=userService.getUserInfo();
         if(user.getStudy()==null) {
             Study study = studyService.startBook(user, bookId);

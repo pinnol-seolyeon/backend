@@ -16,11 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class Study {
 
-    private BookRepository bookRepository;
-    public Study(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
-
 
 
     @Id
@@ -31,18 +26,10 @@ public class Study {
     private Chapter chapter;
 
 
-    //첫 단원일 때
-    public Study(String userId,String bookId){
+    public Study(String userId, String bookId,Chapter chapter) {
         this.userId = userId;
         this.bookId = bookId;
-
-        Book book = bookRepository.findById(bookId).orElseThrow(() ->
-                new IllegalArgumentException("해당 ID의 책이 존재하지 않습니다: " + bookId)
-        );
-
-        List<Chapter> chapterList=book.getChapters();
-
-        this.chapter=chapterList.get(0);
+        this.chapter = chapter;
     }
 
 }

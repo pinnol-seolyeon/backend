@@ -8,6 +8,7 @@ import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,19 +16,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class StudyService {
 
-    private final BookRepository bookRepository;
-    private final ChapterRepository chapterRepository;
-    private final StudyRepository studyRepository;
-    private final UserRepository userRepository;
+  private final BookRepository bookRepository;
+  private final ChapterRepository chapterRepository;
+  private final StudyRepository studyRepository;
+  private final UserRepository userRepository;
 
-    public StudyService(BookRepository bookRepository, ChapterRepository chapterRepository, StudyRepository studyRepository, UserRepository userRepository) {
-        this.bookRepository = bookRepository;
-        this.chapterRepository = chapterRepository;
-        this.studyRepository = studyRepository;
-        this.userRepository = userRepository;
-    }
+//    public StudyService(BookRepository bookRepository, ChapterRepository chapterRepository, StudyRepository studyRepository, UserRepository userRepository) {
+//        this.bookRepository = bookRepository;
+//        this.chapterRepository = chapterRepository;
+//        this.studyRepository = studyRepository;
+//        this.userRepository = userRepository;
+//    }
 
 
     //학습하기
@@ -56,12 +58,20 @@ public class StudyService {
 
 
     //책에 대한 처음 시작
-    public Study startBook(User user,int BookId){
+    public Study startBook(User user,String bookId){
 
-        Book book=bookRepository.findByBookId(BookId);
-        String bookId=book.getId();
+        Book book=bookRepository.findById(bookId)
+                .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
-        Study study=new Study(user.getId(),bookId);
+        List<Chapter> chapters = book.getChapters();
+
+        if (chapters == null || chapters.isEmpty()) {
+            throw new IllegalStateException("책에 단원이 존재하지 않습니다: " + bookId);
+        }
+
+        Chapter firstChapter = chapters.get(0);
+
+        Study study=new Study(user.getId(),bookId,firstChapter);
         studyRepository.save(study);
 
         user.setStudy(study);
@@ -71,11 +81,9 @@ public class StudyService {
     }
 
     //책 선택 후 단원 선택 시, 해당 책의 단원 리스트 제공
-    public List<String> getChapterTitles(int bookId){
-        Book book = bookRepository.findByBookId(bookId);
-//        if (book == null || book.getChapterIds() == null) {
-//            return Collections.emptyList();
-//        }
+    public List<String> getChapterTitles(String bookId){
+        Book book=bookRepository.findById(bookId)
+                .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
         List<Chapter> chapters = book.getChapters();
         List<String> titles = new ArrayList<>();
