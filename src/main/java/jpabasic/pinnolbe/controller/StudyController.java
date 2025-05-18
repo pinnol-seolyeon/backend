@@ -32,11 +32,11 @@ public class StudyController {
     //실제 학습
     @GetMapping("/start")
     @Operation(summary="해당 단원 학습하기") //문장 단위로 끊어서 보여주기..
-    public ResponseEntity<String> getChapterContents(@RequestParam int bookId){
+    public ResponseEntity<String> getChapterContents(@RequestParam String bookId){
         User user=userService.getUserInfo();
-        Study study=user.getStudy();
+//        Study study=user.getStudy();
 
-        String contents=studyService.getChapterContents(bookId,study);
+        String contents=studyService.getChapterContents(bookId);
         return ResponseEntity.ok(contents);
     }
 

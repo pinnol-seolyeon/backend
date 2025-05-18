@@ -33,7 +33,9 @@ public class StudyService {
 
 
     //학습하기
-    public String getChapterContents(int bookId, Study study) {
+    public String getChapterContents(String bookId) {
+        Study study=studyRepository.findByBookId(bookId)
+                .orElseThrow(()->new IllegalArgumentException("이 책에 해당하는 Study 엔티티가 존재하지 않음."));
 
         // 전까지 완료했던 데부터 시작..
         Chapter chapter = study.getChapter();
