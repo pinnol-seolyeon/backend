@@ -4,11 +4,13 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
+import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,15 +35,16 @@ public class StudyService {
 
 
     //학습하기
-    public String getChapterContents(String bookId) {
+    public Chapter getChapterContents(String bookId) {
         Study study=studyRepository.findByBookId(bookId)
                 .orElseThrow(()->new IllegalArgumentException("이 책에 해당하는 Study 엔티티가 존재하지 않음."));
 
         // 전까지 완료했던 데부터 시작..
         Chapter chapter = study.getChapter();
+        System.out.println("✅"+chapter.getChapterTitle());
 
         // 본격적인 학습 시작
-        return chapter.getContent();
+        return chapter;
     }
 
 
@@ -83,19 +86,36 @@ public class StudyService {
     }
 
     //책 선택 후 단원 선택 시, 해당 책의 단원 리스트 제공
-    public List<String> getChapterTitles(String bookId){
+    public List<Chapter> getChapterTitles(String bookId){
         Book book=bookRepository.findById(bookId)
                 .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
         List<Chapter> chapters = book.getChapters();
-        List<String> titles = new ArrayList<>();
+        List<ChaptersDto> chapterDtos = new ArrayList<>();
 
         for (Chapter chapter : chapters) {
-             titles.add(chapter.getChapterTitle());
+            String id = chapter.getId();
+            String idString = (id != null) ? id : "null";
+
+            chapterDtos.add(new ChaptersDto(idString, chapter.getChapterTitle()));
         }
 
-        System.out.println("✏️✏️" + titles);
-        return titles;
+        for (Chapter chapter : chapters) {
+            System.out.println("chapter raw = " + chapter); // toString 확인
+            System.out.println("chapter id = " + chapter.getId());
+            System.out.println("chapter title = " + chapter.getChapterTitle());
+        }
+
+
+
+        System.out.println("✏️✏️" + chapterDtos);
+        return chapters;
+    }
+
+    public String getChapterTitle(String chapterId){
+        Chapter chapter=chapterRepository.findById(chapterId)
+                .orElseThrow(()->new IllegalArgumentException("해당 단원이 없음"));
+        return chapter.getChapterTitle();
     }
 
     //학습 완료

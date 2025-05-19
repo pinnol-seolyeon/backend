@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.question.QAs;
@@ -25,13 +26,14 @@ public class QuestionController {
         this.userService = userService;
     }
 
-//    //AI에게 물어보는 API
-//    @PostMapping("")
-//    public ResponseEntity<String> askQuestion(@RequestBody QuestionRequest questionRequest) {
-//        User user=userService.getUserInfo();
-//        questionService.askQuestion(questionRequest,user);
-//        return new ResponseEntity<>(question, HttpStatus.OK);
-//    }
+
+    @PostMapping("")
+    @Operation(summary="AI에게 물어보기(모델호출)")
+    public ResponseEntity<String> askQuestion(@RequestBody QuestionRequest questionRequest) {
+        User user=userService.getUserInfo();
+        questionService.askQuestion(questionRequest,user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     //여태까지 진행한 질문+답변 한꺼번에 DB에 저장
     @PostMapping("/saveAll")
