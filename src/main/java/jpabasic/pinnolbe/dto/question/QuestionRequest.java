@@ -9,13 +9,11 @@ import java.util.Date;
 @Setter
 public class QuestionRequest {
 
-    int part;
+//    int part; //chapter별?
     String question;
-    Date now;
 
-    public QuestionRequest(int part, String question) {
-        this.part = part;
+    public QuestionRequest(String question) {
+//        this.part = part;
         this.question = question;
-        now=new Date();
     }
 }

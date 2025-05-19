@@ -5,6 +5,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.question.QAs;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
+import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.service.QuestionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.HttpStatus;
@@ -29,10 +30,10 @@ public class QuestionController {
 
     @PostMapping("")
     @Operation(summary="AI에게 물어보기(모델호출)")
-    public ResponseEntity<String> askQuestion(@RequestBody QuestionRequest questionRequest) {
+    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest) {
         User user=userService.getUserInfo();
-        questionService.askQuestion(questionRequest,user);
-        return new ResponseEntity<>(HttpStatus.OK);
+        QuestionResponse response=questionService.askQuestion(questionRequest,user);
+        return ResponseEntity.ok(response);
     }
 
     //여태까지 진행한 질문+답변 한꺼번에 DB에 저장
