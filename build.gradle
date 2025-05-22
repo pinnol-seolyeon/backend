@@ -42,6 +42,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE' //S3
+
+	implementation 'net.nurigo:sdk:4.3.2'
+
 }
 
 tasks.named('test') {
