@@ -17,5 +17,5 @@ public class Book {
     private String title;
 //    private Long chapter_id;
 
-    private List<Chapter> chapters;
+    private List<String> chapters;
 }

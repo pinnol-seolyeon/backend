@@ -5,8 +5,10 @@ import jpabasic.pinnolbe.repository.study.BookRepository;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -19,7 +21,8 @@ public class Study {
 
 
     @Id
-    private String id;
+    @Field("_id")
+    private ObjectId id;
     private String userId;
     private String bookId;
 
