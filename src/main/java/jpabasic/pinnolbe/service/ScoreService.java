@@ -16,7 +16,6 @@ public class ScoreService {
         Score s = Score.builder()
                 .childId(childId)
                 .score(score)
-                .timestamp(LocalDateTime.now())
                 .build();
         scoreRepository.save(s);
     }
