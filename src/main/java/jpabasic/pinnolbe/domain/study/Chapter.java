@@ -17,4 +17,5 @@ public class Chapter {
     private String chapterTitle;
     private String content;
     private String objective;
+    private String imgUrl;
 }

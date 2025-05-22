@@ -10,10 +10,7 @@ import jpabasic.pinnolbe.service.QuestionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/question")
@@ -28,13 +25,16 @@ public class QuestionController {
     }
 
 
-    @PostMapping("")
+    @PostMapping("/{chapterId}")
     @Operation(summary="AI에게 물어보기(모델호출)")
-    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest) {
+    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest, @RequestParam String chapterId) {
         User user=userService.getUserInfo();
+
+        //해당 단원에서 첫 질문인 경우,
         QuestionResponse response=questionService.askQuestion(questionRequest,user);
         return ResponseEntity.ok(response);
     }
+
 
     //여태까지 진행한 질문+답변 한꺼번에 DB에 저장
     @PostMapping("/saveAll")

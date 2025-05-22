@@ -23,7 +23,7 @@ public class User {
     private String role;
     //가입자(부모)의 이름
     private String name;
-
+    //카카오에서 발급한 AccessToken
     private String accessToken;
 
     @Nullable

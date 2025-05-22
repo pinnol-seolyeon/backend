@@ -2,8 +2,11 @@ package jpabasic.pinnolbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Positive;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
@@ -82,19 +85,34 @@ public class StudyController {
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
-    @Operation(summary="S3에 학습하기 이미지 업로드")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file){
+    @Operation(summary="S3에 학습하기 이미지 업로드+db에 fileURl 저장")
+    //chapterId에 대한 로직 검토 필요.. 현재 프론트에서 chatperId 매핑이 안되는 문제 있음
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
+        /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
         try{
-            String fileName=file.getOriginalFilename();
-            String fileUrl="https://"+bucket+"/test"+fileName;
+
+            //확장자 추출
+            String extension=file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
+            String keyName="test/"+chapterId+"."+extension; //키를 chapterId로
+
             ObjectMetadata metadata=new ObjectMetadata();
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
-            amazonS3Client.putObject(bucket,fileName,file.getInputStream(),metadata);
+
+
+            PutObjectRequest putObjectRequest=new PutObjectRequest(bucket,keyName,file.getInputStream(),metadata);
+            
+            amazonS3Client.putObject(putObjectRequest);
+            String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/"+ keyName;
+
+
+            studyService.saveImgUrl(chapterId,fileUrl); //DB에 이미지 url 저장
             return ResponseEntity.ok(fileUrl);
         }catch(Exception e){
             e.printStackTrace();
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+
+  
 }

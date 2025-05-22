@@ -12,7 +12,10 @@ import jpabasic.pinnolbe.repository.study.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import retrofit2.http.Multipart;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -117,6 +120,20 @@ public class StudyService {
                 .orElseThrow(()->new IllegalArgumentException("해당 단원이 없음"));
         return chapter.getChapterTitle();
     }
+
+
+
+    ///chapterRepository에 S3 image url 저장
+    public void saveImgUrl(String chapterId,String fileUrl){
+        Chapter chapter=chapterRepository.findById(chapterId)
+                .orElseThrow(()->new IllegalArgumentException("해당 단원이 없음"));
+        chapter.setImgUrl(fileUrl);
+
+
+        chapterRepository.save(chapter);
+        //StudyRepository, BookRepository도 수정해야함..
+    }
+
 
     //학습 완료
 }

@@ -33,8 +33,9 @@ public class QuestionService {
     //질문 내용을 AI 모델에게 전달
     public QuestionResponse askQuestion(QuestionRequest request, User user){
 
-//        // 물어본 질문
-//        String question=request.getQuestion();
+        // 물어본 질문
+        String question=request.getQuestion();
+
 
         // AI에 유저의 질문 전달
         try {
