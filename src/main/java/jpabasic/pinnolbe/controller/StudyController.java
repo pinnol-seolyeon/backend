@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Positive;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
+import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
@@ -49,13 +50,17 @@ public class StudyController {
 
 
     //실제 학습
+    // getStudy 방식 고쳐야 함 -> 현재는 책이 어차피 한 권이므로 상관X
+    // user-study-chapter 관계 수정 필요
+    
     @GetMapping("/start")
     @Operation(summary="해당 단원 학습하기") //문장 단위로 끊어서 보여주기..
-    public ResponseEntity<Chapter> getChapterContents(@RequestParam String bookId){
+    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String bookId){
         User user=userService.getUserInfo();
-//        Study study=user.getStudy();
+        Study study=user.getStudy();
+        System.out.println("🐛🐛"+study);
 
-        Chapter chapter=studyService.getChapterContents(bookId);
+        ChapterDto chapter=studyService.getChapterContents(study);
         return ResponseEntity.ok(chapter);
     }
 
@@ -64,13 +69,14 @@ public class StudyController {
     // 어떤 책으로 공부할지 선택
     @GetMapping("")
     @Operation(summary="새로운 책의 학습 시작")
-    public ResponseEntity<List<Chapter>> startBook(@RequestParam String bookId){
+    public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
         User user=userService.getUserInfo();
         if(user.getStudy()==null) {
             Study study = studyService.startBook(user, bookId);
         }
-            //책 선택 후 단원이 보이는 화면 get
-            List<Chapter> chapterList=studyService.getChapterTitles(bookId);
+
+        //책 선택 후 단원이 보이는 화면 get
+        List<ChaptersDto> chapterList=studyService.getChapterTitles(bookId);
 
         return ResponseEntity.ok(chapterList);
     }
