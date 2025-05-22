@@ -39,7 +39,10 @@ public class StudyService {
 
 
     //학습하기
-    public ChapterDto getChapterContents(Study study) {
+    public ChapterDto getChapterContents(String studyId) {
+
+        ObjectId objectId=new ObjectId(studyId);
+        Study study=studyRepository.findById(objectId).orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
 
         // 전까지 완료했던 데부터 시작..
         Chapter chapter = study.getChapter();
@@ -88,8 +91,10 @@ public class StudyService {
 
         Study study=new Study(user.getId(),bookId,nowChapter);
         studyRepository.save(study);
+        String studyId=study.getId().toString();
 
-        user.setStudy(study);
+
+        user.setStudyId(studyId);
         userRepository.save(user);
 
         return study;

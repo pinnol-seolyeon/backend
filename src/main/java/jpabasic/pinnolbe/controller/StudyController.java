@@ -52,15 +52,15 @@ public class StudyController {
     //실제 학습
     // getStudy 방식 고쳐야 함 -> 현재는 책이 어차피 한 권이므로 상관X
     // user-study-chapter 관계 수정 필요
-    
+
     @GetMapping("/start")
     @Operation(summary="해당 단원 학습하기") //문장 단위로 끊어서 보여주기..
     public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String bookId){
         User user=userService.getUserInfo();
-        Study study=user.getStudy();
-        System.out.println("🐛🐛"+study);
+        String studyId=user.getStudyId();
+        System.out.println("🐛🐛"+studyId);
 
-        ChapterDto chapter=studyService.getChapterContents(study);
+        ChapterDto chapter=studyService.getChapterContents(studyId);
         return ResponseEntity.ok(chapter);
     }
 
@@ -71,7 +71,7 @@ public class StudyController {
     @Operation(summary="새로운 책의 학습 시작")
     public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
         User user=userService.getUserInfo();
-        if(user.getStudy()==null) {
+        if(user.getStudyId()==null) {
             Study study = studyService.startBook(user, bookId);
         }
 
