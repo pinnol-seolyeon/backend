@@ -1,24 +1,22 @@
 package jpabasic.pinnolbe.domain;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
 
 @Document(collection = "scores")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Score {
     @Id
-    private String id;
+    private String childId;
 
-    private String userId;
+    private String childName;
+    private int unit;
     private int score;
-    private String timestamp;
-
-    public Score() {}
-
-    public Score(String userId, int score, String timestamp) {
-        this.userId = userId;
-        this.score = score;
-        this.timestamp = timestamp;
-    }
-
-    // getters/setters
+    private int coin;
 }
