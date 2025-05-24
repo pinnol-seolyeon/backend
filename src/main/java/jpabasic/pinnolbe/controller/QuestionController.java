@@ -25,9 +25,9 @@ public class QuestionController {
     }
 
 
-    @PostMapping("/{chapterId}")
+    @PostMapping("")
     @Operation(summary="AI에게 물어보기(모델호출)")
-    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest, @RequestParam String chapterId) {
+    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest) {
         User user=userService.getUserInfo();
 
         //해당 단원에서 첫 질문인 경우,

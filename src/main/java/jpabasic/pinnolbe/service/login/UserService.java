@@ -61,14 +61,15 @@ public class UserService {
     //유저 정보 받아오기
     public UserInfoDto getUserInfoDto(User user){
         String userId=user.getId();
-        Reward reward=rewardRepository.findByUserId(userId);
-
-        Long coin=reward.getCoin();
+//        Reward reward=rewardRepository.findByUserId(userId);
+//
+//        Long coin=reward.getCoin();
 
         return new UserInfoDto(
                 user.getUsername(),
                 user.getChildName(),
-                coin
+                user.getReward()
+
         );
     }
 }
