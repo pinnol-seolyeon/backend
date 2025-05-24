@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/user")
 @Slf4j
@@ -31,14 +33,10 @@ public class UserController {
     }
 
     @PatchMapping("/child")
-    public ResponseEntity<User> inputChildInfo(@RequestBody ChildInfoDto dto) {
-
-        //SecurityContextHolder에서 유저 정보 가져오기
-        User user=userService.getUserInfo();
-
-        //자녀 정보 업데이트
-        userService.inputUserInfo(user,dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> inputChildInfo(@RequestBody ChildInfoDto dto) {
+        User user = userService.getUserInfo();     // 로그인한 부모
+        userService.inputUserInfo(user, dto);      // 자녀 정보 업데이트
+        return ResponseEntity.ok(Map.of("childId", user.getId())); // 자녀 ID 반환
     }
 
     //유저 정보 가져오기(헤더용)
