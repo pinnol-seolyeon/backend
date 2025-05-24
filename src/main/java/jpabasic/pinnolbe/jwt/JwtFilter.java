@@ -27,6 +27,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String requestUri=request.getRequestURI();
+
+
         //Cookie들을 불러온 뒤 Authorization key에 담긴 쿠키를 찾음
         String authorization=null;
         Cookie[] cookies = request.getCookies(); //쿠키 리스트에 담기
@@ -55,6 +58,8 @@ public class JwtFilter extends OncePerRequestFilter {
         if(jwtUtil.isExpired(token)){ //isExpired 메서드를 통해 검증
             System.out.println("token expired");
             filterChain.doFilter(request, response);
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.getWriter().write("Expired JWT.Please login again.");
 
             //조건이 해당되면 메서드 종료(필수)
             return;

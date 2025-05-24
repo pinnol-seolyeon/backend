@@ -48,4 +48,10 @@ public class UserController {
         UserInfoDto userInfo=userService.getUserInfoDto(user);
         return ResponseEntity.ok(userInfo);
     }
+
+//    @PostMapping("/logout")
+//    @Operation(summary="내 서버에서 로그아웃")
+//    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
+//
+//    }
 }
