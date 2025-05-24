@@ -6,5 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface ScoreRepository extends MongoRepository<Score, String> {
-    List<Score> findByUserId(String userId);
+    List<Score> findByChildId(String childId);
 }
