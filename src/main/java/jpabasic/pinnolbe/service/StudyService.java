@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -103,7 +105,8 @@ public class StudyService {
     }
 
     //책 선택 후 단원 선택 시, 해당 책의 단원 리스트 제공
-    //수정 : chapterId+chapterTitle만 반환
+    //수정 : chapterId+chapterTitle만
+    //2차 수정 : 현재 진도 + 학습 완료한 단원 Boolean 값 반환
     public List<ChaptersDto> getChapterTitles(String bookId){
         ObjectId objectId=new ObjectId(bookId);
         Book book=bookRepository.findById(objectId)
@@ -121,6 +124,32 @@ public class StudyService {
         }
 
         System.out.println("✏️✏️" + chapterDtos);
+        return chapterDtos;
+    }
+
+    //현재진도 + 학습 완료한 단원 Boolean 값 추가
+    public List<ChaptersDto> getCurrentProgress(List<ChaptersDto> chapterDtos,String studyId){
+        Study study=getStudyByString(studyId);
+
+        //completeChapter 리스트의 chapterId에 없는 단원들은 잠금 상태
+        //완료된 단원들의 id 목록
+        List<CompletedChapter> completed=study.getCompleteChapter();
+        /// completed가 null이면 빈 Set 리턴 ///아니면 스트림 처리 -> Set<String> 생성
+        Set<String> completedIds=completed==null?Set.of():
+                completed.stream().map(CompletedChapter::getChapterId).collect(Collectors.toSet()); //CompletedChapter에서 chapterId만 추출 //스트림 결과를 Set<String>으로 수집
+
+        //현재 진도 단원 ID
+        String currentId=study.getChapter()!=null?study.getChapter().getId().toString():null;
+
+        //각 chapterDto에 상태 반영
+        for(ChaptersDto dto:chapterDtos){
+            String dtoId=dto.getId();
+
+            dto.setIsCompleted(completedIds.contains(dtoId)); //완료 여부
+            dto.setIsCurrent(currentId!=null&&currentId.equals(dtoId)); //현재 진도 여부
+
+        }
+
         return chapterDtos;
     }
 
