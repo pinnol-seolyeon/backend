@@ -89,7 +89,7 @@ public class StudyController {
         return ResponseEntity.ok(title);
     }
 
-    @DeleteMapping("/finish")
+    @PostMapping("/finish")
     @Operation(summary="학습완료")
     public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
         User user=userService.getUserInfo();
