@@ -6,6 +6,7 @@ import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
+import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import retrofit2.http.Multipart;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -139,7 +141,25 @@ public class StudyService {
     }
 
 
-    //학습 완료
+    //학습 완료 //학습 완료 시 나오는 화면 or 나오는 로직 설정해야..
+    public void finishChapter(String chapterId,String studyId){
+        Chapter chapter=getChapterByString(chapterId);
+        ObjectId objectId=new ObjectId(studyId);
+        Study study=studyRepository.findById(objectId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+
+        if(study.getCompleteChapter()==null){
+            study.setCompleteChapter(new ArrayList<>());
+        }
+
+        //완료된 단원 리스트에 추가
+        study.getCompleteChapter().add(new CompletedChapter(chapterId,LocalDateTime.now()));
+
+        //현재 학습중인 단원 제거 or 다음 단원으로 교체
+        study.setChapter(null);
+
+        studyRepository.save(study);
+    }
 
     //String chapterId로 chapter찾기
     public Chapter getChapterByString(String id){

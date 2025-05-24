@@ -12,6 +12,7 @@ import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
+import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.StudyService;
@@ -88,11 +89,24 @@ public class StudyController {
         return ResponseEntity.ok(title);
     }
 
+    @DeleteMapping("/finish")
+    @Operation(summary="학습완료")
+    public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
+        User user=userService.getUserInfo();
+        String studyId=user.getStudyId();
+        String chapterTitle=studyService.getChapterTitle(chapterId);
+
+        try {
+            studyService.finishChapter(chapterId, studyId);
+        }catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+        return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
+    }
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
     @Operation(summary="S3에 학습하기 이미지 업로드+db에 fileURl 저장")
-    //chapterId에 대한 로직 검토 필요.. 현재 프론트에서 chatperId 매핑이 안되는 문제 있음
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
         /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
         try{
