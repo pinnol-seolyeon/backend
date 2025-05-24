@@ -197,4 +197,13 @@ public class StudyService {
                 .orElseThrow(()->new IllegalArgumentException("해당 단원이 없음"));
         return chapter;
     }
-}
+
+    //String studyId로 study 찾기
+    public Study getStudyByString(String id){
+        ObjectId realId=new ObjectId(id);
+        Study study=studyRepository.findById(realId)
+                .orElseThrow(()->new IllegalArgumentException("해당 Study 없음"));
+            return study;
+        }
+    }
+

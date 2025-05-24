@@ -1,11 +1,15 @@
 package jpabasic.pinnolbe.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.StudyLog;
+import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.AttendanceDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
+import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
+import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,7 @@ import java.util.List;
 public class StudyLogController {
 
     private final StudyLogService studyLogService;
+    private final UserService userService;
 
     @GetMapping("/today")
     public ResponseEntity<TodayStudyTimeDto> getTodayStudyTime(@RequestParam String userId) {
@@ -38,6 +43,18 @@ public class StudyLogController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/completed")
+    @Operation(summary="학습완료한 단원 개수")
+    public ResponseEntity<FinishChaptersDto> getCompletedWeek(){
+        User user=userService.getUserInfo();
+        String studyId=user.getStudyId();
+
+        FinishChaptersDto dto=studyLogService.getCompletedWeek(studyId);
+        return ResponseEntity.ok(dto);
+    }
+
+
+
 //    @GetMapping("/today/{userId}")
 //    public TodayStudyTypeResponse getTodayStudyInfo(@PathVariable String userId) {
 //        LocalDate today = LocalDate.now();
@@ -53,6 +70,9 @@ public class StudyLogController {
 //        String type = studyLogService.getTodayStudyType(userId);
 //        return new TodayStudyTypeResponse(hours, minutes, type);
 //    }
+
+
+
 
 
 }
