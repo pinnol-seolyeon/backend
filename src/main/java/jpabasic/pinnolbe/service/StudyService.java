@@ -75,8 +75,8 @@ public class StudyService {
 
     //책에 대한 처음 시작 //수정완료
     public Study startBook(User user,String bookId){
-
-        Book book=bookRepository.findById(bookId)
+        ObjectId objectId=new ObjectId(bookId);
+        Book book=bookRepository.findById(objectId)
                 .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
         List<String> chapters = book.getChapters();
@@ -105,7 +105,8 @@ public class StudyService {
     //책 선택 후 단원 선택 시, 해당 책의 단원 리스트 제공
     //수정 : chapterId+chapterTitle만 반환
     public List<ChaptersDto> getChapterTitles(String bookId){
-        Book book=bookRepository.findById(bookId)
+        ObjectId objectId=new ObjectId(bookId);
+        Book book=bookRepository.findById(objectId)
                 .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
         List<String> chapterIds = book.getChapters();
@@ -122,6 +123,8 @@ public class StudyService {
         System.out.println("✏️✏️" + chapterDtos);
         return chapterDtos;
     }
+
+
 
     public String getChapterTitle(String chapterId){
         Chapter chapter=getChapterByString(chapterId);
@@ -156,10 +159,36 @@ public class StudyService {
         study.getCompleteChapter().add(new CompletedChapter(chapterId,LocalDateTime.now()));
 
         //현재 학습중인 단원 제거 or 다음 단원으로 교체
-        study.setChapter(null);
+//        study.setChapter(null);
+        study.setChapter(getNextChapter(study));
 
         studyRepository.save(study);
     }
+
+    //학습 완료 후 다음 단원으로 이동
+    public Chapter getNextChapter(Study study){
+        ObjectId objectId=new ObjectId(study.getBookId());
+        Book book=bookRepository.findById(objectId)
+                .orElseThrow(()->new IllegalArgumentException("해당 책이 없어요."));
+        List<String> chapterIds=book.getChapters(); //순서 보장된 단원 ID 리스트
+        ObjectId currentChapterId=study.getChapter().getId();
+
+        //현재 단원의 인덱스 탐색
+        int index=chapterIds.indexOf(currentChapterId.toString());
+        if (index==-1){
+            throw new IllegalStateException("현재 단원이 책의 chapter 목록에 없습니다.");
+        }
+
+        //다음 단원이 존재하면 반환
+        if (index+1<chapterIds.size()){
+            String nextChapterId=chapterIds.get(index+1);
+            return getChapterByString(nextChapterId);
+        }else{
+            return study.getChapter(); //책에 대한 모든 단원 마무리-> 현재의 마지막 단원으로 그대로 저장
+        }
+    }
+
+
 
     //String chapterId로 chapter찾기
     public Chapter getChapterByString(String id){
