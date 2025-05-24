@@ -14,7 +14,7 @@ public class UserInfoDto {
 //    private String name;
 //    private String role;
     private String childName;
-    private Long coin;
+    private int coin;
 
 
 }

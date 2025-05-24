@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.domain.study;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,10 +13,10 @@ import java.util.List;
 public class Book {
 
     @Id
-    private String id;
+    private ObjectId id;
 //    private int bookId;
     private String title;
 //    private Long chapter_id;
 
-    private List<Chapter> chapters;
+    private List<String> chapters;
 }

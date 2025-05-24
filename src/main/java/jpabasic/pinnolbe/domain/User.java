@@ -27,7 +27,10 @@ public class User {
     private String accessToken;
 
     @Nullable
-    private Study study;
+    private String studyId;
+
+    //여태까지 모은 코인 개수
+    private int reward=0;
 
 
     //별도로 입력받아야 할 자녀 정보

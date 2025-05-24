@@ -1,12 +1,9 @@
 package jpabasic.pinnolbe.controller;
 
-import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.service.login.RewardService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,11 +22,10 @@ public class RewardController {
     }
     
     
-    //reward 조회
+    //reward 조회 //헤더에서 reward 조회할 수 있도록 수정할 필요 O
     @GetMapping("/myReward")
-    public ResponseEntity<Reward> myReward() {
+    public int myReward() {
         User user=userService.getUserInfo();
-        Reward myReward=rewardService.myReward(user.getId());
-        return ResponseEntity.ok(myReward);
+        return user.getReward();
     }
 }
