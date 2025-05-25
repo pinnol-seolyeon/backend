@@ -8,8 +8,10 @@ import jpabasic.pinnolbe.dto.ScoreRequestDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
+import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
+import jpabasic.pinnolbe.service.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,14 @@ public class StudyLogController {
 
     private final StudyLogService studyLogService;
     private final UserService userService;
+    private final StudyService studyService;
+
+
+    @GetMapping("/stats")
+    public ResponseEntity<StudyStatsDto> getStudyStats(@RequestParam String userId) {
+        StudyStatsDto stats = studyService.getStudyStats(userId);
+        return ResponseEntity.ok(stats);
+    }
 
     @GetMapping("/today")
     public ResponseEntity<?> getTodayStudyTime() {

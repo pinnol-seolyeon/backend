@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface StudyRepository extends MongoRepository<Study, ObjectId> {
 
-    Study findByUserId(String userId);
+    Optional<Study> findByUserId(String userId);
     Optional<Study> findByBookId(String bookId);
 
 }
