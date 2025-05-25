@@ -19,10 +19,7 @@ import retrofit2.http.Multipart;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,7 +130,7 @@ public class StudyService {
 
         //completeChapter 리스트의 chapterId에 없는 단원들은 잠금 상태
         //완료된 단원들의 id 목록
-        List<CompletedChapter> completed=study.getCompleteChapter();
+        Set<CompletedChapter> completed=study.getCompleteChapter();
         /// completed가 null이면 빈 Set 리턴 ///아니면 스트림 처리 -> Set<String> 생성
         Set<String> completedIds=completed==null?Set.of():
                 completed.stream().map(CompletedChapter::getChapterId).collect(Collectors.toSet()); //CompletedChapter에서 chapterId만 추출 //스트림 결과를 Set<String>으로 수집
@@ -181,7 +178,7 @@ public class StudyService {
                 .orElseThrow(()-> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
 
         if(study.getCompleteChapter()==null){
-            study.setCompleteChapter(new ArrayList<>());
+            study.setCompleteChapter(new HashSet<>());
         }
 
         //완료된 단원 리스트에 추가
