@@ -20,5 +20,8 @@ public class StudyLog {
     private LocalDate date;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    
+    //오늘 하루 질문한 내용 요약
+    private String summaryQuestions;
 }
 

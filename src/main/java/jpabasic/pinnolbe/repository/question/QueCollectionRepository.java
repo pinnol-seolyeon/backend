@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QueCollectionRepository extends MongoRepository<QueCollection, String> {
 
-    QueCollection findByPart(int part);
 }
