@@ -39,15 +39,11 @@ public class StudyLogService {
     }
 
     public AttendanceDto getAttendanceForMonth(String userId, YearMonth month) {
-
-        // 1. 사용자 로그 전부 불러오기
         List<StudyLog> logs = studyLogRepository.findByUserId(userId);
 
-        // 2. 해당 연도-월에 해당하는 날짜만 필터링하고 문자열로 변환
-        Set<String> uniqueDates = logs.stream()
+        Set<LocalDate> uniqueDates = logs.stream()
                 .map(StudyLog::getDate)
-                .filter(date -> YearMonth.from(date).equals(month))  // 연월 필터
-                .map(LocalDate::toString)                            // "2025-04-12"
+                .filter(date -> YearMonth.from(date).equals(month))
                 .collect(Collectors.toSet());
 
         return new AttendanceDto(new ArrayList<>(uniqueDates));

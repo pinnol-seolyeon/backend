@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.StudyLog;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.AttendanceDto;
+import jpabasic.pinnolbe.dto.ScoreRequestDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -28,18 +30,20 @@ public class StudyLogController {
     private final UserService userService;
 
     @GetMapping("/today")
-    public ResponseEntity<TodayStudyTimeDto> getTodayStudyTime(@RequestParam String userId) {
-        return ResponseEntity.ok(studyLogService.getTodayStudyTime(userId));
+    public ResponseEntity<?> getTodayStudyTime() {
+        User user = userService.getUserInfo();
+        TodayStudyTimeDto result = studyLogService.getTodayStudyTime(user.getId());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/calendar")
     public ResponseEntity<AttendanceDto> getAttendance(
-            @RequestParam String userId,
             @RequestParam int year,
-            @RequestParam int month) {
-
-        YearMonth targetMonth = YearMonth.of(year, month);
-        AttendanceDto dto = studyLogService.getAttendanceForMonth(userId, targetMonth);
+            @RequestParam int month
+    ) {
+        User user = userService.getUserInfo();
+        YearMonth yearMonth = YearMonth.of(year, month);
+        AttendanceDto dto = studyLogService.getAttendanceForMonth(user.getId(), yearMonth);
         return ResponseEntity.ok(dto);
     }
 
@@ -70,9 +74,6 @@ public class StudyLogController {
 //        String type = studyLogService.getTodayStudyType(userId);
 //        return new TodayStudyTypeResponse(hours, minutes, type);
 //    }
-
-
-
 
 
 }
