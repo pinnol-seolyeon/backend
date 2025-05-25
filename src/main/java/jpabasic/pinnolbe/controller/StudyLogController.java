@@ -34,10 +34,13 @@ public class StudyLogController {
 
 
     @GetMapping("/stats")
-    public ResponseEntity<StudyStatsDto> getStudyStats(@RequestParam String userId) {
-        StudyStatsDto stats = studyService.getStudyStats(userId);
+    public ResponseEntity<StudyStatsDto> getStudyStats() {
+        User user = userService.getUserInfo();
+
+        StudyStatsDto stats = studyService.getStudyStats(user.getId());
         return ResponseEntity.ok(stats);
     }
+
 
     @GetMapping("/today")
     public ResponseEntity<?> getTodayStudyTime() {
