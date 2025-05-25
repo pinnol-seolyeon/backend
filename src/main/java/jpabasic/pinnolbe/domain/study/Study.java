@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ public class Study {
     private String bookId;
 
     @Nullable
-    private List<CompletedChapter> completeChapter=new ArrayList<>(); //해당 교재에서 학습 완료된 단원id 리스트
+    private Set<CompletedChapter> completeChapter=new HashSet<>(); //해당 교재에서 학습 완료된 단원id 리스트
 
     private Chapter chapter;
 
@@ -39,7 +40,7 @@ public class Study {
         this.userId = userId;
         this.bookId = bookId;
         this.chapter = chapter;
-        this.completeChapter=new ArrayList<>();
+        this.completeChapter=new HashSet<>();
     }
 
 }

@@ -81,7 +81,7 @@ public class StudyLogService {
     /// 이번 주 학습완료한 단원 개수 ///이번주 = (월요일 00:00~일요일 23:59)
     public FinishChaptersDto getCompletedWeek(String studyId){
         Study study=studyService.getStudyByString(studyId);
-        List<CompletedChapter> completedChapters=study.getCompleteChapter();
+        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
         
         if(completedChapters==null){
             return new FinishChaptersDto(0,0); //완료 단원이 아예 없을 경우
