@@ -7,6 +7,7 @@ import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
+import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
@@ -18,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import retrofit2.http.Multipart;
 
 import java.io.File;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -189,6 +192,25 @@ public class StudyService {
         study.setChapter(getNextChapter(study));
 
         studyRepository.save(study);
+    }
+
+    public StudyStatsDto getStudyStats(String userId) {
+        Study study = studyRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+
+        Set<CompletedChapter> completed = study.getCompleteChapter();
+        if (completed == null) return new StudyStatsDto(0, 0);
+
+        int total = completed.size();
+
+        LocalDate now = LocalDate.now();
+        LocalDate weekStart = now.with(DayOfWeek.MONDAY);
+
+        int weekly = (int) completed.stream()
+                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
+                .count();
+
+        return new StudyStatsDto(total, weekly);
     }
 
     //학습 완료 후 다음 단원으로 이동
