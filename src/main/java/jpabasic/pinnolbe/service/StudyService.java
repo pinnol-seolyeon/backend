@@ -4,10 +4,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
-import jpabasic.pinnolbe.dto.study.ChapterDto;
-import jpabasic.pinnolbe.dto.study.ChaptersDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
-import jpabasic.pinnolbe.dto.study.StudyStatsDto;
+import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
@@ -42,8 +39,8 @@ public class StudyService {
 //    }
 
 
-    //학습하기
-    public ChapterDto getChapterContents(String studyId) {
+    //이미 학습했던 단원 다시 클릭
+    public ChapterDto getOnceLearned(String studyId) {
 
         ObjectId objectId=new ObjectId(studyId);
         Study study=studyRepository.findById(objectId).orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
@@ -59,6 +56,37 @@ public class StudyService {
         // 본격적인 학습 시작
         return dto;
     }
+
+    //학습하고 싶은 단원 선택
+    public ChapterDto getChapterContents(User user,String chapterId) {
+        //유저의 Study Document 찾기
+        String studyId=user.getStudyId();
+        ObjectId objectId=new ObjectId(studyId);
+        Study study=studyRepository.findById(objectId)
+                .orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
+
+        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
+
+        //해당 챕터 공부한 적 있는지 확인
+        boolean isAlreadyCompleted=completedChapters.stream()
+                .anyMatch(c->c.getChapterId().equals(chapterId));
+
+        if(isAlreadyCompleted){
+            Chapter chapter=getChapterByString(chapterId);
+            ChapterDto dto=ChapterDto.convertDto(chapterId,chapter);
+            System.out.println("✅이미 학습한 단원이예요:"+dto.getChapterId());
+            return dto;
+        }else {
+            ChapterDto dto = getOnceLearned(studyId);
+            System.out.println("✅이제 진도를 나가볼까요?" + dto.getChapterId()); ///objectId
+            return dto;
+
+        }
+
+    }
+
+
+    //ch
 
 
 
@@ -234,6 +262,14 @@ public class StudyService {
         }else{
             return study.getChapter(); //책에 대한 모든 단원 마무리-> 현재의 마지막 단원으로 그대로 저장
         }
+    }
+
+
+    //3단계 학습하기: AI와 상호작용 후 답변 저장
+    public void saveFeedback(User user,FeedBackRequest request){
+        String userId=user.getId();
+
+
     }
 
 

@@ -13,6 +13,7 @@ import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
+import jpabasic.pinnolbe.dto.study.FeedBackRequest;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.StudyService;
@@ -24,7 +25,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -61,8 +64,21 @@ public class StudyController {
         String studyId=user.getStudyId();
         System.out.println("🐛🐛"+studyId);
 
-        ChapterDto chapter=studyService.getChapterContents(studyId);
+        ChapterDto chapter=studyService.getChapterContents(user,studyId);
         return ResponseEntity.ok(chapter);
+    }
+
+    @PostMapping("/feedback")
+    @Operation(summary="유저가 대답하면 AI가 피드백/리액션")
+    public ResponseEntity<Map<String,String>> handleFeedback(@RequestBody FeedBackRequest request){
+        System.out.println("🎙선생님의 질문:"+request.getQuestion());
+        System.out.println("🎙사용자 답변:"+request.getUserAnswer());
+
+        String reaction="좋은 생각이야~";
+
+        Map<String,String> response=new HashMap<>();
+        response.put("reaction",reaction);
+        return ResponseEntity.ok(response);
     }
 
 
