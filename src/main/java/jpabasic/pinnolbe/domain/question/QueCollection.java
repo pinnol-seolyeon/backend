@@ -1,12 +1,14 @@
 package jpabasic.pinnolbe.domain.question;
 
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.question.QuestionAnswer;
+import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -22,16 +24,14 @@ public class QueCollection {
     @Id
     private String id;
     private String userId;
-    private Date date; //질문한 날짜
-    private int part; //단원
 
-    private List<QuestionAnswer> questions;
+    private LocalDateTime date; //질문한 날짜
+    private String chapterId; //단원
 
-    public QueCollection(int part, User user){
-        date=new Date();
-        this.part=part;
-        this.userId = user.getId();
-    }
+    private List<String> questions;
+    private List<String> answers;
+
+
 
 //    public void addQuestionAnswer(String question){
 //        if(questions==null){

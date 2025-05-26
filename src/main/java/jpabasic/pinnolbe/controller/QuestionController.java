@@ -36,10 +36,19 @@ public class QuestionController {
     }
 
 
-    //여태까지 진행한 질문+답변 한꺼번에 DB에 저장
+    //여태까지 진행한 질문+답변 한꺼번에 DB에 저장 //해당 단원 학습 완료 시 호출
     @PostMapping("/saveAll")
-    public ResponseEntity<QueCollection> saveAllQA(@RequestBody QAs queAns){
+    public ResponseEntity<String> saveAllQA(@RequestParam String chapterId){
         User user=userService.getUserInfo();
-        return(questionService.saveAllQAs(user,queAns));
+        try {
+            questionService.saveAllQAs(user, chapterId);
+        }catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+        return ResponseEntity.ok("여태까지의 질문&답변이 DB에 무사히 저장되었습니다.");
     }
+
+    // 질문한 개수
+
+
 }
