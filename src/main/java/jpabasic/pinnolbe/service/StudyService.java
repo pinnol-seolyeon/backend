@@ -194,6 +194,7 @@ public class StudyService {
         studyRepository.save(study);
     }
 
+    // 학습 참여도 (총 학습 완료 단원 수, 이번주 학습 완료 단원 수) 가져오기
     public StudyStatsDto getStudyStats(String userId) {
         Study study = studyRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));

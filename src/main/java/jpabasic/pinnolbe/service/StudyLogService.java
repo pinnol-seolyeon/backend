@@ -8,11 +8,14 @@ import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
+import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -21,6 +24,7 @@ import jpabasic.pinnolbe.domain.User;
 import org.springframework.web.client.RestClientException;
 
 import java.time.*;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +33,7 @@ import java.util.stream.Collectors;
 public class StudyLogService {
 
     private final StudyLogRepository studyLogRepository;
+    private final StudyRepository studyRepository;
     private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final AskQuestionTemplate askQuestionTemplate;
@@ -53,6 +58,7 @@ public class StudyLogService {
         return new TodayStudyTimeDto(hours, minutes);
     }
 
+
     public AttendanceDto getAttendanceForMonth(String userId, YearMonth month) {
         List<StudyLog> logs = studyLogRepository.findByUserId(userId);
 
@@ -64,31 +70,90 @@ public class StudyLogService {
         return new AttendanceDto(new ArrayList<>(uniqueDates));
     }
 
-    public String getTodayStudyType(String userId) {
-        LocalDate today = LocalDate.now();
-        List<StudyLog> logs = studyLogRepository.findByUserIdAndDate(userId, today);
+    // 학습 선호 시간대 분석
+    public StudyTimeStatsDto analyzeStudyTime(String studyId) {
+        Study study = studyRepository.findById(new ObjectId(studyId))
+                .orElseThrow(() -> new IllegalArgumentException("해당 study를 찾을 수 없습니다"));
 
-        if (logs.isEmpty()) return "랜덤형";
+        Set<CompletedChapter> chapters = study.getCompleteChapter();
 
-        Map<String, Integer> timeSlots = new HashMap<>();
-        timeSlots.put("아침형", 0);
-        timeSlots.put("낮형", 0);
-        timeSlots.put("저녁형", 0);
-        timeSlots.put("야행성", 0);
-
-        for (StudyLog log : logs) {
-            int hour = log.getStartTime().getHour();
-
-            if (hour >= 5 && hour <= 9) timeSlots.computeIfPresent("아침형", (k, v) -> v + 1);
-            else if (hour >= 10 && hour <= 16) timeSlots.computeIfPresent("낮형", (k, v) -> v + 1);
-            else if (hour >= 17 && hour <= 21) timeSlots.computeIfPresent("저녁형", (k, v) -> v + 1);
-            else timeSlots.computeIfPresent("야행성", (k, v) -> v + 1);
+        assert chapters != null;
+        if (chapters.isEmpty()) {
+            return new StudyTimeStatsDto("데이터 없음", Collections.emptyMap());
         }
 
-        // 가장 많은 구간 찾기
-        String maxType = Collections.max(timeSlots.entrySet(), Map.Entry.comparingByValue()).getKey();
-        if (timeSlots.get(maxType) == 0) return "랜덤형";
-        return maxType;
+        // 최근 일주일 범위: 가장 최근 완료일 기준
+        LocalDate latest = chapters.stream()
+                .map(cc -> cc.getCompletedAt().toLocalDate())
+                .max(LocalDate::compareTo)
+                .orElse(LocalDate.now());
+
+        LocalDate startDate = latest.minusDays(6); // 최근 7일
+
+        // 일~토 기준 요일 순서 지정
+        List<DayOfWeek> weekOrder = List.of(
+                DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY
+        );
+
+        Map<String, Map<String, Integer>> weeklyStats = new LinkedHashMap<>();
+        for (DayOfWeek dow : weekOrder) {
+            String label = dow.getDisplayName(TextStyle.SHORT, Locale.KOREAN); // 예: "일"
+            weeklyStats.put(label, new HashMap<>());
+        }
+
+        Map<String, Integer> timeTypeCount = new HashMap<>();
+
+        for (CompletedChapter cc : chapters) {
+            LocalDateTime completed = cc.getCompletedAt();
+            if (completed.toLocalDate().isBefore(startDate)) continue;
+
+            int hour = completed.getHour();
+            String type = hour >= 5 && hour < 12 ? "아침형"
+                    : hour >= 12 && hour < 18 ? "낮형"
+                    : hour >= 18 && hour < 23 ? "밤형"
+                    : "새벽형";
+
+            timeTypeCount.merge(type, 1, Integer::sum);
+
+            String dayLabel = completed.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+            String periodKey = switch (type) {
+                case "아침형" -> "morning";
+                case "낮형" -> "afternoon";
+                case "밤형" -> "evening";
+                case "새벽형" -> "night";
+                default -> "etc";
+            };
+            weeklyStats.getOrDefault(dayLabel, new HashMap<>())
+                    .merge(periodKey, 1, Integer::sum);
+        }
+
+        timeTypeCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey);
+        String preferredType;
+
+        // 고르게 분포되어 있으면 '언제든지좋아형'
+        int total = timeTypeCount.values().stream().mapToInt(Integer::intValue).sum();
+        int max = timeTypeCount.values().stream().max(Integer::compareTo).orElse(0);
+
+        // max와의 차이가 1 이하인 시간대가 3개 이상이면 고르게 분포한 것으로 간주
+        long evenlySpread = timeTypeCount.values().stream()
+                .filter(c -> Math.abs(c - max) <= 1)
+                .count();
+
+        // 전체 학습 횟수가 3 이하이거나, 고르게 분포된 시간대가 3개 이상이면
+        if (total <= 3 || evenlySpread >= 3) {
+            preferredType = "언제든지 좋아형";
+        } else {
+            preferredType = timeTypeCount.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse("분석불가");
+        }
+
+        return new StudyTimeStatsDto(preferredType, weeklyStats);
     }
 
 
