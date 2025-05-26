@@ -1,14 +1,24 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.StudyLog;
+import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.AttendanceDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
+import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
+import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import jpabasic.pinnolbe.domain.User;
+import org.springframework.web.client.RestClientException;
 
 import java.time.*;
 import java.util.*;
@@ -20,6 +30,11 @@ public class StudyLogService {
 
     private final StudyLogRepository studyLogRepository;
     private final StudyService studyService;
+    private final QueCollectionRepository queCollectionRepository;
+    private final AskQuestionTemplate askQuestionTemplate;
+    private final MongoTemplate mongoTemplate;
+
+
 
     public TodayStudyTimeDto getTodayStudyTime(String userId) {
         LocalDate today = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
@@ -106,6 +121,75 @@ public class StudyLogService {
         long totalCount= completedChapters.size();
         return new FinishChaptersDto((int) weekCount,(int) totalCount);
     }
+
+    //AI : 질문 요약
+    public QuestionSummaryDto summaryQuestion(List<String> questions,User user){
+        //AI에 유저의 질문리스트 전달
+        try{
+            return askQuestionTemplate.summaryQuestionsByAI(questions);
+        }catch(RestClientException e){
+            throw new RuntimeException("AI 서버 호출 중 오류 발생",e);
+        }
+    }
+
+
+    //오늘 한 질문 개수들 보기
+    public Integer countTodayQuestions(String userId) {
+        //질문+답변 전체 불러오기
+        List<String> questions=getTodayCollections(userId);
+
+        return questions.size();
+    }
+
+
+    //오늘한 질문들만 보기
+    public List<String> getTodayCollections(String userId){
+        List<QueCollection> queCollections=getTodayQueCollection(userId);
+
+        if(queCollections.isEmpty()){
+            throw new IllegalStateException("아직 오늘 질문한 내용이 없습니다.");
+        }
+
+        List<String> result=new ArrayList<>();
+        for(QueCollection queCollection:queCollections){
+            if(queCollection.getQuestions()!=null){
+                result.addAll(queCollection.getQuestions());
+            }
+            if(queCollection.getAnswers()!=null){
+                result.addAll(queCollection.getAnswers());
+            }
+        }
+
+        return result;
+    }
+
+
+    // 오늘의 queCollection
+    public List<QueCollection> getTodayQueCollection(String userId) {
+        System.out.println("😟"+userId);
+
+        List<QueCollection> collections=queCollectionRepository.findByUserId(userId);
+        System.out.println("✅✅"+collections.size());
+
+        LocalDateTime startOfDay=LocalDate.now().atStartOfDay();
+        System.out.println("📅오늘 날짜:"+startOfDay);
+
+        LocalDateTime endOfDay=startOfDay.plusDays(1);
+        System.out.println("📅마지노선:"+endOfDay);
+
+        List<QueCollection> todayQuestions=new ArrayList<>();
+
+        for(QueCollection collection:collections){
+
+            LocalDateTime questionDate=collection.getDate();
+            if (!questionDate.isBefore(startOfDay) && questionDate.isBefore(endOfDay)) {
+                todayQuestions.add(collection);
+                System.out.println("📅todayQuestions:"+todayQuestions);
+            }
+        }
+        return todayQuestions;
+    }
+
 
 
 

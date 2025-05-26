@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -71,7 +73,8 @@ public class QuestionService {
         doc.setQuestions(session.getQuestions());
         doc.setAnswers(session.getAnswers());
         doc.setChapterId(chapterId);
-        doc.setDate(LocalDate.now());
+        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        doc.setDate(nowKST);
 
         queCollectionRepository.save(doc);
 
@@ -81,8 +84,7 @@ public class QuestionService {
     }
 
 
-    // 질문 내용 요약하기
-    public String
+
 
 
 //    //단원별로 질문 모아두는 레포 생성

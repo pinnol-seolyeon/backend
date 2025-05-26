@@ -50,9 +50,5 @@ public class QuestionController {
 
     // 질문한 개수
 
-    // 질문 내용 요약
-    @PostMapping("/summary/questions")
-    public ResponseEntity<String> summaryQuestions(){
-        User user=userService.getUserInfo();
-    }
+
 }
