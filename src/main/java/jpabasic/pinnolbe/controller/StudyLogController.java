@@ -3,6 +3,7 @@ package jpabasic.pinnolbe.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.StudyLog;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.AttendanceDto;
 import jpabasic.pinnolbe.dto.ScoreRequestDto;
 import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
@@ -12,18 +13,22 @@ import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
+import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/study")
@@ -33,6 +38,7 @@ public class StudyLogController {
     private final StudyLogService studyLogService;
     private final UserService userService;
     private final StudyService studyService;
+    private final QueCollectionRepository queCollectionRepository;
 
 
     @GetMapping("/stats")
@@ -95,6 +101,31 @@ public class StudyLogController {
         QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
 
         return ResponseEntity.ok(result);
+    }
+
+    // 학습 분석화면에 표시할 질문 캘린더 날짜 추출
+    @GetMapping("/questions/dates")
+    public List<LocalDate> getQuestionDates() {
+        User user=userService.getUserInfo();
+        String userId=user.getId();
+
+        return queCollectionRepository.findByUserId(userId).stream()
+                .map(q -> q.getDate().toLocalDate())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    // 캘린더 해당 날짜 질문 내역
+    @GetMapping("/questions/history")
+    public List<QueCollection> getDailyQnA(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        User user=userService.getUserInfo();
+        String userId=user.getId();
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+        return queCollectionRepository.findByUserIdAndDateBetween(userId, start, end);
     }
 
 
