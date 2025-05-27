@@ -10,6 +10,7 @@ import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
+import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.StudyService;
@@ -42,6 +43,13 @@ public class StudyLogController {
         return ResponseEntity.ok(stats);
     }
 
+    @GetMapping("/preferred-time")
+    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계")
+    public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
+        User user = userService.getUserInfo();
+        StudyTimeStatsDto stats = studyLogService.analyzeStudyTime(user.getStudyId());
+        return ResponseEntity.ok(stats);
+    }
 
     @GetMapping("/today")
     public ResponseEntity<?> getTodayStudyTime() {
