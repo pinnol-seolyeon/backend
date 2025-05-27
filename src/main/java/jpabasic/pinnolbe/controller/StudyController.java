@@ -2,18 +2,15 @@ package jpabasic.pinnolbe.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.constraints.Positive;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
+import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
-import jpabasic.pinnolbe.dto.study.FeedBackRequest;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.StudyService;
@@ -59,26 +56,42 @@ public class StudyController {
 
     @GetMapping("/start")
     @Operation(summary="해당 단원 학습하기") //문장 단위로 끊어서 보여주기..
-    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String bookId){
+    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String chapterId){
         User user=userService.getUserInfo();
         String studyId=user.getStudyId();
         System.out.println("🐛🐛"+studyId);
 
-        ChapterDto chapter=studyService.getChapterContents(user,studyId);
+        ChapterDto chapter=studyService.getChapterContents(user,chapterId);
         return ResponseEntity.ok(chapter);
     }
 
     @PostMapping("/feedback")
     @Operation(summary="유저가 대답하면 AI가 피드백/리액션")
-    public ResponseEntity<Map<String,String>> handleFeedback(@RequestBody FeedBackRequest request){
+    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequest request){
         System.out.println("🎙선생님의 질문:"+request.getQuestion());
         System.out.println("🎙사용자 답변:"+request.getUserAnswer());
+        User user=userService.getUserInfo();
 
-        String reaction="좋은 생각이야~";
+//        String reaction="좋은 생각이야~";
+//
+//        Map<String,String> response=new HashMap<>();
+//        response.put("reaction",reaction);
+//        return ResponseEntity.ok(response);
+        QuestionResponse res=studyService.getFeedback(user,request);
+        return ResponseEntity.ok(res);
+    }
 
-        Map<String,String> response=new HashMap<>();
-        response.put("reaction",reaction);
-        return ResponseEntity.ok(response);
+    
+    @PostMapping("/feedback/saveAll")
+    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장")
+    public ResponseEntity<String> saveAllFeedBacks(@RequestParam String chapterId){
+        User user=userService.getUserInfo();
+        try {
+            studyService.saveAllFeedBacks(user, chapterId);
+        }catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+        return ResponseEntity.ok("여태까지의 피드백이 DB에 무사히 저장되었습니다.");
     }
 
 

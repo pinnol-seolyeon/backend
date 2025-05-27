@@ -1,13 +1,20 @@
 package jpabasic.pinnolbe.domain.study;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection="userFeedBack")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class UserFeedback {
 
     @Id
@@ -16,6 +23,7 @@ public class UserFeedback {
     private String userId;
     private String chapterId;
     private int sentenceIndex;
-    private String question;
-    private String userAnswer;
+    private List<String> questions;
+    private List<String> userAnswers;
+    private LocalDateTime date; //질문한 날짜
 }

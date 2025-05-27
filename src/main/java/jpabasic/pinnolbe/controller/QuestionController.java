@@ -38,6 +38,7 @@ public class QuestionController {
 
     //여태까지 진행한 질문+답변 한꺼번에 DB에 저장 //해당 단원 학습 완료 시 호출
     @PostMapping("/saveAll")
+    @Operation(summary="여태까지 진행한 질문+답변 한꺼번에 DB에 저장")
     public ResponseEntity<String> saveAllQA(@RequestParam String chapterId){
         User user=userService.getUserInfo();
         try {
