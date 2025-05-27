@@ -3,6 +3,7 @@ package jpabasic.pinnolbe.service.model;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,28 @@ public class AskQuestionTemplate {
         return body;
     }
 
+
+
+    //피드백을 위한 챗봇
+    public QuestionResponse feedbackQuestionToAI(FeedBackRequest questionRequest) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<FeedBackRequest> request = new HttpEntity<>(questionRequest, headers);
+
+        ResponseEntity<QuestionResponse> response = restTemplate.exchange(
+                fastApiEndpoint+"/feedback", HttpMethod.POST, request, QuestionResponse.class
+        );
+        System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
+
+        QuestionResponse body=response.getBody();
+        System.out.println("🧪 응답 객체 = " + body);
+        System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
+        return body;
+    }
 
      /// /api/rag/question-summary
 

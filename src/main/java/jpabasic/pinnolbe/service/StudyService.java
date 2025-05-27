@@ -1,28 +1,33 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
-import jpabasic.pinnolbe.dto.study.ChapterDto;
-import jpabasic.pinnolbe.dto.study.ChaptersDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
-import jpabasic.pinnolbe.dto.study.StudyStatsDto;
+import jpabasic.pinnolbe.domain.study.UserFeedback;
+import jpabasic.pinnolbe.dto.question.QuestionResponse;
+import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
+import jpabasic.pinnolbe.dto.study.*;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
+import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
+import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import retrofit2.http.Multipart;
+import org.springframework.web.client.RestClientException;
 
-import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,17 +38,13 @@ public class StudyService {
   private final ChapterRepository chapterRepository;
   private final StudyRepository studyRepository;
   private final UserRepository userRepository;
-
-//    public StudyService(BookRepository bookRepository, ChapterRepository chapterRepository, StudyRepository studyRepository, UserRepository userRepository) {
-//        this.bookRepository = bookRepository;
-//        this.chapterRepository = chapterRepository;
-//        this.studyRepository = studyRepository;
-//        this.userRepository = userRepository;
-//    }
+  private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
+  private final UserFeedbackRepository userFeedbackRepository;
+    private final AskQuestionTemplate askQuestionTemplate;
 
 
-    //학습하기
-    public ChapterDto getChapterContents(String studyId) {
+    //이미 학습했던 단원 다시 클릭
+    public ChapterDto getOnceLearned(String studyId) {
 
         ObjectId objectId=new ObjectId(studyId);
         Study study=studyRepository.findById(objectId).orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
@@ -59,6 +60,37 @@ public class StudyService {
         // 본격적인 학습 시작
         return dto;
     }
+
+    //학습하고 싶은 단원 선택
+    public ChapterDto getChapterContents(User user,String chapterId) {
+        //유저의 Study Document 찾기
+        String studyId=user.getStudyId();
+        ObjectId objectId=new ObjectId(studyId);
+        Study study=studyRepository.findById(objectId)
+                .orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
+
+        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
+
+        //해당 챕터 공부한 적 있는지 확인
+        boolean isAlreadyCompleted=completedChapters.stream()
+                .anyMatch(c->c.getChapterId().equals(chapterId));
+
+        if(isAlreadyCompleted){
+            Chapter chapter=getChapterByString(chapterId);
+            ChapterDto dto=ChapterDto.convertDto(chapterId,chapter);
+            System.out.println("✅이미 학습한 단원이예요:"+dto.getChapterId());
+            return dto;
+        }else {
+            ChapterDto dto = getOnceLearned(studyId);
+            System.out.println("✅이제 진도를 나가볼까요?" + dto.getChapterId()); ///objectId
+            return dto;
+
+        }
+
+    }
+
+
+    //ch
 
 
 
@@ -235,6 +267,54 @@ public class StudyService {
         }else{
             return study.getChapter(); //책에 대한 모든 단원 마무리-> 현재의 마지막 단원으로 그대로 저장
         }
+    }
+
+
+    //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
+    public QuestionResponse getFeedback(User user, FeedBackRequest request){
+        String userId= user.getId();
+        String question=request.getQuestion();
+
+        // AI에 유저의 질문 전달
+        try {
+            /// AI 수정 필요
+            QuestionResponse answer = askQuestionTemplate.feedbackQuestionToAI(request);
+
+
+            //사용자 세션 가져오기
+            FeedBackResponse session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponse());
+            session.add(request.getQuestion(),request.getUserAnswer(),answer.getResult());
+
+            // AI의 답변 내용을 반환
+            return answer;
+        }catch(RestClientException e){
+            throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
+        }
+
+
+    }
+
+
+    //모든 피드백 저장
+    public void saveAllFeedBacks(User user,String chapterId){
+        String userId=user.getId();
+        FeedBackResponse session=sessionStore.get(userId);
+
+        if(session==null||session.getQuestions().isEmpty()) return;
+
+        UserFeedback doc=new UserFeedback();
+        doc.setUserId(userId);
+        doc.setQuestions(session.getQuestions());
+        doc.setUserAnswers(session.getUserAnswers());
+        doc.setChapterId(chapterId);
+        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        doc.setDate(nowKST);
+
+        userFeedbackRepository.save(doc);
+
+        //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
+        sessionStore.remove(userId);
+
     }
 
 
