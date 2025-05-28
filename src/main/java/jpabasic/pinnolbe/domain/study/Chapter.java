@@ -20,4 +20,9 @@ public class Chapter {
     private String content;
     private String objective;
     private String imgUrl;
+    private String summaryImgUrl;
+    private String objectiveQuestion;
+    private String objectiveAnswer;
+    private String summary;
+    private String topic;
 }
