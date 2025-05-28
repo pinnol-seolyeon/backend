@@ -204,6 +204,16 @@ public class StudyService {
         //StudyRepository, BookRepository도 수정해야함..
     }
 
+    ///chapterRepository에 S3 image url 저장
+    public void saveSummaryImgUrl(String chapterId,String fileUrl){
+        Chapter chapter=getChapterByString(chapterId);
+        chapter.setSummaryImgUrl(fileUrl);
+
+
+        chapterRepository.save(chapter);
+        //StudyRepository, BookRepository도 수정해야함..
+    }
+
 
     //학습 완료 //학습 완료 시 나오는 화면 or 나오는 로직 설정해야..
     public void finishChapter(String chapterId,String studyId){
