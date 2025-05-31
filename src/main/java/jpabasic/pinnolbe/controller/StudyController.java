@@ -137,7 +137,7 @@ public class StudyController {
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
-    @Operation(summary="S3에 학습하기 이미지 업로드+db에 fileURl 저장")
+    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
         /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
         try{
@@ -158,6 +158,38 @@ public class StudyController {
 
 
             studyService.saveImgUrl(chapterId,fileUrl); //DB에 이미지 url 저장
+            return ResponseEntity.ok(fileUrl);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+
+
+
+    @PostMapping(value="/upload-summaryImg",consumes="multipart/form-data")
+    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장")
+    public ResponseEntity<String> uploadSummaryImgFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
+        /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
+        try{
+
+            //확장자 추출
+            String extension=file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
+            String keyName="summary/"+chapterId+"."+extension; //키를 chapterId로
+
+            ObjectMetadata metadata=new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+
+
+            PutObjectRequest putObjectRequest=new PutObjectRequest(bucket,keyName,file.getInputStream(),metadata);
+
+            amazonS3Client.putObject(putObjectRequest);
+            String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/"+ keyName;
+
+
+            studyService.saveSummaryImgUrl(chapterId,fileUrl); //DB에 이미지 url 저장
             return ResponseEntity.ok(fileUrl);
         }catch(Exception e){
             e.printStackTrace();

@@ -14,6 +14,11 @@ public class ChapterDto {
     private String content;
     private String objective;
     private String imgUrl;
+    private String summaryImgUrl;
+    private String objectiveQuestion;
+    private String objectiveAnswer;
+    private String summary;
+    private String topic;
 
     //static : 객체를 만들지 않아도 사용 가능
     public static ChapterDto convertDto(String chapterId, Chapter chapter){
@@ -23,6 +28,11 @@ public class ChapterDto {
         dto.setContent(chapter.getContent());
         dto.setObjective(chapter.getObjective());
         dto.setImgUrl(chapter.getImgUrl());
+        dto.setSummaryImgUrl(chapter.getSummaryImgUrl());
+        dto.setObjectiveQuestion(chapter.getObjectiveQuestion());
+        dto.setObjectiveAnswer(chapter.getObjectiveAnswer());
+        dto.setSummary(chapter.getSummary());
+        dto.setTopic(chapter.getTopic());
         return dto;
     }
 }
