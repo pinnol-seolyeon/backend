@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.dto;
+package jpabasic.pinnolbe.dto.analyze;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

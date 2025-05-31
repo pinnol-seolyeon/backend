@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.domain;
+package jpabasic.pinnolbe.domain.analyze;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
