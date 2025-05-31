@@ -1,6 +1,6 @@
-package jpabasic.pinnolbe.repository;
+package jpabasic.pinnolbe.repository.analyze;
 
-import jpabasic.pinnolbe.domain.StudyLog;
+import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDate;
