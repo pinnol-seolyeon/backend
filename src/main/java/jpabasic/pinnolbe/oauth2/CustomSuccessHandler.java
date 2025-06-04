@@ -1,8 +1,6 @@
 package jpabasic.pinnolbe.oauth2;
 
-
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
@@ -22,50 +20,40 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
 
     public CustomSuccessHandler(JwtUtil jwtUtil) {
-        this.jwtUtil=jwtUtil;
+        this.jwtUtil = jwtUtil;
     }
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-
-
-        //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
+        String username = customUserDetails.getUsername();
 
-        //JWT 생성 위해 필요한 값들을 불러옴
-        String username=customUserDetails.getUsername();
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        GrantedAuthority auth = authorities.iterator().next();
+        String role = auth.getAuthority();
 
-        Collection<? extends GrantedAuthority> authorities=authentication.getAuthorities();
-        Iterator<? extends GrantedAuthority> iterator=authorities.iterator();
-        GrantedAuthority auth=iterator.next();
-        String role=auth.getAuthority();
+        // JWT 생성
+        String token = jwtUtil.createJwt(username, role, 60 * 60 * 60L); // 60시간
 
-        //JWT 생성
-        String token=jwtUtil.createJwt(username,role,60*60*60L);
+        // ✅ Set-Cookie 수동 설정 (크로스도메인 허용)
+        String cookieHeader = "Authorization=" + token +
+                "; Max-Age=" + (60 * 60 * 60) +
+                "; Path=/" +
+                "; Domain=frontend-seolyeon.vercel.app" +
+                "; HttpOnly" +
+                "; Secure" +
+                "; SameSite=None";
 
-        //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트
-        response.addCookie(createCookie("Authorization",token));
+        response.setHeader("Set-Cookie", cookieHeader);
 
-        //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
-        boolean isFirstLogin=customUserDetails.isFirstLogin();
-        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/main";
+        // ✅ 로그인 후 리다이렉트
+        boolean isFirstLogin = customUserDetails.isFirstLogin();
+        String targetUrl = isFirstLogin
+                ? "https://frontend-seolyeon.vercel.app/childInfo"
+                : "https://frontend-seolyeon.vercel.app/main";
 
         response.sendRedirect(targetUrl);
-
     }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie=new Cookie(key,value);
-        cookie.setMaxAge(60*60*60);
-
-        //cookie.setSecure(true);
-        cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음
-        cookie.setHttpOnly(true); //JavaScript가 쿠키를 가져갈 수 없도록
-
-        return cookie;
-    }
-
 }
+

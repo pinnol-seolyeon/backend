@@ -48,7 +48,7 @@ public class SecurityConfig {
 
                                 CorsConfiguration config = new CorsConfiguration();
 
-                                config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                                config.setAllowedOrigins(Collections.singletonList("https://frontend-seolyeon.vercel.app"));
                                 config.setAllowedMethods(Collections.singletonList("*")); //모든 요청 허용
                                 config.setAllowCredentials(true);
                                 config.setAllowedHeaders(Collections.singletonList("*")); //어떤 헤더를 받을 수 있는지
@@ -106,7 +106,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config=new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of("https://frontend-seolyeon.vercel.app")); //http://localhost:3000
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(List.of("*"));
