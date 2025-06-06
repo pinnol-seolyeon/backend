@@ -26,7 +26,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
+        System.out.println("⭐ CustomSuccessHandler 시작");
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
+        System.out.println("⭐ customUserDetails = " + customUserDetails);
         String username = customUserDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -35,17 +37,19 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // JWT 생성
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 60L); // 60시간
+        System.out.println("⭐token="+token);
 
         // ✅ Set-Cookie 수동 설정 (크로스도메인 허용)
         String cookieHeader = "Authorization=" + token +
                 "; Max-Age=" + (60 * 60 * 60) +
                 "; Path=/" +
-                "; Domain=frontend-seolyeon.vercel.app" +
                 "; HttpOnly" +
-                "; Secure" +
-                "; SameSite=None";
+                "; Secure" + //HTTPS 요청에도 쿠키 무시됨
+                "; SameSite=None"; //크로스 도메인에서 쿠키 전송 위해
 
         response.setHeader("Set-Cookie", cookieHeader);
+        System.out.println("⭐ cookieHeader = " + cookieHeader);
+
 
         // ✅ 로그인 후 리다이렉트
         boolean isFirstLogin = customUserDetails.isFirstLogin();
@@ -53,7 +57,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 ? "https://frontend-seolyeon.vercel.app/childInfo"
                 : "https://frontend-seolyeon.vercel.app/main";
 
+        logger.debug("🚨"+cookieHeader);
         response.sendRedirect(targetUrl);
+//        String callbackUrl="https://frontend-seolyeon.vercel.app/callback";
+//        response.sendRedirect(callbackUrl);
     }
 }
 

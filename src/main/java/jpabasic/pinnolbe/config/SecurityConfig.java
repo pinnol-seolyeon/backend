@@ -40,28 +40,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(corsCustomizer->corsCustomizer
-                        .configurationSource(new CorsConfigurationSource(){
-
-                            @Override
-                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                                CorsConfiguration config = new CorsConfiguration();
-
-                                config.setAllowedOrigins(Collections.singletonList("https://frontend-seolyeon.vercel.app"));
-                                config.setAllowedMethods(Collections.singletonList("*")); //모든 요청 허용
-                                config.setAllowCredentials(true);
-                                config.setAllowedHeaders(Collections.singletonList("*")); //어떤 헤더를 받을 수 있는지
-                                config.setMaxAge(3600L);
-
-                                //
-                                config.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                                config.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                                return config;
-                            }
-                        }
-                        ))
+                .cors(cors->cors.configurationSource(corsConfigurationSource()))
 
                 //Form 로그인 방식 disable
                 .formLogin((auth)->auth.disable())
@@ -74,6 +53,9 @@ public class SecurityConfig {
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
+
+                //HTTPS 강제 리디렉션
+                .requiresChannel(channel->channel.anyRequest().requiresSecure())
 
                 //oauth2
                 .oauth2Login((oauth2)->oauth2
@@ -93,7 +75,7 @@ public class SecurityConfig {
 
                 //경로별 인가 작업
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui")
+                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui","/health-check")
                         .permitAll()
                         .anyRequest().authenticated()
 
@@ -106,14 +88,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config=new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("https://frontend-seolyeon.vercel.app")); //http://localhost:3000
+        config.setAllowedOrigins(List.of(
+                "https://frontend-seolyeon.vercel.app",
+                "https://frontend-psi-one-31.vercel.app",
+                "http://localhost:3000","https://finnol-seolyeon.vercel.app"
+        )); //http://localhost:3000
+
+//        config.setAllowedHeaders(List.of("Authorization","Set-Cookie"));
+//        config.setExposedHeaders(List.of("Authorization","Set-Cookie")); //JS에서 응답을 읽어야함
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(List.of("*"));
+//        config.setAllowedHeaders(List.of("Authorization","Set-Cookie")); //브라우저가 응답 헤더 중 어떤 것을 JavaScript에서 읽을 수 있는지 지정
 
         //위의 설정들을 어떤 URL 경로에 적용할 지 지정.
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config); //모든 경로에 적용
 
         return source;
 

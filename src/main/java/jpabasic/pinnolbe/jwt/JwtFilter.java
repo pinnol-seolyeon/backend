@@ -29,13 +29,25 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String requestUri=request.getRequestURI();
 
+        // health-check bypass
+        if (requestUri.equals("/health-check")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 
         //Cookie들을 불러온 뒤 Authorization key에 담긴 쿠키를 찾음
         String authorization=null;
         Cookie[] cookies = request.getCookies(); //쿠키 리스트에 담기
+
+        if(cookies==null || cookies.length==0){
+            System.out.println("🍪🍪No cookies found");
+        }
+
         for(Cookie cookie:cookies){
 
             System.out.println(cookie.getName());
+            //쿠키에서 Authorization JWT 토큰을 꺼냄
             if(cookie.getName().equals("Authorization")){
                 authorization=cookie.getValue();
             }
@@ -79,8 +91,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken=new UsernamePasswordAuthenticationToken(customOAuth2User,null,customOAuth2User.getAuthorities());
-        //세션에 사용자 등록
+        //세션에 사용자 등록 //SecurityContext에 인증 정보 등록->이후 컨트롤러나 @AuthenticationPrincipal 에서 접근 가능 
         SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        System.out.println("🙆 JwtFilter 성공");
 
         filterChain.doFilter(request, response);
 
