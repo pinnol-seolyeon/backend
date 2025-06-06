@@ -9,7 +9,6 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
-import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.StudyService;
