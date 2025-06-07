@@ -99,7 +99,9 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://frontend-seolyeon.vercel.app",
                 "http://localhost:3000",
-                "http://3.38.74.5:3000"
+                "http://3.38.74.5:3000",
+                "https://frontend-git-main-seolyeon.vercel.app",
+                "frontend-tau-henna-83.vercel.app"
         ));
 
         // ✅ 허용할 HTTP 헤더

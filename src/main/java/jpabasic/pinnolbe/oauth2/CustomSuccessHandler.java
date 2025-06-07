@@ -56,8 +56,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // ✅ 로그인 후 리다이렉트
         boolean isFirstLogin = customUserDetails.isFirstLogin();
         String targetUrl = isFirstLogin
-                ? "https://frontend-git-develop-seolyeon.vercel.app/childInfo"
-                : "https://frontend-git-develop-seolyeon.vercel.app/main";
+                ? "https://frontend-tau-henna-83.vercel.app/childInfo"
+                : "https://frontend-tau-henna-83.vercel.app/main";
 
 //        logger.debug("🚨"+cookieHeader);
         response.sendRedirect(targetUrl);
