@@ -44,6 +44,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE' //S3
 
+	// 1) Google Cloud 공통 BOM을 먼저 선언
+	implementation platform('com.google.cloud:libraries-bom:26.1.0') // 버전은 예시. 최신 버전은 https://github.com/googleapis/java-cloud-bom 에서 확인 :contentReference[oaicite:0]{index=0}
+
+	// 2) 그 위에서 필요한 Google Cloud 라이브러리 선언 (버전은 BOM에서 관리)
+	implementation 'com.google.cloud:google-cloud-texttospeech'
+
 	implementation 'net.nurigo:sdk:4.3.2'
 
 }

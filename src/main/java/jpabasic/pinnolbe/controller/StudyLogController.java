@@ -1,18 +1,14 @@
 package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.StudyLog;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
-import jpabasic.pinnolbe.dto.AttendanceDto;
-import jpabasic.pinnolbe.dto.ScoreRequestDto;
-import jpabasic.pinnolbe.dto.TodayStudyTimeDto;
-import jpabasic.pinnolbe.dto.TodayStudyTypeResponse;
+import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
+import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
-import jpabasic.pinnolbe.repository.StudyLogRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.StudyService;
@@ -22,7 +18,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
