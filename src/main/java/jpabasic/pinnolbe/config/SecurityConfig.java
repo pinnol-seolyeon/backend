@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.config;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.jwt.JwtFilter;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.oauth2.CustomSuccessHandler;
@@ -40,28 +41,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(corsCustomizer->corsCustomizer
-                        .configurationSource(new CorsConfigurationSource(){
-
-                            @Override
-                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                                CorsConfiguration config = new CorsConfiguration();
-
-                                config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                                config.setAllowedMethods(Collections.singletonList("*")); //모든 요청 허용
-                                config.setAllowCredentials(true);
-                                config.setAllowedHeaders(Collections.singletonList("*")); //어떤 헤더를 받을 수 있는지
-                                config.setMaxAge(3600L);
-
-                                //
-                                config.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                                config.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                                return config;
-                            }
-                        }
-                        ))
+                .cors(cors->cors.configurationSource(corsConfigurationSource()))
 
                 //Form 로그인 방식 disable
                 .formLogin((auth)->auth.disable())
@@ -74,6 +54,15 @@ public class SecurityConfig {
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
+
+                //로그인 안 된 경우 302 redirection이 아닌 401 응답
+                .exceptionHandling(handler->handler
+                        .authenticationEntryPoint((request,response,authException)->{
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        }))
+
+//                //HTTPS 강제 리디렉션
+//                .requiresChannel(channel->channel.anyRequest().requiresSecure())
 
                 //oauth2
                 .oauth2Login((oauth2)->oauth2
@@ -93,7 +82,7 @@ public class SecurityConfig {
 
                 //경로별 인가 작업
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui")
+                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui","/health-check")
                         .permitAll()
                         .anyRequest().authenticated()
 
@@ -104,19 +93,31 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config=new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowCredentials(true);
-        config.setAllowedHeaders(List.of("*"));
+        // 정확한 도메인만 명시해야 allowCredentials(true)와 함께 작동함
+        config.setAllowedOrigins(List.of(
+                "https://frontend-seolyeon.vercel.app",
+                "http://localhost:3000",
+                "http://3.38.74.5:3000"
+        ));
 
-        //위의 설정들을 어떤 URL 경로에 적용할 지 지정.
+        // ✅ 허용할 HTTP 헤더
+        config.setAllowedHeaders(List.of(
+                "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"
+        ));
+
+        // ✅ JS에서 응답 헤더 읽게 허용 (원하는 경우)
+        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowCredentials(true); // ✅ 쿠키 인증 시 필수
+        config.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
-
     }
+
 }
 

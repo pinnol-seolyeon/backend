@@ -43,6 +43,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<UserInfoDto> getUserInfoDto() {
 
+        System.out.println("⭐정상적으로 호출됨⭐");
         User user=userService.getUserInfo();
         //SecurityContextHolder에서 유저 정보 가져오기
         UserInfoDto userInfo=userService.getUserInfoDto(user);
