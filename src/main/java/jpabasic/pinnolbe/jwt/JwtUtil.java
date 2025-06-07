@@ -22,8 +22,6 @@ public class JwtUtil {
     }
 
 
-
-
     public String getUsername(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username",String.class);
     }
@@ -45,8 +43,8 @@ public class JwtUtil {
         return Jwts.builder()
                 .claim("username",username)
                 .claim("role",role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+expiredMs))
+                .issuedAt(new Date(System.currentTimeMillis())) //생성일
+                .expiration(new Date(System.currentTimeMillis()+expiredMs)) //만료일
                 .signWith(secretKey)
                 .compact();
     }
