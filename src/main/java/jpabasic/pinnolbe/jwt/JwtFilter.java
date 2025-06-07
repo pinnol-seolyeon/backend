@@ -42,11 +42,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if(cookies==null || cookies.length==0){
             System.out.println("🍪🍪No cookies found");
+            filterChain.doFilter(request, response); //여기서 종료하지 않으면 NPE 발생
+            return;
         }
 
         for(Cookie cookie:cookies){
 
-            System.out.println(cookie.getName());
+            System.out.println("🥸Cookie:"+cookie.getName());
             //쿠키에서 Authorization JWT 토큰을 꺼냄
             if(cookie.getName().equals("Authorization")){
                 authorization=cookie.getValue();
@@ -56,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         //Authorization 헤더 검증
         if(authorization==null){
-            System.out.println("token null");
+            System.out.println("Authorization 쿠키 없음.. token null");
             filterChain.doFilter(request, response);
 
             //조건이 해당되면 메서드 종료(필수)

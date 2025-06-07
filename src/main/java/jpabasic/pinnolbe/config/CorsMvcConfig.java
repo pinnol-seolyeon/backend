@@ -10,7 +10,7 @@
 //    @Override
 //    public void addCorsMappings(CorsRegistry registry) {
 //        registry.addMapping("/**")
-//                .allowedOrigins("https://frontend-seolyeon.vercel.app","https://frontend-psi-one-31.vercel.app") // 프론트 주소 명시
+//                .allowedOrigins("https://frontend-seolyeon.vercel.app","https://frontend-psi-one-31.vercel.app","http://localhost:3000") // 프론트 주소 명시
 //                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 //                .allowedHeaders("*")
 //                .allowCredentials(true) // ★ 필수! credentials: 'include'와 함께 써야 함

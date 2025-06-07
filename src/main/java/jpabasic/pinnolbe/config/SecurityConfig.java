@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.config;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.jwt.JwtFilter;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.oauth2.CustomSuccessHandler;
@@ -54,8 +55,14 @@ public class SecurityConfig {
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
 
-                //HTTPS 강제 리디렉션
-                .requiresChannel(channel->channel.anyRequest().requiresSecure())
+                //로그인 안 된 경우 302 redirection이 아닌 401 응답
+                .exceptionHandling(handler->handler
+                        .authenticationEntryPoint((request,response,authException)->{
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        }))
+
+//                //HTTPS 강제 리디렉션
+//                .requiresChannel(channel->channel.anyRequest().requiresSecure())
 
                 //oauth2
                 .oauth2Login((oauth2)->oauth2
@@ -86,27 +93,31 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config=new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
+        // 정확한 도메인만 명시해야 allowCredentials(true)와 함께 작동함
         config.setAllowedOrigins(List.of(
                 "https://frontend-seolyeon.vercel.app",
-                "https://frontend-psi-one-31.vercel.app",
-                "http://localhost:3000","https://finnol-seolyeon.vercel.app"
-        )); //http://localhost:3000
+                "http://localhost:3000",
+                "http://3.38.74.5:3000"
+        ));
 
-//        config.setAllowedHeaders(List.of("Authorization","Set-Cookie"));
-//        config.setExposedHeaders(List.of("Authorization","Set-Cookie")); //JS에서 응답을 읽어야함
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowCredentials(true);
-        config.setAllowedHeaders(List.of("*"));
-//        config.setAllowedHeaders(List.of("Authorization","Set-Cookie")); //브라우저가 응답 헤더 중 어떤 것을 JavaScript에서 읽을 수 있는지 지정
+        // ✅ 허용할 HTTP 헤더
+        config.setAllowedHeaders(List.of(
+                "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"
+        ));
 
-        //위의 설정들을 어떤 URL 경로에 적용할 지 지정.
+        // ✅ JS에서 응답 헤더 읽게 허용 (원하는 경우)
+        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowCredentials(true); // ✅ 쿠키 인증 시 필수
+        config.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); //모든 경로에 적용
-
+        source.registerCorsConfiguration("/**", config);
         return source;
-
     }
+
 }
 
