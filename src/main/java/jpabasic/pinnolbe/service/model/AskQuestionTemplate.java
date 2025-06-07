@@ -32,6 +32,8 @@ public class AskQuestionTemplate {
         ResponseEntity<QuestionResponse> response = restTemplate.exchange(
                 fastApiEndpoint+"/chat", HttpMethod.POST, request, QuestionResponse.class
         );
+
+
         System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
 
         QuestionResponse body=response.getBody();
