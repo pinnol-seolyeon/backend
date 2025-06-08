@@ -39,13 +39,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = authorities.iterator().next();
         String role = auth.getAuthority();
 
-        // JWT 생성
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 60L); // 60시간
-        System.out.println("⭐token="+token);
+        //JWT 생성
+        String token=jwtUtil.createJwt(username,role,60*60*1000L);
+
 
         ResponseCookie cookie = ResponseCookie.from("Authorization", token)
                 .httpOnly(true)
-                .secure(true) 
+                .secure(true)
                 .path("/")
                 .sameSite("None") //크로스 도메인 요청에도 쿠키 전송 허용
                 .domain("finnol.site") //쿠키가 적용될 도메인
