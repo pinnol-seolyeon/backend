@@ -110,7 +110,7 @@ public class SecurityConfig {
         // ✅ JS에서 응답 헤더 읽게 허용 (원하는 경우)
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowCredentials(true); // ✅ 쿠키 인증 시 필수
         config.setMaxAge(3600L);
 
