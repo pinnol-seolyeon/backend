@@ -1,10 +1,12 @@
 package jpabasic.pinnolbe.service.login;
 
+import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.User.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.ChildInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
+import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -16,10 +18,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public UserService(UserRepository userRepository, RewardRepository rewardRepository) {
+    public UserService(UserRepository userRepository, RewardRepository rewardRepository, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.rewardRepository = rewardRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
 
@@ -74,5 +78,12 @@ public class UserService {
                 user.getReward()
 
         );
+    }
+
+
+    //refresh Token 관련
+    public void saveRefreshToken(String username,String refreshToken){
+        RefreshToken token=new RefreshToken(username,refreshToken);
+        refreshTokenRepository.save(token);
     }
 }

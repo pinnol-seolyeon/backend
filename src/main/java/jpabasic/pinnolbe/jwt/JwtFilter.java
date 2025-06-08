@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.jwt;
 
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
+import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import org.apache.catalina.UserDatabase;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,45 +21,46 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil,RefreshTokenRepository refreshTokenRepository) {
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String requestUri=request.getRequestURI();
+        String requestUri = request.getRequestURI();
+        String accessToken = null;
+        String refreshToken = null;
 
         // health-check bypass
-        if (requestUri.equals("/health-check")){
+        if (requestUri.equals("/health-check")) {
             filterChain.doFilter(request, response);
             return;
         }
 
 
         //Cookie들을 불러온 뒤 Authorization key에 담긴 쿠키를 찾음
-        String authorization=null;
-        Cookie[] cookies = request.getCookies(); //쿠키 리스트에 담기
+        Cookie[] cookies = request.getCookies();
 
-        if(cookies==null || cookies.length==0){
-            System.out.println("🍪🍪No cookies found");
-            filterChain.doFilter(request, response); //여기서 종료하지 않으면 NPE 발생
+        if (cookies == null) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        for(Cookie cookie:cookies){
-
-            System.out.println("🥸Cookie:"+cookie.getName());
-            //쿠키에서 Authorization JWT 토큰을 꺼냄
-            if(cookie.getName().equals("Authorization")){
-                authorization=cookie.getValue();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("Authorization")) {
+                accessToken = cookie.getValue();
+            } else if (cookie.getName().equals("RefreshToken")) {
+                refreshToken = cookie.getValue();
             }
         }
 
 
         //Authorization 헤더 검증
-        if(authorization==null){
+        if (accessToken == null) {
             System.out.println("Authorization 쿠키 없음.. token null");
             filterChain.doFilter(request, response);
 
@@ -65,23 +68,51 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        //토큰
-        String token=authorization;
 
-        //토큰 소멸 시간 검증
-        if(jwtUtil.isExpired(token)){ //isExpired 메서드를 통해 검증
-            System.out.println("token expired");
+        try {//JWT 파싱 도중 발생하는 예외처리??
+//            if (jwtUtil.isExpired(accessToken)) { //isExpired 메서드를 통해 검증
+//                throw new ExpiredJwtException(null, null, "🚨AccessToken Expired");
+//            }
+
+            authenticateWithToken(accessToken); //이게뭐임
             filterChain.doFilter(request, response);
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write("Expired JWT.Please login again.");
-
-            //조건이 해당되면 메서드 종료(필수)
             return;
+
+        } catch (ExpiredJwtException e) {
+            System.out.println("🚨파싱 도중 access token expired");
+
+            //Refresh Token 검사
+            if (refreshToken != null && !jwtUtil.isExpired(refreshToken)) {
+                //토큰에서 username, role 획득
+                String username = jwtUtil.getUsername(refreshToken);
+                String role = jwtUtil.getRole(refreshToken);
+
+                //Refresh Token DB에 저장된 것과 비교
+                String savedRefreshToken = refreshTokenRepository.findByUsername(username);
+                if (savedRefreshToken != null && savedRefreshToken.equals(refreshToken)) {
+                    //새 Access Token 생성
+                    String newAccessToken = jwtUtil.createJwt(username, role, 5 * 60 * 1000L);
+                    response.addCookie(createCookie("Authorization", newAccessToken, 5 * 60));
+
+                    //인증된 사용자로 등록
+                    authenticateWithToken(newAccessToken);
+
+                    System.out.println("✅ Access Token 재발급 성공");
+                } else {
+                    System.out.println("😡 Refresh Token 없음 or 만료"); ///Refresh Token 만료되면 어떡하죠?
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+            }
         }
 
-        //토큰에서 username, role 획득
-        String username=jwtUtil.getUsername(token);
-        String role=jwtUtil.getRole(token);
+        filterChain.doFilter(request, response);
+    }
+
+
+    private void authenticateWithToken(String accessToken) {
+        String username=jwtUtil.getUsername(accessToken);
+        String role=jwtUtil.getRole(accessToken);
 
         //userDto를 생성하여 값 set
         UserDto userDto=new UserDto();
@@ -93,12 +124,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken=new UsernamePasswordAuthenticationToken(customOAuth2User,null,customOAuth2User.getAuthorities());
-        //세션에 사용자 등록 //SecurityContext에 인증 정보 등록->이후 컨트롤러나 @AuthenticationPrincipal 에서 접근 가능 
+        //세션에 사용자 등록 //SecurityContext에 인증 정보 등록->이후 컨트롤러나 @AuthenticationPrincipal 에서 접근 가능
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
 
-        System.out.println("🙆 JwtFilter 성공");
 
-        filterChain.doFilter(request, response);
-
+    private Cookie createCookie(String key, String value, int maxAgeSeconds) {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(maxAgeSeconds);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        return cookie;
     }
 }

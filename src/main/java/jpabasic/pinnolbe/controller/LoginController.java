@@ -1,5 +1,7 @@
 package jpabasic.pinnolbe.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,12 @@ public class LoginController {
     public String myInfo() {
         System.out.println("myroute");
         return "개힘들어";
+    }
+
+    @GetMapping("/logout")
+    @Operation(summary="로그아웃")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+
     }
 
 

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.jwt.JwtUtil;
+import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -20,9 +21,11 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
-    public CustomSuccessHandler(JwtUtil jwtUtil) {
+    public CustomSuccessHandler(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil=jwtUtil;
+        this.userService=userService;
     }
 
 
@@ -42,11 +45,22 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth=iterator.next();
         String role=auth.getAuthority();
 
-        //JWT 생성
-        String token=jwtUtil.createJwt(username,role,60*60*60L);
+//        //JWT 생성
+//        String token=jwtUtil.createJwt(username,role,60*60*1000L);
+
+        //Access Token 생성 : 5분
+        String accessToken=jwtUtil.createJwt(username,role,5*60*1000L);
+
+        //Refresh Token : 14일
+        String refreshToken=jwtUtil.createJwt(username,role,7*24*60*60*1000L);
+        userService.saveRefreshToken(username,refreshToken);
 
         //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트
-        response.addCookie(createCookie("Authorization",token));
+        //access Token
+        response.addCookie(createCookie("Authorization",accessToken,300));//5분
+
+        //refresh Token
+        response.addCookie(createCookie("RefreshToken",refreshToken,14 * 24 * 60 * 60));//14일
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
         boolean isFirstLogin=customUserDetails.isFirstLogin();
@@ -56,10 +70,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     }
 
-    private Cookie createCookie(String key, String value) {
+    private Cookie createCookie(String key, String value,int maxAgeSeconds) {
 
         Cookie cookie=new Cookie(key,value);
-        cookie.setMaxAge(60*60*60);
+        cookie.setMaxAge(maxAgeSeconds);
 
         //cookie.setSecure(true);
         cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음
