@@ -43,7 +43,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role=auth.getAuthority();
 
         //JWT 생성
-        String token=jwtUtil.createJwt(username,role,60*60*60L);
+        String token=jwtUtil.createJwt(username,role,60*60*1000L);
 
         //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트
         response.addCookie(createCookie("Authorization",token));
@@ -59,7 +59,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie=new Cookie(key,value);
-        cookie.setMaxAge(60*60*60);
+        cookie.setMaxAge(60*60*1000);
 
         //cookie.setSecure(true);
         cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음
