@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class RewardDto {
 
-    public String userId;
-    public Long coin;
+
+    public Integer coin;
 
 }
