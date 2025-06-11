@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.service.TtsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -52,5 +53,26 @@ public class TtsController {
                 .ok()
                 .headers(headers)
                 .body(audioBytes);
+    }
+
+    @PostMapping("/string")
+    @Operation(summary="ai응답 tts(문장 단위)")
+    public ResponseEntity<byte[]> synthesizeByString(@RequestBody String body) {
+        if(body==null || body.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        byte[] audioBytes;
+        try{
+            audioBytes=ttsService.synthesizeToByteArray(body);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
+
+        return ResponseEntity.ok().headers(headers).body(audioBytes);
     }
 }

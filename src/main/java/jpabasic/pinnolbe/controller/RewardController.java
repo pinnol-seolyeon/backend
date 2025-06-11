@@ -1,12 +1,16 @@
 package jpabasic.pinnolbe.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.reward.RewardDto;
 import jpabasic.pinnolbe.service.login.RewardService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -27,5 +31,13 @@ public class RewardController {
     public int myReward() {
         User user=userService.getUserInfo();
         return user.getReward();
+    }
+
+    @PostMapping("/upload-coin")
+    @Operation(summary="퀴즈에서 얻은 코인")
+    public ResponseEntity<Map<String,Integer>> uploadCoin(@RequestBody RewardDto dto) {
+        User user=userService.getUserInfo();
+        Map<String,Integer> result=rewardService.uploadCoin(dto,user);
+        return ResponseEntity.ok(result);
     }
 }
