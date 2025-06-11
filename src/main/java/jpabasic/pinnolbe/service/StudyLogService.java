@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import jpabasic.pinnolbe.domain.User;
 import org.springframework.web.client.RestClientException;
 
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -79,6 +80,14 @@ public class StudyLogService {
             return new StudyTimeStatsDto("데이터 없음", Collections.emptyMap());
         }
 
+        //시간 테스트
+        System.out.println("✅ localDate: " + LocalDateTime.now());
+        List<LocalDateTime> times=chapters.stream()
+                        .map(cc->cc.getCompletedAt())
+                        .collect(Collectors.toList());
+        System.out.println("✅ DB localDate:"+times);
+
+
         // 최근 일주일 범위: 가장 최근 완료일 기준
         LocalDate latest = chapters.stream()
                 .map(cc -> cc.getCompletedAt().toLocalDate())
@@ -103,10 +112,14 @@ public class StudyLogService {
         Map<String, Integer> timeTypeCount = new HashMap<>();
 
         for (CompletedChapter cc : chapters) {
+            //test
+
             LocalDateTime completed = cc.getCompletedAt();
+            System.out.println("✅completed:"+completed);
             if (completed.toLocalDate().isBefore(startDate)) continue;
 
             int hour = completed.getHour();
+            System.out.println("✅hout:"+hour);
             String type = hour >= 5 && hour < 12 ? "아침형"
                     : hour >= 12 && hour < 18 ? "낮형"
                     : hour >= 18 && hour < 23 ? "밤형"
