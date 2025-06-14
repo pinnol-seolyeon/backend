@@ -40,7 +40,7 @@ public class StudyLogService {
 
 
     public TodayStudyTimeDto getTodayStudyTime(String userId) {
-        LocalDate today = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
+        LocalDate today = ZonedDateTime.now().toLocalDate();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
@@ -122,7 +122,7 @@ public class StudyLogService {
             System.out.println("✅hout:"+hour);
             String type = hour >= 5 && hour < 12 ? "아침형"
                     : hour >= 12 && hour < 18 ? "낮형"
-                    : hour >= 18 && hour < 23 ? "밤형"
+                    : hour >= 18 && hour <= 23 ? "밤형"
                     : "새벽형";
 
             timeTypeCount.merge(type, 1, Integer::sum);

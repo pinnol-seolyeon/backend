@@ -7,15 +7,14 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.sql.Timestamp;
+import java.time.ZoneId;
 
 @Component
 @WritingConverter
 public class ToKstConverter implements Converter<LocalDateTime, Date> {
-
     @Override
-    public java.util.Date convert(LocalDateTime source) {
-        //KST 보정:UTC+9
-        return Timestamp.valueOf(source.plusHours(9));
+    public Date convert(LocalDateTime source) {
+        // ❌ 보정 없이 UTC로 저장되도록 해야 함
+        return Date.from(source.atZone(ZoneId.of("Asia/Seoul")).toInstant());
     }
 }

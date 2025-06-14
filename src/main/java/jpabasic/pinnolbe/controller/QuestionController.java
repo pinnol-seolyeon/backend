@@ -43,6 +43,7 @@ public class QuestionController {
         User user=userService.getUserInfo();
         try {
             questionService.saveAllQAs(user, chapterId);
+            questionService.updateWeeklyQuestionCount(user);
         }catch(Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -50,7 +51,5 @@ public class QuestionController {
     }
 
     // 질문한 개수
-
-
 
 }

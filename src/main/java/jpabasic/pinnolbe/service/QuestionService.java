@@ -1,11 +1,13 @@
 package jpabasic.pinnolbe.service;
 
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.question.QAs;
 import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
+import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.repository.question.QuestionRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,18 +25,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class QuestionService {
 
-    private final QuestionRepository questionRepository;
     private final QueCollectionRepository queCollectionRepository;
     private final AskQuestionTemplate askQuestionTemplate;
+    private final WeeklyAnalysisRepository weeklyAnalysisRepository;
 
     //사용자별 세션 저장소 //메모리에 저장된 질문 세션 관리 -> 일시적으로 관리
     private final Map<String,QuestionSessionDto> sessionStore=new ConcurrentHashMap<>();
 
 
-    public QuestionService(QuestionRepository questionRepository, QueCollectionRepository queCollectionRepository,AskQuestionTemplate askQuestionTemplate) {
-        this.questionRepository = questionRepository;
+    public QuestionService(QueCollectionRepository queCollectionRepository, AskQuestionTemplate askQuestionTemplate, WeeklyAnalysisRepository weeklyAnalysisRepository) {
         this.queCollectionRepository = queCollectionRepository;
         this.askQuestionTemplate = askQuestionTemplate;
+        this.weeklyAnalysisRepository = weeklyAnalysisRepository;
     }
 
 
@@ -81,6 +84,49 @@ public class QuestionService {
         //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
         sessionStore.remove(userId);
 
+    }
+
+    // 참여도
+    public void updateWeeklyQuestionCount(User user) {
+        String userId = user.getId();
+        LocalDate today     = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate weekStart = today.with(DayOfWeek.MONDAY);
+        LocalDateTime startDt = weekStart.atStartOfDay();
+        LocalDateTime endDt   = weekStart.plusDays(7).atStartOfDay();
+
+        // 1) 이번 주에 저장된 모든 세션 문서 조회
+        List<QueCollection> sessions =
+                queCollectionRepository.findAllByUserIdAndDateBetween(userId, startDt, endDt);
+
+        // 2) 각 세션의 질문 개수를 합산
+        int totalQuestions = sessions.stream()
+                .mapToInt(qc -> qc.getQuestions() == null ? 0 : qc.getQuestions().size())
+                .sum();
+
+        // 3) 같은 주차의 WeeklyAnalysis 조회
+        List<WeeklyAnalysis> analyses =
+                weeklyAnalysisRepository.findAllByUserIdAndWeekStartDate(userId, weekStart);
+
+        WeeklyAnalysis analysis;
+        if (analyses.isEmpty()) {
+            // — 없으면 새로 생성
+            analysis = WeeklyAnalysis.builder()
+                    .userId(userId)
+                    .weekStartDate(weekStart)
+                    .engagementData(
+                            WeeklyAnalysis.EngagementData.builder()
+                                    .questionCount(totalQuestions)
+                                    .build()
+                    )
+                    .analyzedAt(LocalDateTime.now())
+                    .build();
+        } else {
+            // — 있으면 덮어쓰기(upsert)
+            analysis = analyses.get(0);
+            analysis.getEngagementData().setQuestionCount(totalQuestions);
+            analysis.setAnalyzedAt(LocalDateTime.now());
+        }
+        weeklyAnalysisRepository.save(analysis);
     }
 
 

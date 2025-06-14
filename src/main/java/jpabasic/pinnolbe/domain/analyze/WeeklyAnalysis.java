@@ -44,6 +44,8 @@ public class WeeklyAnalysis {
     @Builder
     public static class FocusData {
         private double averageResponseTime;
+        private double sumResponseTime;
+        private int count;
     }
 
     @Getter @Setter
