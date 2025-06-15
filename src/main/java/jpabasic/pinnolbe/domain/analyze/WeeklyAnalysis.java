@@ -62,7 +62,8 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private double avgWordCount;
+        private int starScore;
+        private int starCount;
     }
 
 }

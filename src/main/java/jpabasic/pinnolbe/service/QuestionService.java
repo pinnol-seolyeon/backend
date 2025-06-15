@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class QuestionService {
@@ -129,7 +131,47 @@ public class QuestionService {
         weeklyAnalysisRepository.save(analysis);
     }
 
+    // 표현력
+    public void updateExpressionScore(User user, int newStarScore) {
+        String userId = user.getId();
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul")).with(DayOfWeek.MONDAY);
 
+        List<WeeklyAnalysis> analyses =
+                weeklyAnalysisRepository.findAllByUserIdAndWeekStartDate(userId, weekStart);
+
+        WeeklyAnalysis analysis;
+        if (analyses.isEmpty()) {
+            // 첫 별점이므로 그대로 저장
+            analysis = WeeklyAnalysis.builder()
+                    .userId(userId)
+                    .weekStartDate(weekStart)
+                    .expressionData(
+                            WeeklyAnalysis.ExpressionData.builder()
+                                    .starScore(newStarScore)
+                                    .starCount(1)
+                                    .build()
+                    )
+                    .analyzedAt(LocalDateTime.now())
+                    .build();
+        } else {
+            analysis = analyses.get(0);
+
+            if (analysis.getExpressionData() == null) {
+                analysis.setExpressionData(new WeeklyAnalysis.ExpressionData());
+            }
+
+            WeeklyAnalysis.ExpressionData expr = analysis.getExpressionData();
+            int prevTotalScore = expr.getStarScore() * expr.getStarCount();
+            int newCount = expr.getStarCount() + 1;
+            int newAverage = Math.round((float)(prevTotalScore + newStarScore) / newCount);
+
+            expr.setStarScore(newAverage);
+            expr.setStarCount(newCount);
+            analysis.setAnalyzedAt(LocalDateTime.now());
+        }
+
+        weeklyAnalysisRepository.save(analysis);
+    }
 
 
 

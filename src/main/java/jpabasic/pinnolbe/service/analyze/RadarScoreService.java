@@ -100,12 +100,15 @@ public class RadarScoreService {
         dto.setFocus(focus);
 
         // 표현력
-        double avgWords = dataList.stream()
-                .mapToDouble(d -> Optional.ofNullable(d.getExpressionData()).map(WeeklyAnalysis.ExpressionData::getAvgWordCount).orElse(0.0))
+        double avgStarScore = dataList.stream()
+                .mapToInt(d -> Optional.ofNullable(d.getExpressionData())
+                        .map(WeeklyAnalysis.ExpressionData::getStarScore)
+                        .orElse(0))
                 .average()
                 .orElse(0.0);
-        double expressionScore = Math.min(5.0, avgWords / 2.0);
-        dto.setExpression(expressionScore / 5.0);
+
+        double expressionScore = Math.min(5.0, avgStarScore); // 혹시 모르니 제한 유지
+        dto.setExpression(expressionScore / 5.0); // 정규화
 
         return dto;
     }
