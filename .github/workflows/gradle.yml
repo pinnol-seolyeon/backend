@@ -57,7 +57,7 @@ jobs:
       env: 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
-      run: 
+      run: |
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com
           docker build -t finnol-second-deploy .
           docker tag finnol-second-deploy:latest 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com/finnol-second-deploy:latest
