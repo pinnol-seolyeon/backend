@@ -74,8 +74,8 @@ cloud:
       region:
         static: ap-northeast-2
       credentials:
-        accessKey: ${AWS_ACCESS_KEY_ID}
-        secretKey: ${AWS_SECRET_ACCESS_KEY}
+        accessKey: ${S3_AWS_ACCESS_KEY_ID}
+        secretKey: ${S3_AWS_SECRET_ACCESS_KEY}
 
 custom:
   frontend:
