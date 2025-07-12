@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.jwt.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -20,6 +21,12 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
+
+    @Value("${custom.frontend.deploy.url}")
+    private String deployUrl;
+
+    @Value("${custom.frontend.local.url}")
+    private String localUrl;
 
     public CustomSuccessHandler(JwtUtil jwtUtil) {
         this.jwtUtil=jwtUtil;
@@ -50,7 +57,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
         boolean isFirstLogin=customUserDetails.isFirstLogin();
-        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/main";
+        String targetUrl=isFirstLogin? deployUrl+"/childInfo":deployUrl+"/main";
 
         response.sendRedirect(targetUrl);
 
