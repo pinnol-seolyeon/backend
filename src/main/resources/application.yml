@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: pinnol-be
+  jackson:
+    time-zone: Asia/Seoul
+  security:
+    oauth2:
+      client:
+        provider: #인증 서버, 리소스 서버 주소
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            #code 전달
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            client-name: kakao
+            scope:
+              - profile_nickname
+              - account_email
+  data:
+    mongodb:
+      uri: ${DB_URL}
+
+server:
+    tomcat:
+      keep-alive-timeout: 180s
+      max-threads: 200
+      max-keep-alive-requests: 100
+
+
+logging:
+  level:
+    org.springframework.web: INFO
+    org.springframework.web.servlet.DispatcherServlet: WARN
+
+
+
+
+jwt:
+  secret: ${JWT_SECRET}
+
+
+
+
+springdoc:
+  swagger-ui:
+    oauth2-redirect-url: ${SWAGGER_URL}
+    use-root-path: true
+
+  #Swagger에서 사용하는 OAUth2 client 명시
+  oAuthFlow:
+    authorization-uri: https://kauth.kakao.com/oauth/authorize
+    token-uri: https://kauth.kakao.com/oauth/token
+    user-info-uri: https://kapi.kakao.com/v2/user/me
+    user-name-attribute: id
+
+# fastAPI endpoint
+myapp:
+  fastApi:
+    endpoint: ${RAG_URL}
+
+#s3 설정
+cloud:
+  aws:
+    s3:
+      bucket: finnol-image
+      stack:
+        auto: false # EC2에서 Spirng Cloud 실행 -> 기본으로 CloudFormation 구성 시작 -> 설정한 CloudFormation이 없으면 프로젝트 실행 X
+      region:
+        static: ap-northeast-2
+      credentials:
+        accessKey: ${S3_AWS_ACCESS_KEY_ID}
+        secretKey: ${S3_AWS_SECRET_ACCESS_KEY}
+
+custom:
+  frontend:
+    deploy:
+      url: ${DEPLOY_URL}
+    local:
+      url: ${LOCAL_URL}
