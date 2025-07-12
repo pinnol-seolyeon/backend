@@ -1,0 +1,97 @@
+name: CI/CD using github actions & docker
+
+on:
+  push:
+    branches: [ "develop" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    #변수 설정
+    env:
+      AWS_REGION: ap-northeast-2
+      ECR_REPOSITORY: finnol-second-deploy
+      # CONTAINER_NAME: 
+      
+    permissions:
+      contents: read
+
+    steps:
+    - name: CheckOut
+      uses: actions/checkout@v4
+      with:
+        token: ${{secrets.CONFIG_SUBMODULE_TOKEN}}
+        submodules: true
+
+    # AWS Config
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credential@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-action/amazon-ecr-login@v1
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Test with Gradle Wrapper
+      run: ./gradlew clean build
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env: 
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: 
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com
+          docker build -t finnol-second-deploy .
+          docker tag finnol-second-deploy:latest 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com/finnol-second-deploy:latest
+          docker push 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com/finnol-second-deploy:latest
+
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+  
+      - name: Login to Amazon ECR (for pull)
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | \
+          docker login --username AWS --password-stdin 440173071739.dkr.ecr.ap-northeast-2.amazonaws.com
+  
+      - name: Create Docker network if not exists
+        run: |
+          NETWORK_NAME="finnol_network"
+          if ! sudo docker network ls --format '{{.Name}}' | grep -w "$NETWORK_NAME" > /dev/null 2>&1; then
+            echo "Creating Docker network $NETWORK_NAME..."
+            sudo docker network create $NETWORK_NAME
+          else
+            echo "Docker network $NETWORK_NAME already exists."
+          fi
+
+          
+      - name: Docker Image pull
+        run: docker compose -f /home/ubuntu/finnol-server/compose.yml pull
+
+      - name: Docker Compose up
+        run: docker compose -f /home/ubuntu/finnol-server/compose.yml up -d
+
+      - name: Remove unused Docker images
+        run: |
+          echo "Removing unused Docker images..."
+          sudo docker image prune -af --filter "until=24h"
