@@ -49,7 +49,7 @@ jwt:
 
 springdoc:
   swagger-ui:
-    oauth2-redirect-url: https://finnol.site/swagger-ui/oauth2-redirect.html
+    oauth2-redirect-url: ${SWAGGER_URL}
     use-root-path: true
 
   #Swagger에서 사용하는 OAUth2 client 명시
