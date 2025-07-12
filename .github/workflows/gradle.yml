@@ -84,6 +84,25 @@ jobs:
             echo "Docker network $NETWORK_NAME already exists."
           fi
 
+
+      - name: Create .env file for Docker Compose
+        run: |
+              cat <<EOF | sudo tee /home/ubuntu/finnol-server/.env
+              DB_URL=${{ secrets.DB_URL }}
+              S3_AWS_ACCESS_KEY_ID=${{ secrets.S3_AWS_ACCESS_KEY_ID }}
+              S3_AWS_SECRET_ACCESS_KEY=${{ secrets.S3_AWS_SECRET_ACCESS_KEY }}
+              # AWS_BUCKET=${{ secrets.AWS_BUCKET }}
+              KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+              KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+              JWT_SECRET=${{ secrets.JWT_SECRET }}
+              # SMS_API_KEY=${{ secrets.SMS_API_KEY }}
+              # SMS_SECRET_KEY=${{ secrets.SMS_SECRET_KEY }}
+              DEPLOY_URL=${{ secrets.DEPLOY_URL }}
+              LOCAL_URL=${{ secrets.LOCAL_URL }}
+              RAG_URL=${{ secrets.RAG_URL }}
+              SWAGGER_URL=${{ secrets.SWAGGER_URL }}
+              EOF
+
           
       - name: Docker Image pull
         run: docker compose -f /home/ubuntu/finnol-server/compose.yml pull
