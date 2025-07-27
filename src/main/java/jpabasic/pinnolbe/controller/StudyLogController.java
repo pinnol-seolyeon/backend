@@ -10,6 +10,7 @@ import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.service.QuestionService;
 import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -23,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,7 +37,7 @@ public class StudyLogController {
     private final UserService userService;
     private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
-
+    private final QuestionService questionService;
 
     @GetMapping("/stats")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
@@ -97,6 +100,7 @@ public class StudyLogController {
 
         return ResponseEntity.ok(result);
     }
+
 
     // 학습 분석화면에 표시할 질문 캘린더 날짜 추출
     @GetMapping("/questions/dates")

@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
-import org.apache.catalina.UserDatabase;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtFilter(JwtUtil jwtUtil,RefreshTokenRepository refreshTokenRepository) {
+    public JwtFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
     }

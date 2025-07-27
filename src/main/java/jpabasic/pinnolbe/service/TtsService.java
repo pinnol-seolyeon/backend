@@ -53,8 +53,8 @@ public class TtsService {
             // 2) 목소리 설정 (한국어 WaveNet, 원하는 목소리로 교체 가능)
             VoiceSelectionParams voice = VoiceSelectionParams.newBuilder()
                     .setLanguageCode("ko-KR")
-                    .setName("ko-KR-Wavenet-D")
-                    .setSsmlGender(SsmlVoiceGender.MALE)
+                    .setName("ko-KR-Chirp3-HD-Orus")
+                    .setSsmlGender(SsmlVoiceGender.NEUTRAL)
                     .build();
 
             // 3) MP3 포맷 설정

@@ -14,4 +14,10 @@ public interface QueCollectionRepository extends MongoRepository<QueCollection, 
         List<QueCollection> findByUserId(String userId);
 
     List<QueCollection> findByUserIdAndDateBetween(String userId, LocalDateTime start, LocalDateTime end);
+
+    List<QueCollection> findAllByUserIdAndDateBetween(
+            String userId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }

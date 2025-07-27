@@ -6,11 +6,17 @@ import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.question.QAs;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
+import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.service.QuestionService;
+import jpabasic.pinnolbe.service.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/question")
@@ -18,10 +24,12 @@ public class QuestionController {
 
     private final QuestionService questionService;
     private final UserService userService;
+    private final StudyLogService studyLogService;
 
-    public QuestionController(QuestionService questionService, UserService userService) {
+    public QuestionController(QuestionService questionService, UserService userService, StudyLogService studyLogService) {
         this.questionService = questionService;
         this.userService = userService;
+        this.studyLogService = studyLogService;
     }
 
 
@@ -43,14 +51,29 @@ public class QuestionController {
         User user=userService.getUserInfo();
         try {
             questionService.saveAllQAs(user, chapterId);
+            questionService.updateWeeklyQuestionCount(user);
+
+            List<String> todayQAs = studyLogService.getTodayCollections(user.getId());
+            if (!todayQAs.isEmpty()) {
+                QuestionSummaryDto summaryDto = studyLogService.summaryQuestion(todayQAs, user);
+                int expressionScore = extractExpressionScore(summaryDto.getSummary());
+                questionService.updateExpressionScore(user, expressionScore);
+            }
+
         }catch(Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
         return ResponseEntity.ok("여태까지의 질문&답변이 DB에 무사히 저장되었습니다.");
     }
 
-    // 질문한 개수
-
-
+    // AI 응답에서 별점 숫자만 가져오기
+    public int extractExpressionScore(String summaryText) {
+        Pattern pattern = Pattern.compile("별점.*\\((\\d)점\\)");
+        Matcher matcher = pattern.matcher(summaryText);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return 0;
+    }
 
 }

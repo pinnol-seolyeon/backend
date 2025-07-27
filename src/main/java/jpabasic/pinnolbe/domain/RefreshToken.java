@@ -18,4 +18,6 @@ public class RefreshToken {
     private String token;
     private String userId;
 
+    public RefreshToken(String username, String refreshToken) {
+    }
 }

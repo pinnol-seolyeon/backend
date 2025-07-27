@@ -72,8 +72,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             rewardRepository.save(reward);
 
 
-            RewardDto rewardDto=new RewardDto();
-            rewardDto.setUserId(user.getId());
+//            RewardDto rewardDto=new RewardDto();
+//            rewardDto.setUserId(user.getId());
 
             System.out.println("✅ 새로운 유저"+userDto);
             return new CustomOAuth2User(userDto);

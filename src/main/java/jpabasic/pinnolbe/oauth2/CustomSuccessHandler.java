@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.service.login.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -22,6 +23,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
+
+    @Value("${custom.frontend.deploy.url}")
+    private String deployUrl;
+
+    @Value("${custom.frontend.local.url}")
+    private String localUrl;
 
     public CustomSuccessHandler(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil=jwtUtil;
@@ -45,6 +52,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth=iterator.next();
         String role=auth.getAuthority();
 
+        //JWT 생성
+        String token=jwtUtil.createJwt(username,role,60*60*1000L);
 //        //JWT 생성
 //        String token=jwtUtil.createJwt(username,role,60*60*1000L);
 
@@ -64,7 +73,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
         boolean isFirstLogin=customUserDetails.isFirstLogin();
-        String targetUrl=isFirstLogin?"http://localhost:3000/childInfo":"http://localhost:3000/main";
+        String targetUrl=isFirstLogin? deployUrl+"/childInfo":deployUrl+"/main";
 
         response.sendRedirect(targetUrl);
 
@@ -73,7 +82,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private Cookie createCookie(String key, String value,int maxAgeSeconds) {
 
         Cookie cookie=new Cookie(key,value);
-        cookie.setMaxAge(maxAgeSeconds);
+        cookie.setMaxAge(60*60*1000);
 
         //cookie.setSecure(true);
         cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음

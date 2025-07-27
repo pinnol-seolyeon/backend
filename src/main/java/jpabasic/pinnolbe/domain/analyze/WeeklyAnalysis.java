@@ -44,6 +44,8 @@ public class WeeklyAnalysis {
     @Builder
     public static class FocusData {
         private double averageResponseTime;
+        private double sumResponseTime;
+        private int count;
     }
 
     @Getter @Setter
@@ -60,7 +62,8 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private double avgWordCount;
+        private int starScore;
+        private int starCount;
     }
 
 }
