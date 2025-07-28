@@ -9,6 +9,7 @@ import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
 import jpabasic.pinnolbe.dto.reward.RewardDto;
 import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -16,16 +17,13 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
-
+@RequiredArgsConstructor
 //DefaultOAuth2UserService -> user 정보를 가져오는 걸 포함하는 클래스
 // CustomOAuth2User 생성 -> SecurityContext에 저장
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
 
-    public CustomOAuth2UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     //OAuth2UserRequest : 리소스서버에서 제공하는 유저 정보

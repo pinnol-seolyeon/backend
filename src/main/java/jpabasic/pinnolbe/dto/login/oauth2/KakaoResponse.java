@@ -34,4 +34,5 @@ public class KakaoResponse implements OAuth2Response{
         Map<String,Object> properties=(Map<String,Object>)attribute.get("properties");
         return properties.get("nickname").toString();
     }
+
 }

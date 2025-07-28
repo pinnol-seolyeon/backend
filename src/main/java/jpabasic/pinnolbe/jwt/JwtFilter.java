@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -87,11 +89,14 @@ public class JwtFilter extends OncePerRequestFilter {
                 String role = jwtUtil.getRole(refreshToken);
 
                 //Refresh Token DB에 저장된 것과 비교
-                String savedRefreshToken = refreshTokenRepository.findByUsername(username);
+                Optional<RefreshToken> entity = refreshTokenRepository.
+                        findByUsername(username);
+                String savedRefreshToken=entity.get().getToken();
+
                 if (savedRefreshToken != null && savedRefreshToken.equals(refreshToken)) {
                     //새 Access Token 생성
-                    String newAccessToken = jwtUtil.createJwt(username, role, 5 * 60 * 1000L);
-                    response.addCookie(createCookie("Authorization", newAccessToken, 5 * 60));
+                    String newAccessToken = jwtUtil.createJwt(username, role, 5 * 60 * 1000L); //access token 5분
+                    response.addCookie(createCookie("Authorization", newAccessToken, 30 * 60)); //쿠키 5분
 
                     //인증된 사용자로 등록
                     authenticateWithToken(newAccessToken);

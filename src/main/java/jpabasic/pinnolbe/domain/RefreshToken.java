@@ -16,8 +16,11 @@ public class RefreshToken {
     @Id
     private String id;
     private String token;
-    private String userId;
+    private String username;
 
-    public RefreshToken(String username, String refreshToken) {
+
+    public RefreshToken(String refreshToken,String username) {
+        this.token = refreshToken;
+        this.username = username;
     }
 }

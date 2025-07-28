@@ -84,10 +84,27 @@ public class UserService {
 
 
     //refresh Token 관련
-    public void saveRefreshToken(String username,String refreshToken){
+    public void deleteExpiredRefreshToken(RefreshToken refreshToken){
+        refreshTokenRepository.delete(refreshToken);
+        log.info("✅ 만료된 refresh token 삭제");
+    }
+    
+    public void saveNewRefreshToken(String username,String refreshToken){
         User user=userRepository.findByUsername(username);
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
-        log.info("✅ user RefreshToken 저장 완료");
+
+        RefreshToken token=new RefreshToken(refreshToken,username);
+        refreshTokenRepository.save(token);
+
+        log.info("✅ user RefreshToken 생성 후 저장 완료");
+    }
+
+    public void saveExistingRefreshToken(String username,String refreshToken){
+        User user=userRepository.findByUsername(username);
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        log.info("✅ 기존 user RefreshToken 저장 완료");
     }
 }
