@@ -24,11 +24,11 @@ public class LoginController {
         return "개힘들어";
     }
 
-    @GetMapping("/logout")
-    @Operation(summary="로그아웃")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-
-    }
+//    @GetMapping("/logout")
+//    @Operation(summary="로그아웃")
+//    public ResponseEntity<?> logout(HttpServletResponse response) {
+//
+//    }
 
 
 

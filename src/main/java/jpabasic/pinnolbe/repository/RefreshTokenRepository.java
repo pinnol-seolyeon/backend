@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RefreshTokenRepository extends MongoRepository<RefreshToken, String> {
 
+    String findByUsername(String username);
 }

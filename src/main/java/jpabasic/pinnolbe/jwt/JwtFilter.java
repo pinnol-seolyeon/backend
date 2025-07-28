@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,15 +18,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-        this.refreshTokenRepository = refreshTokenRepository;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -68,12 +66,14 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
 
-        try {//JWT 파싱 도중 발생하는 예외처리??
-//            if (jwtUtil.isExpired(accessToken)) { //isExpired 메서드를 통해 검증
-//                throw new ExpiredJwtException(null, null, "🚨AccessToken Expired");
-//            }
+        try {
 
-            authenticateWithToken(accessToken); //이게뭐임
+            //accessToken이 만료되었는지 먼저 검사
+            if (jwtUtil.isExpired(accessToken)) {
+                throw new ExpiredJwtException(null, null, "AccessToken 만료됨");
+            }
+
+            authenticateWithToken(accessToken);
             filterChain.doFilter(request, response);
             return;
 
@@ -118,7 +118,7 @@ public class JwtFilter extends OncePerRequestFilter {
         userDto.setUsername(username);
         userDto.setRole(role);
 
-        //UserDetails에 회원 정보 객체 담기
+        //UserDetails(OAuth2User)에 회원 정보 객체 담기
         CustomOAuth2User customOAuth2User=new CustomOAuth2User(userDto);
 
         //스프링 시큐리티 인증 토큰 생성
