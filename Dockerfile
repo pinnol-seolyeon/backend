@@ -11,7 +11,7 @@ COPY src/main/resources/static/credentials.json /app/credentials.json
 
 #환경변수 등록
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
-=======
+
 COPY .env .env
 
 ## 컨테이너가 실행될 때 최초로 실행시키고 싶은 명령어
