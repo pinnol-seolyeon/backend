@@ -44,6 +44,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
+
         //OAuth2User //사용자 정보 가져옴
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -101,7 +102,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(maxAgeSeconds);
-        //cookie.setSecure(true); //https 환경에서만 쿠키 전송
+        cookie.setSecure(true);
         cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음
         cookie.setHttpOnly(true); //JavaScript가 쿠키를 가져갈 수 없도록
 
