@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.jwt.JwtFilter;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.oauth2.CustomSuccessHandler;
+import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.service.login.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +40,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, RefreshTokenRepository refreshTokenRepository) throws Exception {
         http
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
 
@@ -50,7 +51,7 @@ public class SecurityConfig {
                 .httpBasic((auth)->auth.disable())
 
                 //JwtFilter 추가
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
+                .addFilterBefore(new JwtFilter(jwtUtil,refreshTokenRepository), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
@@ -71,7 +72,6 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
                                // 실제 사용자 정보를 어떻게 가공할지 정의
                                 .userService(customOAuth2UserService))
-
                         .successHandler(customSuccessHandler))
 
 

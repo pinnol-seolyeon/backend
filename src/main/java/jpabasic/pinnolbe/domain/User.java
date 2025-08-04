@@ -26,6 +26,8 @@ public class User {
     //카카오에서 발급한 AccessToken
     private String accessToken;
 
+    private String refreshToken;
+
     @Nullable
     private String studyId;
 
