@@ -3,8 +3,10 @@ package jpabasic.pinnolbe.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jpabasic.pinnolbe.global.ExceptionHandlerFilter;
 import jpabasic.pinnolbe.jwt.JwtFilter;
 import jpabasic.pinnolbe.jwt.JwtUtil;
+import jpabasic.pinnolbe.jwt.TokenService;
 import jpabasic.pinnolbe.oauth2.CustomSuccessHandler;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.service.login.CustomOAuth2UserService;
@@ -32,11 +34,13 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,CustomSuccessHandler customSuccessHandler,JwtUtil jwtUtil) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,CustomSuccessHandler customSuccessHandler,JwtUtil jwtUtil,ExceptionHandlerFilter exceptionHandlerFilter,TokenService tokenService) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
+        this.tokenService = tokenService;
     }
 
     @Bean
@@ -51,16 +55,18 @@ public class SecurityConfig {
                 .httpBasic((auth)->auth.disable())
 
                 //JwtFilter 추가
-                .addFilterBefore(new JwtFilter(jwtUtil,refreshTokenRepository), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
+                .addFilterBefore(new JwtFilter(jwtUtil,tokenService), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
+
+                .addFilterBefore(new ExceptionHandlerFilter(), JwtFilter.class) //필터 단의 예외 처리 handler filter
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
 
-                //로그인 안 된 경우 302 redirection이 아닌 401 응답
-                .exceptionHandling(handler->handler
-                        .authenticationEntryPoint((request,response,authException)->{
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                        }))
+//                //로그인 안 된 경우 302 redirection이 아닌 401 응답
+//                .exceptionHandling(handler->handler
+//                        .authenticationEntryPoint((request,response,authException)->{
+//                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+//                        }))
 
 //                //HTTPS 강제 리디렉션
 //                .requiresChannel(channel->channel.anyRequest().requiresSecure())
