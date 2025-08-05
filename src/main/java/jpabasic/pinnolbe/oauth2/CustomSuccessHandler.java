@@ -91,7 +91,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
         boolean isFirstLogin = customUserDetails.isFirstLogin();
-        String targetUrl = isFirstLogin ? localUrl + "/childInfo" : localUrl + "/main";
+        String targetUrl = isFirstLogin ? deployUrl + "/childInfo" : deployUrl + "/main";
 
         response.sendRedirect(targetUrl);
 
@@ -101,7 +101,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(maxAgeSeconds);
-        //cookie.setSecure(true); //https 환경에서만 쿠키 전송
+        cookie.setSecure(true); //https 환경에서만 쿠키 전송
         cookie.setPath("/"); //모든 위치(전역)에서 쿠키를 볼 수 있음
         cookie.setHttpOnly(true); //JavaScript가 쿠키를 가져갈 수 없도록
 
