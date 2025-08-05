@@ -44,6 +44,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
+
         //OAuth2User //사용자 정보 가져옴
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
