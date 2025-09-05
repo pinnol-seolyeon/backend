@@ -16,9 +16,8 @@ public class ApiErrorDetail {
 
     public static ResponseEntity<ApiErrorDetail> toApiErrorDetail(ErrorCode e){
         return ResponseEntity
-                .status(e.getHttpStatus())
+                .status(e.getStatus())
                 .body(ApiErrorDetail.builder()
-                        .status(e.getHttpStatus().value())
                         .name(e.name())
                         .code(e.getCode())
                         .message(e.getMessage())

@@ -62,12 +62,14 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtUtil.createJwt(username, role, 5 * 60 * 1000L);
 
         //refresh token 재사용 or 생성
-        String refreshToken;
+        String refreshToken = "";
         Optional<RefreshToken> token = refreshTokenRepository.findByUsername(username);
         if (token.isPresent()) {
             String existingToken = token.get().getToken();
+            System.out.println("🖥️ existingToken: " + existingToken);
 
-            if (!jwtUtil.isExpired(existingToken)) {
+            if (jwtUtil.isExpired(existingToken)) {
+                // jwtUtil.isExpired=true인 경우 실행됨
                 refreshToken = existingToken;
                 userService.saveExistingRefreshToken(username, refreshToken);
             }else {
@@ -76,10 +78,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
                     userService.saveNewRefreshToken(username, refreshToken);
                 }
-            } else {
-                // ❌ 아예 없으면 → 새로 발급
-                refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
-                userService.saveNewRefreshToken(username, refreshToken);
             }
 
 

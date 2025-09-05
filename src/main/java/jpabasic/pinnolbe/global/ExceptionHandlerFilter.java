@@ -44,7 +44,7 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         String message=e.getMessage();
         if(e instanceof CustomException customEx){
             message=customEx.getErrorCode().getMessage();
-            status=customEx.getErrorCode().getHttpStatus();
+            status=customEx.getErrorCode().getStatus();
             response.setStatus(status.value());
         }
 

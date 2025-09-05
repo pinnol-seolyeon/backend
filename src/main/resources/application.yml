@@ -1,6 +1,6 @@
 spring:
   application:
-    name: pinnol-be
+    name: pinnol-bee
   config:
     import: optional:file:.env[.properties]
   jackson:

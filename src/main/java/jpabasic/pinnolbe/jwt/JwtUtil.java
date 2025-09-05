@@ -46,9 +46,19 @@ public class JwtUtil {
 
     public Boolean isExpired(String token) {
         try {
-            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+            System.out.println("🖥️ isExpired 확인 시도");
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration()
+                    .before(new Date());
         } catch (ExpiredJwtException e) {
-            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
+            System.out.println("🖥️ expiredDate (catch): " + e.getClaims().getExpiration());
+            return false;
+        } catch(Exception e){
+            return false;
         }
     }
 

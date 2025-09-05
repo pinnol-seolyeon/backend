@@ -103,10 +103,10 @@ public class SecurityConfig {
 
         // 정확한 도메인만 명시해야 allowCredentials(true)와 함께 작동함
         config.setAllowedOrigins(List.of(
-                "https://frontend-seolyeon.vercel.app",
                 "http://localhost:3000",
                 "http://3.38.74.5:3000",
-                "https://www.finnol.site"
+                "https://finnol.co.kr",
+                "https://www.finnol.co.kr"
         ));
 
         // ✅ 허용할 HTTP 헤더
