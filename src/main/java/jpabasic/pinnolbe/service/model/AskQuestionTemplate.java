@@ -3,7 +3,7 @@ package jpabasic.pinnolbe.service.model;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -45,14 +45,14 @@ public class AskQuestionTemplate {
 
 
     //피드백을 위한 챗봇
-    public QuestionResponse feedbackQuestionToAI(FeedBackRequest questionRequest) {
+    public QuestionResponse feedbackQuestionToAI(FeedBackRequestDto questionRequest) {
 
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<FeedBackRequest> request = new HttpEntity<>(questionRequest, headers);
+        HttpEntity<FeedBackRequestDto> request = new HttpEntity<>(questionRequest, headers);
 
         ResponseEntity<QuestionResponse> response = restTemplate.exchange(
                 fastApiEndpoint+"/feedback", HttpMethod.POST, request, QuestionResponse.class
