@@ -195,11 +195,11 @@ public class StudyController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    @PostMapping("/send-kakao")
-    public ResponseEntity<?> sendKakaoFeedback(@RequestParam String kakaoId){
-        User user=userService.getUserInfo();
-        studyService.sendFeedback
-    }
+//    @PostMapping("/send-kakao")
+//    public ResponseEntity<?> sendKakaoFeedback(@RequestParam String kakaoId){
+//        User user=userService.getUserInfo();
+//        studyService.sendFeedback
+//    }
 
 
 
