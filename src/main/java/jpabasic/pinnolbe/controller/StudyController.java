@@ -10,7 +10,7 @@ import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.StudyService;
@@ -22,9 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -67,7 +65,7 @@ public class StudyController {
 
     @PostMapping("/feedback")
     @Operation(summary="유저가 대답하면 AI가 피드백/리액션")
-    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequest request){
+    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequestDto request){
         System.out.println("🎙선생님의 질문:"+request.getQuestion());
         System.out.println("🎙사용자 답변:"+request.getUserAnswer());
         User user=userService.getUserInfo();
@@ -195,6 +193,12 @@ public class StudyController {
             e.printStackTrace();
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @PostMapping("/send-kakao")
+    public ResponseEntity<?> sendKakaoFeedback(@RequestParam String kakaoId){
+        User user=userService.getUserInfo();
+        studyService.sendFeedback
     }
 
 

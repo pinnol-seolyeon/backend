@@ -1,15 +1,13 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.domain.study.UserFeedback;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
-import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import jpabasic.pinnolbe.dto.study.*;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequest;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
@@ -18,9 +16,15 @@ import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpHeaders;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -40,7 +44,10 @@ public class StudyService {
   private final UserRepository userRepository;
   private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
-    private final AskQuestionTemplate askQuestionTemplate;
+  private final AskQuestionTemplate askQuestionTemplate;
+
+  @Autowired
+  WebClient webClient;
 
 
     //이미 학습했던 단원 다시 클릭
@@ -88,23 +95,6 @@ public class StudyService {
         }
 
     }
-
-
-    //ch
-
-
-
-//    //학습목표
-//    public String getChapterObjective(int bookId, Study study){
-//        String chapterId = study.getChapterId();
-//        Optional<Chapter> chapterOpt = chapterRepository.findById(chapterId);
-//
-//        if (chapterOpt.isPresent()) {
-//            return chapterOpt.get().getObjective();
-//        } else {
-//            throw new IllegalArgumentException("해당 chapterId에 대한 챕터가 존재하지 않습니다: " + chapterId);
-//        }
-//    }
 
 
     //책에 대한 처음 시작 //수정완료
@@ -281,7 +271,7 @@ public class StudyService {
 
 
     //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
-    public QuestionResponse getFeedback(User user, FeedBackRequest request){
+    public QuestionResponse getFeedback(User user, FeedBackRequestDto request){
         String userId= user.getId();
         String question=request.getQuestion();
 
@@ -343,6 +333,21 @@ public class StudyService {
         Study study=studyRepository.findById(realId)
                 .orElseThrow(()->new IllegalArgumentException("해당 Study 없음"));
             return study;
-        }
     }
+
+
+    //카카오톡으로 피드백 전송하기
+    public void sendFeedback(String accessToken,FeedBackRequestDto request){
+        createFeedback(accessToken,request);
+    }
+
+    //에러 핸들링 추가하기
+    public Mono<String> createFeedback(String accessToken, FeedBackRequestDto request){
+        return webClient.post()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken) //카카오에서 발급한 access Token 주입
+                .body(Mono.just(request), FeedBackRequestDto.class) //request 객체를 JSON으로 직렬화에서 넣기
+                .retrieve()
+                .bodyToMono(String.class);
+    }
+}
 
