@@ -1,0 +1,15 @@
+spring:
+  data:
+    mongodb:
+      uri: ${PROD_MONGODB_URL}   # 개발용 MongoDB URI
+
+logging:
+  level:
+    org.springframework.web: INFO
+    org.springframework.web.servlet.DispatcherServlet: WARN
+
+
+custom:
+  frontend:
+    deploy:
+      url: ${OAUTH2_SUCCESS_PROD_URL}

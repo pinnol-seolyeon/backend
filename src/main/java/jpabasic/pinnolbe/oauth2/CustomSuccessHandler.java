@@ -31,9 +31,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${custom.frontend.deploy.url}")
     private String deployUrl;
 
-    @Value("${custom.frontend.local.url}")
-    private String localUrl;
-
     public CustomSuccessHandler(JwtUtil jwtUtil, UserService userService, RefreshTokenRepository refreshTokenRepository) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
