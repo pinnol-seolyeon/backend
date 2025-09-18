@@ -1,8 +1,7 @@
 package jpabasic.pinnolbe.jwt;
 
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -47,13 +46,12 @@ public class JwtUtil {
     public Boolean isExpired(String token) {
         try {
             System.out.println("🖥️ isExpired 확인 시도");
-            return Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .getExpiration()
-                    .before(new Date());
+            System.out.println("🖥️ isExpired 확인 시도");
+            JwtParser parser = Jwts.parser().verifyWith(secretKey).build();
+            Jws<Claims> claimsJws = parser.parseSignedClaims(token);
+            Date exp = claimsJws.getPayload().getExpiration();
+            System.out.println("🖥️ exp: " + exp);
+            return exp.before(new Date());
         } catch (ExpiredJwtException e) {
             System.out.println("🖥️ expiredDate (catch): " + e.getClaims().getExpiration());
             return false;
