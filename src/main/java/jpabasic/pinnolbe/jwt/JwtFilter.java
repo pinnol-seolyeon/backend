@@ -38,11 +38,23 @@ public class JwtFilter extends OncePerRequestFilter {
 //        String accessToken = null;
 //        String refreshToken = null;
 
+
+        //Swagger,API Docs 요청은 필터에서 그냥 통과
+        if(requestUri.startsWith("/swagger-ui")
+                ||requestUri.startsWith("/v3/api-docs")
+                ||requestUri.startsWith("/swagger-resources")){
+            filterChain.doFilter(request,response);
+            return;
+        }
+
         // health-check bypass
         if (requestUri.equals("/health-check")) {
             filterChain.doFilter(request, response);
             return;
         }
+
+
+
 
 
         //Cookie들을 불러온 뒤 Authorization key에 담긴 쿠키를 찾음

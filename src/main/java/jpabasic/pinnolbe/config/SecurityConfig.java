@@ -35,12 +35,14 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
     private final TokenService tokenService;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
 
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,CustomSuccessHandler customSuccessHandler,JwtUtil jwtUtil,ExceptionHandlerFilter exceptionHandlerFilter,TokenService tokenService) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
         this.tokenService = tokenService;
+        this.exceptionHandlerFilter = exceptionHandlerFilter;
     }
 
     @Bean
@@ -54,10 +56,11 @@ public class SecurityConfig {
                 //HTTP Basic 인증 방식 disable
                 .httpBasic((auth)->auth.disable())
 
+
                 //JwtFilter 추가
                 .addFilterBefore(new JwtFilter(jwtUtil,tokenService), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
 
-                .addFilterBefore(new ExceptionHandlerFilter(), JwtFilter.class) //필터 단의 예외 처리 handler filter
+                .addFilterBefore(exceptionHandlerFilter, JwtFilter.class) //필터 단의 예외 처리 handler filter
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())

@@ -20,7 +20,17 @@ import java.io.IOException;
 public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
     @Override
+    //모든 요청을 가로채서 doFilterInternal 실행
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String uri=request.getRequestURI();
+
+        //Swagger,API Docs 요청은 필터에서 그냥 통과
+        if(uri.startsWith("/swagger-ui")
+            ||uri.startsWith("/v3/api-docs")
+            ||uri.startsWith("/swagger-resources")){
+            filterChain.doFilter(request,response);
+            return;
+        }
 
         try{
             filterChain.doFilter(request, response);
