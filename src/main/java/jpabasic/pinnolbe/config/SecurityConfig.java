@@ -107,9 +107,11 @@ public class SecurityConfig {
         // 정확한 도메인만 명시해야 allowCredentials(true)와 함께 작동함
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
+                "http://localhost:8080",
                 "http://3.38.74.5:3000",
                 "https://finnol.co.kr",
-                "https://www.finnol.co.kr"
+                "https://www.finnol.co.kr",
+                "https://api.finnol.co.kr"
         ));
 
         // ✅ 허용할 HTTP 헤더

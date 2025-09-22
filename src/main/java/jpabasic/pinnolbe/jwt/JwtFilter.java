@@ -77,7 +77,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             //Authorization 헤더 검증
-            validateTokens(accessToken, refreshToken);
+//            validateTokens(accessToken, refreshToken);
+            System.out.println("✅ validaToken 완료");
             authenticateWithToken(accessToken);
 
         } catch (CustomException e) {

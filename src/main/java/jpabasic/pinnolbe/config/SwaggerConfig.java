@@ -1,10 +1,12 @@
 package jpabasic.pinnolbe.config;
 
+import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -12,7 +14,11 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .components(new Components())
-                .info(apiInfo());
+                .info(apiInfo())
+                .servers(List.of(
+                        new Server().url("https://api.finnol.co.kr").description("Development Server"),
+                        new Server().url("http://localhost:8080").description("Local Server")
+                ));
     }
 
 
