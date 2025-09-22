@@ -53,9 +53,9 @@ public class JwtUtil {
             return exp.before(new Date());
         } catch (ExpiredJwtException e) {
             System.out.println("🖥️ expiredDate (catch): " + e.getClaims().getExpiration());
-            return false;
+            return true;
         } catch(Exception e){
-            return false;
+            return true;
         }
     }
 
