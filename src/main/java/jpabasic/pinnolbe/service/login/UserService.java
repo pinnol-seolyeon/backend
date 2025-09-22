@@ -40,7 +40,7 @@ public class UserService {
         String username=oAuth2User.getUsername(); //인증 정보 꺼냄
         User user=userRepository.findByUsername(username); //DB에서 최신 정보 조회
 
-        System.out.println("🔍 Principal 클래스: " + auth.getPrincipal().getClass().getName());
+//        System.out.println("🔍 Principal 클래스: " + auth.getPrincipal().getClass().getName());
 
 
         return user;
