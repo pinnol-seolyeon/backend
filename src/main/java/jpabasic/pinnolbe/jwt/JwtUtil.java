@@ -22,7 +22,7 @@ public class JwtUtil {
     private final SecretKey secretKey;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
-        System.out.println("✅✅✅secret" + secret);
+//        System.out.println("✅✅✅secret" + secret);
         secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
@@ -45,14 +45,14 @@ public class JwtUtil {
 
     public Boolean isExpired(String token) {
         try {
-            System.out.println("🖥️ isExpired 확인 시도");
+//            System.out.println("🖥️ isExpired 확인 시도");
             JwtParser parser = Jwts.parser().verifyWith(secretKey).build();
             Jws<Claims> claimsJws = parser.parseSignedClaims(token);
             Date exp = claimsJws.getPayload().getExpiration();
-            System.out.println("🖥️ exp: " + exp);
+//            System.out.println("🖥️ exp: " + exp);
             return exp.before(new Date());
         } catch (ExpiredJwtException e) {
-            System.out.println("🖥️ expiredDate (catch): " + e.getClaims().getExpiration());
+//            System.out.println("🖥️ expiredDate (catch): " + e.getClaims().getExpiration());
             return true;
         } catch(Exception e){
             return true;

@@ -30,10 +30,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
         OAuth2User oAuth2User = super.loadUser(userRequest); //생성자를 부름 -> 유저 정보 가져옴
-        System.out.println("✏️✏️" + oAuth2User);
+//        System.out.println("✏️✏️" + oAuth2User);
 
         OAuth2Response oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
-        System.out.println("✅" + oAuth2Response);
+//        System.out.println("✅" + oAuth2Response);
 
         //OAuth2User를 SecurityConfig에 등록해야 사용할 수 있음
 
@@ -63,7 +63,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDto.setChildName(null);
 
 
-            System.out.println("✅ 새로운 유저" + userDto);
+//            System.out.println("✅ 새로운 유저" + userDto);
             return new CustomOAuth2User(userDto);
 
         } else { //로그인
@@ -81,7 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userDto.setChildName(existData.getChildName());
 
-            System.out.println("✅유저" + userDto);
+//            System.out.println("✅유저" + userDto);
             return new CustomOAuth2User(userDto);
 
 

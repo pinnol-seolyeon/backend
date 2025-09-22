@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -30,6 +31,7 @@ public class UserService {
 
 
     //로그인 된 상태에서 유저 정보 가져오기
+    @Transactional
     public User getUserInfo(){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -38,13 +40,14 @@ public class UserService {
         String username=oAuth2User.getUsername(); //인증 정보 꺼냄
         User user=userRepository.findByUsername(username); //DB에서 최신 정보 조회
 
-        System.out.println("🔍 Principal 클래스: " + auth.getPrincipal().getClass().getName());
+//        System.out.println("🔍 Principal 클래스: " + auth.getPrincipal().getClass().getName());
 
 
         return user;
     }
 
     //첫 로그인 시 자녀 정보 입력하기
+    @Transactional
     public void inputUserInfo(User user, ChildInfoDto dto){
 
         if(user==null){
@@ -68,6 +71,7 @@ public class UserService {
 
 
     //유저 정보 받아오기
+    @Transactional
     public UserInfoDto getUserInfoDto(User user){
         String userId=user.getId();
 //        Reward reward=rewardRepository.findByUserId(userId);
@@ -84,11 +88,13 @@ public class UserService {
 
 
     //refresh Token 관련
+    @Transactional
     public void deleteExpiredRefreshToken(RefreshToken refreshToken){
         refreshTokenRepository.delete(refreshToken);
         log.info("✅ 만료된 refresh token 삭제");
     }
-    
+
+    @Transactional
     public void saveNewRefreshToken(String username,String refreshToken){
         User user=userRepository.findByUsername(username);
         user.setRefreshToken(refreshToken);
@@ -100,6 +106,7 @@ public class UserService {
         log.info("✅ user RefreshToken 생성 후 저장 완료");
     }
 
+    @Transactional
     public void saveExistingRefreshToken(String username,String refreshToken){
         User user=userRepository.findByUsername(username);
         user.setRefreshToken(refreshToken);
