@@ -46,7 +46,6 @@ public class JwtUtil {
     public Boolean isExpired(String token) {
         try {
             System.out.println("🖥️ isExpired 확인 시도");
-            System.out.println("🖥️ isExpired 확인 시도");
             JwtParser parser = Jwts.parser().verifyWith(secretKey).build();
             Jws<Claims> claimsJws = parser.parseSignedClaims(token);
             Date exp = claimsJws.getPayload().getExpiration();

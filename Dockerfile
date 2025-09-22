@@ -11,6 +11,7 @@ COPY src/main/resources/static/credentials.json /app/credentials.json
 
 #환경변수 등록
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+ENV SPRING_PROFILES_ACTIVE=dev
 
 COPY .env .env
 
