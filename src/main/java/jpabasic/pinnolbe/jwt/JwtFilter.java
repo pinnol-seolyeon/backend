@@ -54,53 +54,32 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
 
-
-
-
-        //Cookie들을 불러온 뒤 Authorization key에 담긴 쿠키를 찾음
-//        Cookie[] cookies = request.getCookies();
-//
-//        if (cookies == null) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        for (Cookie cookie : cookies) {
-//            if (cookie.getName().equals("Authorization")) {
-//                accessToken = cookie.getValue();
-//            } else if (cookie.getName().equals("RefreshToken")) {
-//                refreshToken = cookie.getValue();
-//            }
-//        }
         String accessToken=getTokenFromCookies(request,"Authorization");
         String refreshToken=getTokenFromCookies(request,"RefreshToken");
 
-        try {
-            //Authorization 헤더 검증
-//            validateTokens(accessToken, refreshToken);
-            System.out.println("✅ validaToken 완료");
-            authenticateWithToken(accessToken);
-
-        } catch (CustomException e) {
-            ErrorCode errorCode = e.getErrorCode();
-
-            if (errorCode == ErrorCode.REISSUE_TOKEN) {
-                try {
-                    String newAccessToken = tokenService.reissueAccessToken(refreshToken, response);
-                    log.info("🍪 access token 재발급 완료");
-
-                    authenticateWithToken(newAccessToken);
-                    log.info("🍪 access token 유저 정보 저장 완료");
-                } catch (CustomException reissueEx) {
-                    return;
-                }
-            } else {
+        try{
+            if(accessToken!=null && !jwtUtil.isExpired(accessToken)){
+                //access token 정상
+                authenticateWithToken(accessToken);
+                log.info("😎 access token 유효 -> security context 저장 완료");
+            }else if(refreshToken!=null && !jwtUtil.isExpired(refreshToken)){
+                //access token 만료 -> refresh token으로 새로 발급
+                String newAccessToken=tokenService.reissueAccessToken(refreshToken,response);
+                authenticateWithToken(newAccessToken);
+                log.info("😎 access token 재발급 및 securityContext 저장 완료");
+            }else {
+                // Refresh Token도 없거나 만료 → 쿠키 삭제 후 재로그인 유도
+                clearAuthCookies(response);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Refresh token expired. Please login again.");
                 return;
             }
-
+            }catch(CustomException e){
+                log.warn("인증 실패:{}",e.getErrorCode());
+                return;
+            }
+        filterChain.doFilter(request,response);
         }
-        filterChain.doFilter(request, response);
-    }
+
 
 
     private void authenticateWithToken(String accessToken) {
@@ -118,6 +97,20 @@ public class JwtFilter extends OncePerRequestFilter {
         //세션에 사용자 등록 //SecurityContext에 인증 정보 등록->이후 컨트롤러나 @AuthenticationPrincipal 에서 접근 가능
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
+
+    private void clearAuthCookies(HttpServletResponse response) {
+        Cookie expiredAuth = new Cookie("Authorization", null);
+        expiredAuth.setPath("/");
+        expiredAuth.setMaxAge(0);
+
+        Cookie expiredRefresh = new Cookie("RefreshToken", null);
+        expiredRefresh.setPath("/");
+        expiredRefresh.setMaxAge(0);
+
+        response.addCookie(expiredAuth);
+        response.addCookie(expiredRefresh);
+    }
+
 
 
 
