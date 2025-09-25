@@ -1,19 +1,19 @@
 package jpabasic.pinnolbe.dto.question;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 public class QuestionRequest {
 
-//    int part; //chapter별?
-    String question;
+    private final String question;
 
-    public QuestionRequest(String question) {
-//        this.part = part;
+    @JsonCreator
+    public QuestionRequest(@JsonProperty("question")String question) {
         this.question = question;
     }
+
 }

@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/study")
 @RequiredArgsConstructor
+@Tag(name="학습 분석",description="학습 분석 관련 api")
 public class StudyLogController {
 
     private final StudyLogService studyLogService;

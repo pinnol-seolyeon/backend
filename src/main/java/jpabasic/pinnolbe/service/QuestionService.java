@@ -50,6 +50,7 @@ public class QuestionService {
         // AI에 유저의 질문 전달
         try {
             QuestionResponse answer = askQuestionTemplate.askQuestionToAI(request);
+            System.out.println("❓질문은 함.");
 
             //사용자 세션 가져오기
             QuestionSessionDto session=sessionStore.computeIfAbsent(userId,k->new QuestionSessionDto());
