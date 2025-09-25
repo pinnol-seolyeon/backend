@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  finnol-server:
+    build:
+      context: . # Dockerfile이 있는 경로
+    image: finnol-server:latest
+    container_name: finnol-server
+    ports:
+      - "8080:8080"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
