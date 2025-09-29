@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.question.QueCollection;
+import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
@@ -9,8 +10,11 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.StudyLogRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import jpabasic.pinnolbe.domain.User;
 import org.springframework.web.client.RestClientException;
+import org.springframework.data.mongodb.core.query.Query;
+
 
 import java.sql.Timestamp;
 import java.time.*;
@@ -35,6 +41,7 @@ public class StudyLogService {
     private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final AskQuestionTemplate askQuestionTemplate;
+    private final ChapterRepository chapterRepository;
     private final MongoTemplate mongoTemplate;
 
 
@@ -263,6 +270,26 @@ public class StudyLogService {
             }
         }
         return todayQuestions;
+    }
+
+    //전체 진행률
+    public double getStudyProgress(String userId){
+
+        //전체 단원 개수
+        int count=(int)mongoTemplate.count(new Query(), Chapter.class);
+
+        //내가 학습 완료한 단원 개수
+        int completedChapters=0;
+        Study study=studyRepository.findByUserId(userId)
+                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
+        if (study.getCompleteChapter() != null) {
+            completedChapters=study.getCompleteChapter().size();
+        }
+
+        //진행률 계산
+        double progress=((double)completedChapters/count)*100;
+        progress=Math.round(progress*10)/10.0;
+        return progress;
     }
 
 

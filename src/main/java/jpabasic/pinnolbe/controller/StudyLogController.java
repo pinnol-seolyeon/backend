@@ -50,6 +50,14 @@ public class StudyLogController {
         return ResponseEntity.ok(stats);
     }
 
+    @GetMapping("/progress")
+    @Operation(summary="전체 진행률")
+    public ResponseEntity<Map<String, Double>> getStudyProgress(){
+        User user=userService.getUserInfo();
+        Double progress=studyLogService.getStudyProgress(user.getId());
+        return ResponseEntity.ok(Map.of("전체 진행률",progress));
+    }
+
     @GetMapping("/preferred-time")
     @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계")
     public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
