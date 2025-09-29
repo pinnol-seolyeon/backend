@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.question.QueCollection;
+import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
@@ -10,10 +11,12 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
+import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.StudyLogRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
@@ -31,6 +34,7 @@ import java.time.*;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +47,7 @@ public class StudyLogService {
     private final AskQuestionTemplate askQuestionTemplate;
     private final ChapterRepository chapterRepository;
     private final MongoTemplate mongoTemplate;
+    private final BookRepository bookRepository;
 
 
 
@@ -290,6 +295,34 @@ public class StudyLogService {
         double progress=((double)completedChapters/count)*100;
         progress=Math.round(progress*10)/10.0;
         return progress;
+    }
+
+    //현재 학습 중인 교재 + 단원 제공
+    public NowStudyingLevelDto getNowStudyingLevel(String userId){
+
+        Study study=studyRepository.findByUserId(userId)
+                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
+
+        //현재 학습 중인 교재
+        String bookId=study.getBookId();
+        Book book = bookRepository.findById(new ObjectId(bookId))
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+        String title=book.getTitle();
+
+        //현재 진도 단원 ID
+        String currentId=study.getChapter()!=null?study.getChapter().getId().toString():null;
+        List<String> chapters=book.getChapters();
+
+        int index=-0;
+        for(int i=0;i<chapters.size();i++){
+            if(book.getChapters().get(i).equals(currentId)){
+                index=i;
+                break;
+            }
+        }
+
+        NowStudyingLevelDto result=new NowStudyingLevelDto(title,index);
+        return result;
     }
 
 

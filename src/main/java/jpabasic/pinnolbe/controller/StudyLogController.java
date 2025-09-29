@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.controller;
 
+import com.nimbusds.oauth2.sdk.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
@@ -10,6 +11,7 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
+import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.QuestionService;
 import jpabasic.pinnolbe.service.StudyLogService;
@@ -48,6 +50,14 @@ public class StudyLogController {
 
         StudyStatsDto stats = studyService.getStudyStats(user.getId());
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/now-studying")
+    @Operation(summary="현재 학습 단원")
+    public ResponseEntity<NowStudyingLevelDto> getNowStudyingLevel() {
+        User user = userService.getUserInfo();
+        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user.getId());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/progress")
