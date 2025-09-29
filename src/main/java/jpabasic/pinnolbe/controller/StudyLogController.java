@@ -42,6 +42,7 @@ public class StudyLogController {
     private final QuestionService questionService;
 
     @GetMapping("/stats")
+    @Operation(summary="이번주/총 학습 완료한 단원 개수")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
 
@@ -65,6 +66,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/calendar")
+    @Operation(summary="오늘 학습한 시간(n시간 n분)")
     public ResponseEntity<AttendanceDto> getAttendance(
             @RequestParam int year,
             @RequestParam int month
@@ -75,15 +77,6 @@ public class StudyLogController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/completed")
-    @Operation(summary="학습완료한 단원 개수")
-    public ResponseEntity<FinishChaptersDto> getCompletedWeek(){
-        User user=userService.getUserInfo();
-        String studyId=user.getStudyId();
-
-        FinishChaptersDto dto=studyLogService.getCompletedWeek(studyId);
-        return ResponseEntity.ok(dto);
-    }
 
     // 질문 내용 요약
     @PostMapping("/questions")
@@ -104,8 +97,9 @@ public class StudyLogController {
     }
 
 
-    // 학습 분석화면에 표시할 질문 캘린더 날짜 추출
+
     @GetMapping("/questions/dates")
+    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출")
     public List<LocalDate> getQuestionDates() {
         User user=userService.getUserInfo();
         String userId=user.getId();
@@ -116,8 +110,9 @@ public class StudyLogController {
                 .collect(Collectors.toList());
     }
 
-    // 캘린더 해당 날짜 질문 내역
+
     @GetMapping("/questions/history")
+    @Operation(summary="캘린더 해당 날짜 질문 내역(수정중)")
     public List<QueCollection> getDailyQnA(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
