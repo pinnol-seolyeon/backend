@@ -40,9 +40,6 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         }catch(RuntimeException e){
             log.info("RuntimeException handler filter");
             setErrorResponse(HttpStatus.FORBIDDEN,response,e);
-        }catch(Exception e){
-            log.info("Exception handler filter");
-            setErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,response,e);
         }
     }
 

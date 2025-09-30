@@ -1,6 +1,8 @@
 package jpabasic.pinnolbe.controller;
 
+import com.nimbusds.oauth2.sdk.Response;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
@@ -9,6 +11,7 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
+import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.QuestionService;
 import jpabasic.pinnolbe.service.StudyLogService;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/study")
 @RequiredArgsConstructor
+@Tag(name="학습 분석",description="학습 분석 관련 api")
 public class StudyLogController {
 
     private final StudyLogService studyLogService;
@@ -40,11 +44,28 @@ public class StudyLogController {
     private final QuestionService questionService;
 
     @GetMapping("/stats")
+    @Operation(summary="이번주/총 학습 완료한 단원 개수")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
 
         StudyStatsDto stats = studyService.getStudyStats(user.getId());
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/now-studying")
+    @Operation(summary="현재 학습 단원")
+    public ResponseEntity<NowStudyingLevelDto> getNowStudyingLevel() {
+        User user = userService.getUserInfo();
+        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user.getId());
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/progress")
+    @Operation(summary="전체 진행률")
+    public ResponseEntity<Map<String, Double>> getStudyProgress(){
+        User user=userService.getUserInfo();
+        Double progress=studyLogService.getStudyProgress(user.getId());
+        return ResponseEntity.ok(Map.of("전체 진행률",progress));
     }
 
     @GetMapping("/preferred-time")
@@ -63,6 +84,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/calendar")
+    @Operation(summary="오늘 학습한 시간(n시간 n분)")
     public ResponseEntity<AttendanceDto> getAttendance(
             @RequestParam int year,
             @RequestParam int month
@@ -73,15 +95,6 @@ public class StudyLogController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/completed")
-    @Operation(summary="학습완료한 단원 개수")
-    public ResponseEntity<FinishChaptersDto> getCompletedWeek(){
-        User user=userService.getUserInfo();
-        String studyId=user.getStudyId();
-
-        FinishChaptersDto dto=studyLogService.getCompletedWeek(studyId);
-        return ResponseEntity.ok(dto);
-    }
 
     // 질문 내용 요약
     @PostMapping("/questions")
@@ -102,8 +115,9 @@ public class StudyLogController {
     }
 
 
-    // 학습 분석화면에 표시할 질문 캘린더 날짜 추출
+
     @GetMapping("/questions/dates")
+    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출")
     public List<LocalDate> getQuestionDates() {
         User user=userService.getUserInfo();
         String userId=user.getId();
@@ -114,8 +128,9 @@ public class StudyLogController {
                 .collect(Collectors.toList());
     }
 
-    // 캘린더 해당 날짜 질문 내역
+
     @GetMapping("/questions/history")
+    @Operation(summary="캘린더 해당 날짜 질문 내역(수정중)")
     public List<QueCollection> getDailyQnA(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {

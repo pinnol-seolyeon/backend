@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreDto;
 import jpabasic.pinnolbe.service.analyze.QuizService;
@@ -20,12 +21,14 @@ public class RadarChartController {
     }
 
     @GetMapping("/radar-score")
+    @Operation(summary="engagement/focus/understanding/expression 학습분석 내용 제공")
     public ResponseEntity<RadarScoreDto> getRadarScore() {
         return ResponseEntity.ok(radarScoreService.getThisWeekRadarScore());
     }
 
     // 지난주 데이터까지
     @GetMapping("/radar-score/compare")
+    @Operation(summary="학습 분석 지난주와 비교")
     public ResponseEntity<RadarScoreComparisonDto> getRadarComparison() {
         return ResponseEntity.ok(radarScoreService.getThisAndLastWeekRadarScore());
     }
