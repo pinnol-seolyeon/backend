@@ -23,9 +23,4 @@ public class LoginController {
         System.out.println("myroute");
         return "개힘들어";
     }
-
-//ㅡㅛ
-
-
-
 }

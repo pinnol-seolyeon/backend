@@ -65,14 +65,14 @@ public class SecurityConfig {
                 //csrf disable
                 .csrf(csrf -> csrf.disable())
 
-//                //로그인 안 된 경우 302 redirection이 아닌 401 응답
-//                .exceptionHandling(handler->handler
-//                        .authenticationEntryPoint((request,response,authException)->{
-//                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-//                        }))
+                //로그인 안 된 경우 302 redirection이 아닌 401 응답
+                .exceptionHandling(handler->handler
+                        .authenticationEntryPoint((request,response,authException)->{
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        }))
 
 //                //HTTPS 강제 리디렉션
-//                .requiresChannel(channel->channel.anyRequest().requiresSecure())
+                .requiresChannel(channel->channel.anyRequest().requiresSecure())
 
                 //oauth2
                 .oauth2Login((oauth2)->oauth2
