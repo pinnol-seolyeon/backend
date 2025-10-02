@@ -18,7 +18,10 @@ public enum ErrorCode {
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND,"STUDY-001","해당 유저의 공부 기록을 찾을 수 없어요."),
 
     //BOOK 관련
-    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOK-001","해당 ID의 책을 찾을 수 없어요.");
+    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND,"BOOK-001","해당 ID의 책을 찾을 수 없어요."),
+
+    //redis 관련
+    REDIS_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"Redis-001","redis에 저장 실패했어요.");
 
     private final HttpStatus status;
     private final String code;

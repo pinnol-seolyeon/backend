@@ -11,10 +11,9 @@ import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
-import jpabasic.pinnolbe.dto.study.heartbeat.HeartBeatRequest;
+import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.service.HeartBeatService;
 import jpabasic.pinnolbe.service.StudyService;
 import jpabasic.pinnolbe.service.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -37,17 +37,15 @@ public class StudyController {
     private final StudyService studyService;
     private final AmazonS3 amazonS3;
     private final AmazonS3Client amazonS3Client;
-    private final HeartBeatService heartBeatService;
     private final StudySessionService studySessionService;
 
-    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, HeartBeatService heartBeatService, StudySessionService studySessionService) {
+    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, StudySessionService studySessionService) {
         this.studyRepository = studyRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.studyService = studyService;
         this.amazonS3 = amazonS3;
         this.amazonS3Client = amazonS3Client;
-        this.heartBeatService = heartBeatService;
         this.studySessionService = studySessionService;
     }
 
@@ -128,10 +126,14 @@ public class StudyController {
 
     @PostMapping("/start-level")
     @Operation(summary="특정 레벨 공부 시작")
-    public ResponseEntity<?> startLevel(@RequestParam int level,@RequestParam String chapterId){
+    public ApiResponse<Void> startLevel(
+            @RequestParam int level,
+            @RequestParam String chapterId){
+
         User user=userService.getUserInfo();
         studySessionService.startLevel(user,level,chapterId);
 
+        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",null);
     }
 
 
