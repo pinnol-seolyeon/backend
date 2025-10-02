@@ -72,7 +72,7 @@ public class SecurityConfig {
                         }))
 
 //                //HTTPS 강제 리디렉션
-                .requiresChannel(channel->channel.anyRequest().requiresSecure())
+//                .requiresChannel(channel->channel.anyRequest().requiresSecure())
 
                 //oauth2
                 .oauth2Login((oauth2)->oauth2

@@ -11,7 +11,6 @@ server:
     keep-alive-timeout: 180s
     max-threads: 200
     max-keep-alive-requests: 100
-  forward-headers-strategy: native #ALB HTTPS 처리
 
 logging:
   level:
