@@ -35,7 +35,7 @@ public class StudySessionController {
         return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",null);
     }
 
-    @PostMapping("/summary")
+    @PostMapping("/update")
     @Operation(summary="학습 중 summary 반영")
     public ApiResponse<Void> sessionUpdate(
             @RequestBody StudySessionSummaryDto summary
@@ -46,14 +46,14 @@ public class StudySessionController {
         return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
     }
 
-//    @PostMapping("/complete")
-//    @Operation(summary="학습 완료 (세션 삭제)")
-//    public ApiResponse<Void> complete(
-//            @RequestBody StudySession summary
-//    ){
-//        User user=userService.getUserInfo();
-//        StudySessionService.sessionComplete(user,summary);
-//    }
+    @PostMapping("/complete")
+    @Operation(summary="chapter 학습 완료")
+    public ApiResponse<Void> complete(
+            @RequestBody StudySession summary
+    ){
+        User user=userService.getUserInfo();
+        StudySessionService.chapterComplete(user,summary);
+    }
 //
 //    @PostMapping("/force-delete")
 //    @Operation(summary="INACTIVE 세션 강제 삭제")

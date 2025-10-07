@@ -7,6 +7,7 @@ import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class StudySessionService {
 
     @Autowired
@@ -71,6 +73,9 @@ public class StudySessionService {
 
         // 1. INACTIVE로 들어왔을 때
         if(session.getStatus()==Status.ACTIVE && summary.getStatus()== Status.INACTIVE){
+            session.setStatus(Status.INACTIVE);
+            session.setInactiveSince(LocalDateTime.now()); //비활성화 시점 기록
+
             LocalDateTime lastActive=summary.getLastActive();
             session.setLastActive(lastActive);
 
@@ -142,41 +147,25 @@ public class StudySessionService {
 
     }
 
-    @Transactional
-    public void sessionComplete(User user,StudySessionSummaryDto summary){
-        String key=SESSION_PREFIX+summary.getUserId()+":"+summary.getChapterId();
-        flushExpiredSessions();
-    }
-
     /**
-     * 세션 스캔 스케줄러 설정
+     * 해당 chapter를 모두 마무리했을 경우
+     * @param user
+     * @param summary
      */
-    @Scheduled(fixedRate=5*60*1000) //5분마다 실행
-    private void flushExpiredSessions(){
-        Set<String> keys=redisTemplate.keys("study:session:*");
-        if(keys==null) return;
+    @Transactional
+    public void chapterComplete(User user,StudySessionSummaryDto summary){
+        String key=SESSION_PREFIX+summary.getUserId()+":"+summary.getChapterId();
 
-        for(String key:keys){
-            StudySession session=getStudySession(key);
-            if(session==null) continue;
-
-            //TTL 조회
-            Long ttl=redisTemplate.getExpire(key, TimeUnit.SECONDS);
-
-            //만료 임박 or 특정 조건 시 DB로 옮김
-            if(ttl!=null && ttl <=60){
-                saveToDatabase(session);
-                redisTemplate.delete(key);
-            }
-        }
     }
+
+
 
     /**
      * Redis에서 세션 조회
      * @param key
      * @return
      */
-    private StudySession getStudySession(String key){
+    public StudySession getStudySession(String key){
         return redisTemplate.opsForValue().get(key);
     }
 
@@ -184,7 +173,7 @@ public class StudySessionService {
      * db에 session 저장
      * @param session
      */
-    private void saveToDatabase(StudySession session){
+    public void saveToDatabase(StudySession session){
         StudyLog log=new StudyLog();
     }
 

@@ -39,6 +39,7 @@ public class StudySession {
     private long idleDuration; //inactive 누적 시간 (분)
     private long totalDuration; //누적 학습 시간 (분)
     private Map<String,Long> timeZoneDurations; //각 학습 시간대 누적 시간 (분)
+    private LocalDateTime inactiveSince; //비활성화 시작 시간
     private Status status;
 
     //특정 레벨 학습 시작 시
