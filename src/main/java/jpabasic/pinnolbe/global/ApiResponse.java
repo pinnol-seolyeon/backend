@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class ApiResponse<T> {
     private String message; //응답 메시지
     private int status; //http 상태 코드

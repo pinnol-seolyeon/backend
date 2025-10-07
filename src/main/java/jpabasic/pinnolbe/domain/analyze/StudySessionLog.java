@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Map;
 
-@Document(collection="studyTime_logs")
+@Document(collection="studySessionLog")
 @Getter
 @Setter
 @NoArgsConstructor

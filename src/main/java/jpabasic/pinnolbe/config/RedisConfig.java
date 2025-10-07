@@ -1,5 +1,8 @@
 package jpabasic.pinnolbe.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jpabasic.pinnolbe.domain.StudySession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +34,21 @@ public class RedisConfig {
     public RedisTemplate<String, StudySession> redisTemplate() {
         RedisTemplate<String,StudySession> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
+
+        ObjectMapper objectMapper=new ObjectMapper()
+                .registerModule(new JavaTimeModule()) //LocalDateTime 처리
+                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        GenericJackson2JsonRedisSerializer serializer=
+                new GenericJackson2JsonRedisSerializer(objectMapper);
+
         //문자열을 redis에 저장할 때 UTF-8 문자열로 직렬화/역직렬화함(원래는 byte로 변환)
         template.setKeySerializer(new StringRedisSerializer());
         //StudySession을 JSON으로 변환해서 저장, 다시 꺼낼 때 json -> 객체로 복원
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+        template.afterPropertiesSet();
         return template;
     }
 }

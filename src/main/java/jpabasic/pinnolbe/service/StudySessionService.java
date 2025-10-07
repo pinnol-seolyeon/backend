@@ -10,6 +10,7 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -25,20 +26,19 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class StudySessionService {
 
     @Autowired
     private final RedisTemplate<String,StudySession> redisTemplate;
     private static final String SESSION_PREFIX = "study:session:";
     private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
-    @Autowired
-    private StudySessionLogRepository studySessionLogRepository;
-    @Autowired
-    private UserRepository userRepository;
 
-    public StudySessionService(RedisTemplate<String, StudySession> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final StudySessionLogRepository studySessionLogRepository;
+    private final UserRepository userRepository;
+
+
+
 
     /**
      * 학습 시작 시 Redis에 세션 생성
@@ -86,12 +86,14 @@ public class StudySessionService {
         Optional<StudySessionLog> existingLogOpt=studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId,chapterId,level);
         //기존에 StudySessionLog가 존재할 때
         if(existingLogOpt.isPresent()){
+            System.out.println("✅ 기존 StudySessionLog 존재");
             StudySessionLog sessionLog=existingLogOpt.get();
             id=sessionLog.getId();
         }else{
             //StudySessionLog 존재 X
             StudySessionLog log=new StudySessionLog(userId,chapterId,level); //객체 생성
             id=studySessionLogRepository.save(log).getId();
+            System.out.println("✅ 새로운 StudySessionLog 생성:"+ id);
         }
 
         return id;
@@ -140,10 +142,12 @@ public class StudySessionService {
         // 3. COMPLETE (해당 레벨 학습 완료)
         if(summary.getStatus()==Status.COMPLETED){
             //DB:StudySessionLog에 StudySession 내용 저장
-            saveToDatabase(user,session);
+            saveToDatabase(session);
 
-            //
+            //학습 분석(StudyLog)에 세션 내용(StudySessionLog) 저장
+//            studyLogService.analyzeStudyTime()
 
+            //redis 세션 삭제
             redisTemplate.delete(key);
 
         }
@@ -222,7 +226,11 @@ public class StudySessionService {
      * db에 session 저장
      * @param session
      */
-    public void saveToDatabase(User user,StudySession session){
+    public void saveToDatabase(StudySession session){
+        String userId = session.getUserId();
+        User user=userRepository.findById(userId)
+                .orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
+
         // user documentation에서 studySessionLogId 가져와서 해당 엔티티 가져오기
         String studySessionId=user.getStudySessionLogId();
         StudySessionLog existingLog=studySessionLogRepository.findById(studySessionId)
