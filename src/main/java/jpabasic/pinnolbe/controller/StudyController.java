@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
@@ -124,17 +125,7 @@ public class StudyController {
     }
 
 
-    @PostMapping("/start-level")
-    @Operation(summary="특정 레벨 공부 시작")
-    public ApiResponse<Void> startLevel(
-            @RequestParam int level,
-            @RequestParam String chapterId){
 
-        User user=userService.getUserInfo();
-        studySessionService.startLevel(user,level,chapterId);
-
-        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",null);
-    }
 
 
 
