@@ -25,14 +25,14 @@ public class StudySessionController {
 
     @PostMapping("/start-level")
     @Operation(summary="특정 레벨 공부 시작")
-    public ApiResponse<Void> startLevel(
+    public ApiResponse<String> startLevel(
             @RequestParam int level,
             @RequestParam String chapterId){
 
         User user=userService.getUserInfo();
-        studySessionService.startLevel(user,level,chapterId);
+        String studySessionLogId=studySessionService.startLevel(user,level,chapterId);
 
-        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",null);
+        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",studySessionLogId);
     }
 
     @PostMapping("/update")
@@ -46,15 +46,14 @@ public class StudySessionController {
         return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
     }
 
-    @PostMapping("/complete")
-    @Operation(summary="chapter 학습 완료")
-    public ApiResponse<Void> complete(
-            @RequestBody StudySession summary
-    ){
-        User user=userService.getUserInfo();
-        StudySessionService.chapterComplete(user,summary);
-    }
+//    @PostMapping("/complete")
+//    @Operation(summary="chapter 학습 완료")
+//    public ApiResponse<Void> complete(
+//            @RequestBody StudySession summary
+//    ){
+//        User user=userService.getUserInfo();
+//        StudySessionService.chapterComplete(user,summary);
+//    }
 //
-//    @PostMapping("/force-delete")
-//    @Operation(summary="INACTIVE 세션 강제 삭제")
+
 }

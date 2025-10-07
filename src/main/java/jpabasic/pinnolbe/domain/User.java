@@ -31,6 +31,8 @@ public class User {
     @Nullable
     private String studyId;
 
+    private String studySessionLogId; //최근 학습 상태(진도)
+
     //여태까지 모은 코인 개수
     private int reward=0;
 
@@ -41,6 +43,10 @@ public class User {
     private int childAge;
     //부모 전화번호
     private String phoneNumber;
+
+    public User(String studySessionLogId) {
+
+    }
 
 
 

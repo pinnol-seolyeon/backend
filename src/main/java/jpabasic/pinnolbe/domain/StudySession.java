@@ -29,9 +29,9 @@ public class StudySession {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
     private LocalDateTime startTime;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
-    @Nullable
-    private LocalDateTime endTime;
+//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+//    @Nullable
+//    private LocalDateTime endTime;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
     @Nullable

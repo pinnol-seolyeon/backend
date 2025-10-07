@@ -4,9 +4,12 @@ import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
+import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
+import jpabasic.pinnolbe.repository.UserRepository;
+import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -17,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -28,6 +31,10 @@ public class StudySessionService {
     private final RedisTemplate<String,StudySession> redisTemplate;
     private static final String SESSION_PREFIX = "study:session:";
     private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
+    @Autowired
+    private StudySessionLogRepository studySessionLogRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public StudySessionService(RedisTemplate<String, StudySession> redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -40,19 +47,56 @@ public class StudySessionService {
      * @param chapterId
      */
     @Transactional
-    public void startLevel(User user, int level, String chapterId) {
+    public String startLevel(User user, int level, String chapterId) {
         String userId=user.getId();
 
         String key=SESSION_PREFIX+userId+":"+chapterId+":"+level;
 
+        //Redis 세션 객체 생성
         StudySession studySession = new StudySession(userId, level);
+
+        //StudySessionLog 객체 생성 (이미 존재한다면 해당 객체 불러오기)
+        String studySessionLogId=findStudySessionLog(userId,chapterId,level);
+
+        //User documentation에 해당 studySessionLogId 저장
+        user.setStudySessionLogId(studySessionLogId);
+        userRepository.save(user);
+
         try {
             //TTL 설정과 함께 Redis에 저장
             redisTemplate.opsForValue().set(key,studySession,SESSION_TTL, TimeUnit.SECONDS);
         }catch(DataAccessException e){
             throw new CustomException(ErrorCode.REDIS_SAVE_ERROR);
         }
+
+        return studySessionLogId;
     }
+
+
+    /**
+     * 레벨 학습 시작 시, studySessionLog document 검색 및 생성
+     * @param userId
+     * @param chapterId
+     * @param level
+     * @return
+     */
+    private String findStudySessionLog(String userId,String chapterId,int level){
+
+        String id;
+        Optional<StudySessionLog> existingLogOpt=studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId,chapterId,level);
+        //기존에 StudySessionLog가 존재할 때
+        if(existingLogOpt.isPresent()){
+            StudySessionLog sessionLog=existingLogOpt.get();
+            id=sessionLog.getId();
+        }else{
+            //StudySessionLog 존재 X
+            StudySessionLog log=new StudySessionLog(userId,chapterId,level); //객체 생성
+            id=studySessionLogRepository.save(log).getId();
+        }
+
+        return id;
+    }
+
 
     /**
      * 학습 중 활동 중 Redis 세션 갱신 (INACTIVE)
@@ -95,8 +139,13 @@ public class StudySessionService {
 
         // 3. COMPLETE (해당 레벨 학습 완료)
         if(summary.getStatus()==Status.COMPLETED){
-            saveToDatabase(session);
+            //DB:StudySessionLog에 StudySession 내용 저장
+            saveToDatabase(user,session);
+
+            //
+
             redisTemplate.delete(key);
+
         }
 
         //세션 갱신
@@ -173,8 +222,41 @@ public class StudySessionService {
      * db에 session 저장
      * @param session
      */
-    public void saveToDatabase(StudySession session){
-        StudyLog log=new StudyLog();
+    public void saveToDatabase(User user,StudySession session){
+        // user documentation에서 studySessionLogId 가져와서 해당 엔티티 가져오기
+        String studySessionId=user.getStudySessionLogId();
+        StudySessionLog existingLog=studySessionLogRepository.findById(studySessionId)
+                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
+
+        //기존 studySession 업데이트
+        long newDuration=existingLog.getTotalDuration()+session.getTotalDuration();
+        existingLog.setTotalDuration(newDuration);
+
+        mergeTimeZoneDuration(existingLog,session);
+
+        studySessionLogRepository.save(existingLog);
+
+    }
+
+    /**
+     * timeZoneDuration 합치기
+     * @param existingLog
+     * @param session
+     */
+    private void mergeTimeZoneDuration(StudySessionLog existingLog,StudySession session){
+        Map<String,Long> newDurations=session.getTimeZoneDurations();
+
+        if(newDurations==null||newDurations.isEmpty()) return;
+
+        Map<String, Long> existingDurations =
+                Optional.ofNullable(existingLog.getTimeZoneDurations())
+                        .orElseGet(HashMap::new);
+
+        newDurations.forEach((zone,value)->
+                existingDurations.merge(zone,value,Long::sum));
+        existingLog.setTimeZoneDurations(newDurations); //변경된 맵 다시 저장
+
+
     }
 
 

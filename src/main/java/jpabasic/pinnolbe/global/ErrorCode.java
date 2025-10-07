@@ -24,7 +24,9 @@ public enum ErrorCode {
     REDIS_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"Redis-001","redis에 저장 실패했어요."),
 
     // study session 관련
-    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"session-001","기존의 study session 기록이 없어요.");
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"session-001","기존의 study session 기록이 없어요."),
+    STUDY_SESSION_LOG_NOT_FOUND(HttpStatus.NOT_FOUND,"session-002","StudySessionLog 엔티티가 없어요.");
+
 
 
     private final HttpStatus status;
