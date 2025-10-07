@@ -1,0 +1,26 @@
+package jpabasic.pinnolbe.domain.analyze;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Null;
+import jpabasic.pinnolbe.domain.Status;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+public class StudySessionSummaryDto {
+
+    private String userId;
+    private String chapterId;
+    private int level;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+    private LocalDateTime startTime;
+
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+    private LocalDateTime lastActive;
+
+    private Status status;
+}

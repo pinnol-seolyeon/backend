@@ -130,7 +130,7 @@ public class StudyLogController {
 
 
     @GetMapping("/questions/history")
-    @Operation(summary="캘린더 해당 날짜 질문 내역(수정중)")
+    @Operation(summary="캘린더 해당 날짜 질문 내역")
     public List<QueCollection> getDailyQnA(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
@@ -141,6 +141,8 @@ public class StudyLogController {
 
         return queCollectionRepository.findByUserIdAndDateBetween(userId, start, end);
     }
+
+
 
 
 

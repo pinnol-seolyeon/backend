@@ -95,8 +95,8 @@ public class StudyLogService {
         //시간 테스트
         System.out.println("✅ localDate: " + LocalDateTime.now());
         List<LocalDateTime> times=chapters.stream()
-                        .map(cc->cc.getCompletedAt())
-                        .collect(Collectors.toList());
+                .map(cc->cc.getCompletedAt())
+                .collect(Collectors.toList());
         System.out.println("✅ DB localDate:"+times);
 
 
@@ -177,6 +177,7 @@ public class StudyLogService {
 
         return new StudyTimeStatsDto(preferredType, weeklyStats);
     }
+
 
 
 

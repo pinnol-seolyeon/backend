@@ -5,15 +5,18 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
+import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.StudyService;
+import jpabasic.pinnolbe.service.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -34,14 +38,16 @@ public class StudyController {
     private final StudyService studyService;
     private final AmazonS3 amazonS3;
     private final AmazonS3Client amazonS3Client;
+    private final StudySessionService studySessionService;
 
-    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client) {
+    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, StudySessionService studySessionService) {
         this.studyRepository = studyRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.studyService = studyService;
         this.amazonS3 = amazonS3;
         this.amazonS3Client = amazonS3Client;
+        this.studySessionService = studySessionService;
     }
 
     @Value("${cloud.aws.s3.bucket}")
@@ -118,6 +124,11 @@ public class StudyController {
         return ResponseEntity.ok(title);
     }
 
+
+
+
+
+
     @PostMapping("/finish")
     @Operation(summary="학습완료")
     public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
@@ -132,6 +143,16 @@ public class StudyController {
         }
         return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
     }
+
+//    @PostMapping("/heart-beat")
+//    @Operation(summary="heartbeat를 통해 공부시간 측정 및 학습 완료한 단원 파악")
+//    public void heartbeat(@RequestBody HeartBeatRequest req){
+//        User user=userService.getUserInfo();
+//        heartBeatService.handleHeartbeat(
+//                req,
+//                user.getId()
+//        );
+//    }
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
