@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,7 @@ public class StudySessionService {
     private final RedisTemplate<String,StudySession> redisTemplate;
     private static final String SESSION_PREFIX = "study:session:";
     private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final StudySessionLogRepository studySessionLogRepository;
     private final UserRepository userRepository;
@@ -117,12 +119,15 @@ public class StudySessionService {
             throw new CustomException(ErrorCode.SESSION_NOT_FOUND);
         }
 
+        //OffSetTime -> LocalDateTime 변환
+        LocalDateTime lastActive=summary.getLastActive().atZoneSameInstant(KST).toLocalDateTime();
+        LocalDateTime startTime=summary.getStartTime().atZoneSameInstant(KST).toLocalDateTime();
+
         // 1. INACTIVE로 들어왔을 때
         if(session.getStatus()==Status.ACTIVE && summary.getStatus()== Status.INACTIVE){
             session.setStatus(Status.INACTIVE);
             session.setInactiveSince(LocalDateTime.now()); //비활성화 시점 기록
 
-            LocalDateTime lastActive=summary.getLastActive();
             session.setLastActive(lastActive);
 
             //총 학습 시간 누적 + 학습 시간대 세션에 저장
@@ -136,7 +141,7 @@ public class StudySessionService {
 
             session.addIdleDuration(minutes);
             session.setStatus(Status.ACTIVE);
-            session.setLastActive(summary.getLastActive());
+            session.setLastActive(lastActive);
         }
 
         // 3. COMPLETE (해당 레벨 학습 완료)
@@ -189,10 +194,11 @@ public class StudySessionService {
      * @param summary
      */
     private long calculateIdleDuration(StudySessionSummaryDto summary) {
-        LocalDateTime lastActiveTime=summary.getLastActive();
+        //OffSetTime -> LocalDateTime 변환
+        LocalDateTime lastActive=summary.getLastActive().atZoneSameInstant(KST).toLocalDateTime();
         LocalDateTime now=LocalDateTime.now();
 
-        Duration duration=Duration.between(lastActiveTime,now);
+        Duration duration=Duration.between(lastActive,now);
         long minutes=duration.toMinutes();
 
         System.out.println("경과 시간:"+minutes+"분");
