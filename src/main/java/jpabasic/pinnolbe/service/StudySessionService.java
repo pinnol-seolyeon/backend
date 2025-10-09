@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
@@ -38,6 +39,7 @@ public class StudySessionService {
 
     private final StudySessionLogRepository studySessionLogRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
 
 
@@ -225,7 +227,17 @@ public class StudySessionService {
      * @return
      */
     public StudySession getStudySession(String key){
-        return redisTemplate.opsForValue().get(key);
+        Object value= redisTemplate.opsForValue().get(key);
+
+        if(value==null) return null;
+
+        //이미 StudySession으로 역직렬화된 경우
+        if(value instanceof StudySession session){
+            return session;
+        }
+
+        //LinkedHashMap 형태로 들어온 경우 -> StudySession 으로 변환
+        return objectMapper.convertValue(value,StudySession.class);
     }
 
     /**

@@ -34,9 +34,9 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
         try{
             filterChain.doFilter(request, response);
-        }catch(CustomException e){
-            log.info("TokenException handler filter");
-            setErrorResponse(HttpStatus.UNAUTHORIZED,response,e);
+//        }catch(CustomException e){
+//            log.info("TokenException handler filter");
+//            setErrorResponse(HttpStatus.UNAUTHORIZED,response,e);
         }catch(RuntimeException e){
             log.info("RuntimeException handler filter");
             setErrorResponse(HttpStatus.FORBIDDEN,response,e);

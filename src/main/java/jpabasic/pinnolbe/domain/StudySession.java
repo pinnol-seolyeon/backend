@@ -2,7 +2,9 @@ package jpabasic.pinnolbe.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Null;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
@@ -18,6 +20,8 @@ import java.util.Map;
 @Getter
 @Setter
 @RedisHash(value="studySession",timeToLive=3600) //1시간 TTL
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudySession {
 
     @Id
@@ -26,14 +30,14 @@ public class StudySession {
     private String chapterId;
     private int level; //학습 단계
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
     private LocalDateTime startTime;
 
 //    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
 //    @Nullable
 //    private LocalDateTime endTime;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
     @Nullable
     private LocalDateTime lastActive;
     private long idleDuration; //inactive 누적 시간 (분)

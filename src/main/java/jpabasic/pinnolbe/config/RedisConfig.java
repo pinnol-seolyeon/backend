@@ -31,16 +31,27 @@ public class RedisConfig {
     }
 
     @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        //공백 포함 "yyyy-MM-DD HH:mm:ss" 도 허용하도록 추가 설정
+        mapper.setDateFormat(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        return mapper;
+    }
+
+    @Bean
     public RedisTemplate<String, StudySession> redisTemplate() {
         RedisTemplate<String,StudySession> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        ObjectMapper objectMapper=new ObjectMapper()
-                .registerModule(new JavaTimeModule()) //LocalDateTime 처리
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        ObjectMapper objectMapper=new ObjectMapper()
+//                .registerModule(new JavaTimeModule()) //LocalDateTime 처리
+//                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         GenericJackson2JsonRedisSerializer serializer=
-                new GenericJackson2JsonRedisSerializer(objectMapper);
+                new GenericJackson2JsonRedisSerializer(objectMapper());
 
         //문자열을 redis에 저장할 때 UTF-8 문자열로 직렬화/역직렬화함(원래는 byte로 변환)
         template.setKeySerializer(new StringRedisSerializer());
