@@ -53,7 +53,7 @@ public class StudySessionService {
         String key=SESSION_PREFIX+userId+":"+chapterId+":"+level;
 
         //Redis 세션 객체 생성
-        StudySession studySession = new StudySession(userId, level);
+        StudySession studySession = new StudySession(key,userId,chapterId, level);
 
         //StudySessionLog 객체 생성 (이미 존재한다면 해당 객체 불러오기)
         String studySessionLogId=findStudySessionLog(userId,chapterId,level);

@@ -43,8 +43,10 @@ public class StudySession {
     private Status status;
 
     //특정 레벨 학습 시작 시
-    public StudySession(String userId,int level) {
+    public StudySession(String key,String userId,String chapterId,int level) {
+        this.key=key;
         this.userId = userId;
+        this.chapterId=chapterId;
         this.level = level;
         this.startTime = LocalDateTime.now();
         this.lastActive = LocalDateTime.now();
