@@ -34,7 +34,7 @@ public class QuestionController {
 
 
     @PostMapping("")
-    @Operation(summary="AI에게 물어보기(모델호출)")
+    @Operation(summary="AI에게 물어보기(모델호출) (수정 전)")
     public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest) {
         User user=userService.getUserInfo();
 
@@ -45,7 +45,7 @@ public class QuestionController {
 
 
     //여태까지 진행한 질문+답변 한꺼번에 DB에 저장 //해당 단원 학습 완료 시 호출
-    @PostMapping("/saveAll")
+    @PostMapping("/saveAll (수정 전)")
     @Operation(summary="여태까지 진행한 질문+답변 한꺼번에 DB에 저장")
     public ResponseEntity<String> saveAllQA(@RequestParam String chapterId){
         User user=userService.getUserInfo();

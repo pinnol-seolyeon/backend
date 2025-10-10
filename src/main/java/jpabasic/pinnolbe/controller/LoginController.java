@@ -30,12 +30,12 @@ public class LoginController {
 
 
     //로그인 테스트용
-    @GetMapping("/my")
-    @ResponseBody
-    public String myInfo() {
-        System.out.println("myroute");
-        return "개힘들어";
-    }
+//    @GetMapping("/my")
+//    @ResponseBody
+//    public String myInfo() {
+//        System.out.println("myroute");
+//        return "개힘들어";
+//    }
 
     @PostMapping("/logout")
     @Operation(summary="로그아웃")
