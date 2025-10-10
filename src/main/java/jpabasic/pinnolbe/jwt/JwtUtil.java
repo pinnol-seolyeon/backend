@@ -2,6 +2,8 @@ package jpabasic.pinnolbe.jwt;
 
 
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -69,6 +71,16 @@ public class JwtUtil {
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String getTokenFromCookie(HttpServletRequest request,String cookieName) {
+        if(request.getCookies()==null) return null;
+        for(Cookie cookie:request.getCookies()){
+            if(cookie.getName().equals(cookieName)){
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
 

@@ -2,10 +2,14 @@ package jpabasic.pinnolbe.controller;
 
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.User.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.ChildInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
+import jpabasic.pinnolbe.global.ApiResponse;
+import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.service.login.CustomOAuth2UserService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -26,10 +30,14 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserRepository userRepository, UserService userService) {
+    public UserController(UserRepository userRepository,
+                          UserService userService,
+                          JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PatchMapping("/child")
@@ -43,16 +51,12 @@ public class UserController {
     @GetMapping
     public ResponseEntity<UserInfoDto> getUserInfoDto() {
 
-        System.out.println("⭐정상적으로 호출됨⭐");
+//        System.out.println("⭐정상적으로 호출됨⭐");
         User user=userService.getUserInfo();
         //SecurityContextHolder에서 유저 정보 가져오기
         UserInfoDto userInfo=userService.getUserInfoDto(user);
         return ResponseEntity.ok(userInfo);
     }
 
-//    @PostMapping("/logout")
-//    @Operation(summary="내 서버에서 로그아웃")
-//    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
-//
-//    }
+
 }
