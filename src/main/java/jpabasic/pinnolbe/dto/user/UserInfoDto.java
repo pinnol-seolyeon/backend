@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.dto.User;
+package jpabasic.pinnolbe.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,8 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserInfoDto {
     private String username;
-//    private String name;
-//    private String role;
     private String childName;
     private int coin;
 

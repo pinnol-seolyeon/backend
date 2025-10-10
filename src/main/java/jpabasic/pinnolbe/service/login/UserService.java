@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.User.UserInfoDto;
-import jpabasic.pinnolbe.dto.login.ChildInfoDto;
+import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
+import jpabasic.pinnolbe.dto.user.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
@@ -24,18 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final RewardRepository rewardRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtUtil jwtUtil;
 
     public UserService(UserRepository userRepository,
-                       RewardRepository rewardRepository,
-                       RefreshTokenRepository refreshTokenRepository,
-                       JwtUtil jwtUtil) {
+                       RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
-        this.rewardRepository = rewardRepository;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.jwtUtil=jwtUtil;
     }
 
 
@@ -49,15 +43,12 @@ public class UserService {
         String username=oAuth2User.getUsername(); //인증 정보 꺼냄
         User user=userRepository.findByUsername(username); //DB에서 최신 정보 조회
 
-//        System.out.println("🔍 Principal 클래스: " + auth.getPrincipal().getClass().getName());
-
-
         return user;
     }
 
     //첫 로그인 시 자녀 정보 입력하기
     @Transactional
-    public void inputUserInfo(User user, ChildInfoDto dto){
+    public void inputUserInfo(User user, PhoneRequestDto dto){
 
         if(user==null){
             throw new IllegalArgumentException("유저 정보 ✖️");
@@ -68,10 +59,8 @@ public class UserService {
         }
 
         try {
-            user.setChildAge(dto.getChildAge());
-            user.setChildName(dto.getChildName());
             user.setPhoneNumber(dto.getPhoneNumber());
-
+            user.setAgreement(dto.getAgreement());
             userRepository.save(user);
         }catch(Exception e){
             throw new RuntimeException("유저 자녀 정보를 저장하는 중 오류 발생");
@@ -82,14 +71,10 @@ public class UserService {
     //유저 정보 받아오기
     @Transactional
     public UserInfoDto getUserInfoDto(User user){
-        String userId=user.getId();
-//        Reward reward=rewardRepository.findByUserId(userId);
-//
-//        Long coin=reward.getCoin();
 
         return new UserInfoDto(
                 user.getUsername(),
-                user.getChildName(),
+                user.getName(),
                 user.getReward()
 
         );
@@ -105,10 +90,6 @@ public class UserService {
 
     @Transactional
     public void saveNewRefreshToken(String username,String refreshToken){
-//        User user=userRepository.findByUsername(username);
-//        user.setRefreshToken(refreshToken);
-//        userRepository.save(user);
-
         RefreshToken token=new RefreshToken(refreshToken,username);
         refreshTokenRepository.save(token);
 
