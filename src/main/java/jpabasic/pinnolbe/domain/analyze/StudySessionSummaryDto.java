@@ -17,14 +17,14 @@ public class StudySessionSummaryDto {
     private String userId;
     private String chapterId;
     private int level;
-//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
-//    private LocalDateTime startTime;
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime startTime;
 
-//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
-//    private LocalDateTime lastActive;
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime lastActive;
 
-    private OffsetDateTime startTime;
-    private OffsetDateTime lastActive;
+//    private OffsetDateTime startTime;
+//    private OffsetDateTime lastActive;
 
     private Status status;
 }

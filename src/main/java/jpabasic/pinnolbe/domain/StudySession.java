@@ -30,32 +30,32 @@ public class StudySession {
     private String chapterId;
     private int level; //학습 단계
 
-//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
+    // ✅ 그냥 LocalDateTime (항상 KST로만 저장)
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
+
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime lastActive;
 
 //    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
 //    @Nullable
-//    private LocalDateTime endTime;
-
-//    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Asia/Seoul")
-    @Nullable
-    private LocalDateTime lastActive;
+//    private LocalDateTime lastActive;
     private long idleDuration; //inactive 누적 시간 (분)
     private long totalDuration; //누적 학습 시간 (분)
-    private Map<String,Long> timeZoneDurations; //각 학습 시간대 누적 시간 (분)
+    private Map<String,Long> timeZoneDurations=new HashMap<>(); //각 학습 시간대 누적 시간 (분)
     private LocalDateTime inactiveSince; //비활성화 시작 시간
     private Status status;
 
     //특정 레벨 학습 시작 시
-    public StudySession(String key,String userId,String chapterId,int level) {
+    public StudySession(String  key,String userId,String chapterId,int level) {
         this.key=key;
         this.userId = userId;
         this.chapterId=chapterId;
         this.level = level;
         this.startTime = LocalDateTime.now();
-        this.lastActive = LocalDateTime.now();
         this.status = Status.ACTIVE;
         this.idleDuration= 0;
+
     }
 
     public void addIdleDuration(long minutes){

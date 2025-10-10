@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.global.ErrorCode;
@@ -12,27 +11,22 @@ import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class StudySessionService {
 
     @Autowired
-    private final RedisTemplate<String,StudySession> redisTemplate;
+    private final RedisTemplate<String, StudySession> redisTemplate;
     private static final String SESSION_PREFIX = "study:session:";
     private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
@@ -41,250 +35,178 @@ public class StudySessionService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
-
-
-
-    /**
-     * 학습 시작 시 Redis에 세션 생성
-     * @param user
-     * @param level
-     * @param chapterId
-     */
+    /** 학습 시작 시 Redis에 세션 생성 */
     @Transactional
     public String startLevel(User user, int level, String chapterId) {
-        String userId=user.getId();
+        System.out.println("📘 [startLevel] 호출됨: userId=" + user.getId() + ", level=" + level + ", chapterId=" + chapterId);
 
-        String key=SESSION_PREFIX+userId+":"+chapterId+":"+level;
+        String userId = user.getId();
+        String key = SESSION_PREFIX + userId + ":" + chapterId + ":" + level;
 
-        //Redis 세션 객체 생성
-        StudySession studySession = new StudySession(key,userId,chapterId, level);
+        // Redis 세션 객체 생성
+        StudySession studySession = new StudySession(key, userId, chapterId, level);
+        System.out.println("✅ [startLevel] StudySession 객체 생성 완료");
 
-        //StudySessionLog 객체 생성 (이미 존재한다면 해당 객체 불러오기)
-        String studySessionLogId=findStudySessionLog(userId,chapterId,level);
-
-        //User documentation에 해당 studySessionLogId 저장
+        // StudySessionLog 확인 또는 생성
+        String studySessionLogId = findStudySessionLog(userId, chapterId, level);
         user.setStudySessionLogId(studySessionLogId);
         userRepository.save(user);
+        System.out.println("✅ [startLevel] User 문서 업데이트 완료, studySessionLogId=" + studySessionLogId);
 
         try {
-            //TTL 설정과 함께 Redis에 저장
-            redisTemplate.opsForValue().set(key,studySession,SESSION_TTL, TimeUnit.SECONDS);
-        }catch(DataAccessException e){
+            redisTemplate.opsForValue().set(key, studySession, SESSION_TTL, TimeUnit.SECONDS);
+            System.out.println("✅ [startLevel] Redis 세션 저장 성공 key=" + key);
+        } catch (DataAccessException e) {
+            System.out.println("❌ [startLevel] Redis 저장 실패: " + e.getMessage());
             throw new CustomException(ErrorCode.REDIS_SAVE_ERROR);
         }
 
         return studySessionLogId;
     }
 
-
-    /**
-     * 레벨 학습 시작 시, studySessionLog document 검색 및 생성
-     * @param userId
-     * @param chapterId
-     * @param level
-     * @return
-     */
-    private String findStudySessionLog(String userId,String chapterId,int level){
-
-        String id;
-        Optional<StudySessionLog> existingLogOpt=studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId,chapterId,level);
-        //기존에 StudySessionLog가 존재할 때
-        if(existingLogOpt.isPresent()){
-            System.out.println("✅ 기존 StudySessionLog 존재");
-            StudySessionLog sessionLog=existingLogOpt.get();
-            id=sessionLog.getId();
-        }else{
-            //StudySessionLog 존재 X
-            StudySessionLog log=new StudySessionLog(userId,chapterId,level); //객체 생성
-            id=studySessionLogRepository.save(log).getId();
-            System.out.println("✅ 새로운 StudySessionLog 생성:"+ id);
+    /** StudySessionLog 찾기/생성 */
+    private String findStudySessionLog(String userId, String chapterId, int level) {
+        System.out.println("🔍 [findStudySessionLog] 실행 중...");
+        Optional<StudySessionLog> existingLogOpt = studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId, chapterId, level);
+        if (existingLogOpt.isPresent()) {
+            System.out.println("✅ 기존 StudySessionLog 존재, ID=" + existingLogOpt.get().getId());
+            return existingLogOpt.get().getId();
+        } else {
+            StudySessionLog log = new StudySessionLog(userId, chapterId, level);
+            String id = studySessionLogRepository.save(log).getId();
+            System.out.println("🆕 새로운 StudySessionLog 생성됨, ID=" + id);
+            return id;
         }
-
-        return id;
     }
 
-
-    /**
-     * 학습 중 활동 중 Redis 세션 갱신 (INACTIVE)
-     * @param user
-     * @param summary
-     */
+    /** 학습 중 세션 갱신 */
     @Transactional
-    public void sessionUpdate(User user, StudySessionSummaryDto summary){
+    public void sessionUpdate(User user, StudySessionSummaryDto summary) {
+        System.out.println("🌀 [sessionUpdate] 호출됨, userId=" + summary.getUserId() + ", status=" + summary.getStatus());
 
-        String key=SESSION_PREFIX+summary.getUserId()+":"+summary.getChapterId()+":"+summary.getLevel();
-        StudySession session=getStudySession(key);
+        String key = SESSION_PREFIX + summary.getUserId() + ":" + summary.getChapterId() + ":" + summary.getLevel();
+        StudySession session = getStudySession(key);
 
-        if(session==null){
-            //세션이 없으면 새로 생성
-            startLevel(user,summary.getLevel(),summary.getChapterId());
+        if (session == null) {
+            System.out.println("⚠️ Redis 세션이 존재하지 않아 새로 생성함");
+            startLevel(user, summary.getLevel(), summary.getChapterId());
             throw new CustomException(ErrorCode.SESSION_NOT_FOUND);
         }
 
-        //OffSetTime -> LocalDateTime 변환
-        LocalDateTime lastActive=summary.getLastActive().atZoneSameInstant(KST).toLocalDateTime();
-        LocalDateTime startTime=summary.getStartTime().atZoneSameInstant(KST).toLocalDateTime();
+        LocalDateTime lastActive=summary.getLastActive();
 
-        // 1. INACTIVE로 들어왔을 때
-        if(session.getStatus()==Status.ACTIVE && summary.getStatus()== Status.INACTIVE){
+        // ACTIVE → INACTIVE
+        if (session.getStatus() == Status.ACTIVE && summary.getStatus() == Status.INACTIVE) {
+            System.out.println("🔻 [ACTIVE → INACTIVE] 전환 감지");
             session.setStatus(Status.INACTIVE);
-            session.setInactiveSince(LocalDateTime.now()); //비활성화 시점 기록
-
+            session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
-
-            //총 학습 시간 누적 + 학습 시간대 세션에 저장
+            System.out.println("🕒 inactiveSince=" + session.getInactiveSince() + ", lastActive=" + session.getLastActive());
             updateTimeZone(session);
         }
 
-        // 2. INACTIVE -> ACTIVE로 다시 바뀌는 시점
-        if(session.getStatus()== Status.INACTIVE && summary.getStatus()==Status.ACTIVE){
-            //idleDurationTime 계산
-            long minutes=calculateIdleDuration(summary);
-
+        // INACTIVE → ACTIVE
+        if (session.getStatus() == Status.INACTIVE && summary.getStatus() == Status.ACTIVE) {
+            System.out.println("🔺 [INACTIVE → ACTIVE] 전환 감지");
+            long minutes = calculateIdleDuration(summary);
             session.addIdleDuration(minutes);
             session.setStatus(Status.ACTIVE);
             session.setLastActive(lastActive);
+            System.out.println("⏱️ idleDuration 추가: " + minutes + "분");
         }
 
-        // 3. COMPLETE (해당 레벨 학습 완료)
-        if(summary.getStatus()==Status.COMPLETED){
-            //DB:StudySessionLog에 StudySession 내용 저장
+        // COMPLETE
+        if (summary.getStatus() == Status.COMPLETED) {
+            System.out.println("🏁 [COMPLETE] 감지 - DB 저장 로직 실행");
             saveToDatabase(session);
-
-            //학습 분석(StudyLog)에 세션 내용(StudySessionLog) 저장
-//            studyLogService.analyzeStudyTime()
-
-            //redis 세션 삭제
-            redisTemplate.delete(key);
-
+            boolean deleted=redisTemplate.delete(key);
+            System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
+            return;
         }
 
-        //세션 갱신
-        redisTemplate.opsForValue().set(key,session,SESSION_TTL, TimeUnit.SECONDS);
-
+        redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
+        System.out.println("💾 Redis 세션 갱신 완료 key=" + key);
     }
 
-    /**
-     * 총 학습 시간 누적 + 학습 시간대 세션에 저장
-     * @param session
-     */
-    private void updateTimeZone(StudySession session){
+    /** 총 학습 시간 및 시간대 누적 */
+    private void updateTimeZone(StudySession session) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastActive = session.getLastActive() != null
+                ? session.getLastActive()
+                : session.getStartTime();
 
-        LocalDateTime now=LocalDateTime.now();
-
-        LocalDateTime lastActive;
-        //첫 inactive 인 경우
-        if(session.getLastActive()==null){
-            System.out.println("한 번도 inactive 된 적이 없습니당");
-            lastActive=session.getStartTime(); //lastActiveTime=startTime
-        }else{ //이미 여러 번 inactive <-> active 된 경우
-            lastActive=session.getLastActive(); //lastActiveTime 값 그대로
-        }
-
-        //시간 차 계산
-        long diffMinutes=Duration.between(lastActive,now).toMinutes();
-
-        //총 학습 시간 누적
+        long diffMinutes = Duration.between(lastActive, now).toMinutes();
         session.addTotalDuration(diffMinutes);
-
-        //시간대별 학습 시간 누적
-        session.addDurationToTimeZone(lastActive,now);
+        session.addDurationToTimeZone(lastActive, now);
     }
 
-    /**
-     * idleDuration 계산
-     * @param summary
-     */
+    /** idleDuration 계산 */
     private long calculateIdleDuration(StudySessionSummaryDto summary) {
-        //OffSetTime -> LocalDateTime 변환
-        LocalDateTime lastActive=summary.getLastActive().atZoneSameInstant(KST).toLocalDateTime();
-        LocalDateTime now=LocalDateTime.now();
+        LocalDateTime lastActive = summary.getLastActive();
+        LocalDateTime now = LocalDateTime.now();
 
-        Duration duration=Duration.between(lastActive,now);
-        long minutes=duration.toMinutes();
-
-        System.out.println("경과 시간:"+minutes+"분");
+        long minutes = Duration.between(lastActive, now).toMinutes();
+        System.out.println("⏳ 경과 시간: " + minutes + "분");
         return minutes;
-
     }
 
-    /**
-     * 해당 chapter를 모두 마무리했을 경우
-     * @param user
-     * @param summary
-     */
-    @Transactional
-    public void chapterComplete(User user,StudySessionSummaryDto summary){
-        String key=SESSION_PREFIX+summary.getUserId()+":"+summary.getChapterId();
-
-    }
-
-
-
-    /**
-     * Redis에서 세션 조회
-     * @param key
-     * @return
-     */
-    public StudySession getStudySession(String key){
-        Object value= redisTemplate.opsForValue().get(key);
-
-        if(value==null) return null;
-
-        //이미 StudySession으로 역직렬화된 경우
-        if(value instanceof StudySession session){
-            return session;
+    /** Redis에서 세션 조회 */
+    public StudySession getStudySession(String key) {
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            System.out.println("⚠️ [getStudySession] key=" + key + " 값이 null");
+            return null;
         }
 
-        //LinkedHashMap 형태로 들어온 경우 -> StudySession 으로 변환
-        return objectMapper.convertValue(value,StudySession.class);
+        StudySession session = (value instanceof StudySession s)
+                ? s
+                : objectMapper.convertValue(value, StudySession.class);
+
+        if (session.getTimeZoneDurations() == null)
+            session.setTimeZoneDurations(new HashMap<>());
+
+        System.out.println("✅ [getStudySession] key=" + key + " 세션 조회 성공");
+        return session;
     }
 
-    /**
-     * db에 session 저장
-     * @param session
-     */
-    public void saveToDatabase(StudySession session){
+    /** DB에 세션 저장 */
+    public void saveToDatabase(StudySession session) {
+        System.out.println("💾 [saveToDatabase] 실행 시작, userId=" + session.getUserId());
         String userId = session.getUserId();
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // user documentation에서 studySessionLogId 가져와서 해당 엔티티 가져오기
-        String studySessionId=user.getStudySessionLogId();
-        StudySessionLog existingLog=studySessionLogRepository.findById(studySessionId)
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        //기존 studySession 업데이트
-        long newDuration=existingLog.getTotalDuration()+session.getTotalDuration();
+        String studySessionId = user.getStudySessionLogId();
+        StudySessionLog existingLog = studySessionLogRepository.findById(studySessionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
+
+        long newDuration = existingLog.getTotalDuration() + session.getTotalDuration();
         existingLog.setTotalDuration(newDuration);
 
-        mergeTimeZoneDuration(existingLog,session);
-
+        mergeTimeZoneDuration(existingLog, session);
+        existingLog.setStatus(session.getStatus());
         studySessionLogRepository.save(existingLog);
 
+        System.out.println("✅ [saveToDatabase] 저장 완료, totalDuration=" + newDuration);
     }
 
-    /**
-     * timeZoneDuration 합치기
-     * @param existingLog
-     * @param session
-     */
-    private void mergeTimeZoneDuration(StudySessionLog existingLog,StudySession session){
-        Map<String,Long> newDurations=session.getTimeZoneDurations();
-
-        if(newDurations==null||newDurations.isEmpty()) return;
+    /** timeZoneDuration 병합 */
+    private void mergeTimeZoneDuration(StudySessionLog existingLog, StudySession session) {
+        Map<String, Long> newDurations = session.getTimeZoneDurations();
+        if (newDurations == null || newDurations.isEmpty()) {
+            System.out.println("⚠️ [mergeTimeZoneDuration] 새로운 데이터 없음");
+            return;
+        }
 
         Map<String, Long> existingDurations =
                 Optional.ofNullable(existingLog.getTimeZoneDurations())
                         .orElseGet(HashMap::new);
 
-        newDurations.forEach((zone,value)->
-                existingDurations.merge(zone,value,Long::sum));
-        existingLog.setTimeZoneDurations(newDurations); //변경된 맵 다시 저장
+        newDurations.forEach((zone, value) ->
+                existingDurations.merge(zone, value, Long::sum));
 
-
+        existingLog.setTimeZoneDurations(existingDurations);
+        System.out.println("✅ [mergeTimeZoneDuration] 병합 완료");
     }
-
-
-
 }

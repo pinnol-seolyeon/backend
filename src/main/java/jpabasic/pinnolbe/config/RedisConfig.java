@@ -15,6 +15,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.TimeZone;
+
 @Configuration
 public class RedisConfig {
 
@@ -35,9 +37,7 @@ public class RedisConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        //공백 포함 "yyyy-MM-DD HH:mm:ss" 도 허용하도록 추가 설정
-        mapper.setDateFormat(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        mapper.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
         return mapper;
     }
 
