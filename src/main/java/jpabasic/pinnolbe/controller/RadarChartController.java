@@ -21,14 +21,14 @@ public class RadarChartController {
     }
 
     @GetMapping("/radar-score")
-    @Operation(summary="engagement/focus/understanding/expression 학습분석 내용 제공")
+    @Operation(summary="engagement/focus/understanding/expression 학습분석 내용 제공(수정 전)")
     public ResponseEntity<RadarScoreDto> getRadarScore() {
         return ResponseEntity.ok(radarScoreService.getThisWeekRadarScore());
     }
 
     // 지난주 데이터까지
     @GetMapping("/radar-score/compare")
-    @Operation(summary="학습 분석 지난주와 비교")
+    @Operation(summary="학습 분석 지난주와 비교(수정 전)")
     public ResponseEntity<RadarScoreComparisonDto> getRadarComparison() {
         return ResponseEntity.ok(radarScoreService.getThisAndLastWeekRadarScore());
     }

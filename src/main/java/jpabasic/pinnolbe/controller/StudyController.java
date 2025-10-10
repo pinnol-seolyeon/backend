@@ -59,7 +59,7 @@ public class StudyController {
     // user-study-chapter 관계 수정 필요
 
     @GetMapping("/start")
-    @Operation(summary="해당 단원 학습하기") //문장 단위로 끊어서 보여주기..
+    @Operation(summary="해당 단원 학습하기(수정 전)") //문장 단위로 끊어서 보여주기..
     public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String chapterId){
         User user=userService.getUserInfo();
         String studyId=user.getStudyId();
@@ -70,7 +70,7 @@ public class StudyController {
     }
 
     @PostMapping("/feedback")
-    @Operation(summary="유저가 대답하면 AI가 피드백/리액션")
+    @Operation(summary="유저가 대답하면 AI가 피드백/리액션(수정 전)")
     public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequestDto request){
         System.out.println("🎙선생님의 질문:"+request.getQuestion());
         System.out.println("🎙사용자 답변:"+request.getUserAnswer());
@@ -87,7 +87,7 @@ public class StudyController {
 
     
     @PostMapping("/feedback/saveAll")
-    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장")
+    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장(수정 전)")
     public ResponseEntity<String> saveAllFeedBacks(@RequestParam String chapterId){
         User user=userService.getUserInfo();
         try {
@@ -102,7 +102,7 @@ public class StudyController {
 
     // 어떤 책으로 공부할지 선택
     @GetMapping("")
-    @Operation(summary="해당 책의 단원리스트 제공")
+    @Operation(summary="해당 책의 단원리스트 제공(수정 전)")
     public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
         User user=userService.getUserInfo();
         if(user.getStudyId()==null) {
@@ -118,7 +118,7 @@ public class StudyController {
 
 
     @GetMapping("/chapter")
-    @Operation(summary="단원리스트에서 단원 선택후 단원명 GET")
+    @Operation(summary="단원리스트에서 단원 선택후 단원명 GET(수정 전)")
     public ResponseEntity<String> getChapterTitle(@RequestParam String chapterId){
         String title=studyService.getChapterTitle(chapterId);
         return ResponseEntity.ok(title);
@@ -130,7 +130,7 @@ public class StudyController {
 
 
     @PostMapping("/finish")
-    @Operation(summary="학습완료")
+    @Operation(summary="학습완료(수정 전)")
     public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
         User user=userService.getUserInfo();
         String studyId=user.getStudyId();
@@ -156,7 +156,7 @@ public class StudyController {
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
-    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장")
+    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장(수정 전)")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
         /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
         try{
@@ -188,7 +188,7 @@ public class StudyController {
 
 
     @PostMapping(value="/upload-summaryImg",consumes="multipart/form-data")
-    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장")
+    @Operation(summary="S3에 학습하기1단계 이미지 업로드+db에 fileURl 저장(수정 전)")
     public ResponseEntity<String> uploadSummaryImgFile(@RequestParam("file") MultipartFile file, @RequestParam String chapterId){
         /// memberId : 파일과 멤버키값(파일이름)을 전달하여 저장 작업 진행
         try{

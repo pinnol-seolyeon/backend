@@ -36,7 +36,7 @@ public class QuizAnalyzeController {
 
     // 이해도, 집중도
     @PostMapping("")
-    @Operation(summary="이번 주 이해도+집중도 저장·업데이트")
+    @Operation(summary="이번 주 이해도+집중도 저장·업데이트(수정 전)")
     public ResponseEntity<String> saveResults(
             @RequestBody List<QuizAnalyzeDto> results) {
         if (results.isEmpty()) {

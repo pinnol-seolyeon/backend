@@ -34,7 +34,7 @@ public class RewardController {
     }
 
     @PostMapping("/upload-coin")
-    @Operation(summary="퀴즈에서 얻은 코인")
+    @Operation(summary="퀴즈에서 얻은 코인 저장")
     public ResponseEntity<Map<String,Integer>> uploadCoin(@RequestBody RewardDto dto) {
         User user=userService.getUserInfo();
         Map<String,Integer> result=rewardService.uploadCoin(dto,user);

@@ -34,9 +34,23 @@ public class StudySessionController {
     }
 
     @PostMapping("/update")
-    @Operation(summary="학습 중 summary 반영")
+    @Operation(
+            summary = "학습 상태 저장 (ACTIVE / INACTIVE / COMPLETED)",
+            description = """
+    사용자의 학습 세션 상태를 Redis에 갱신합니다.
+
+    ✅ 상태별 전송 규칙:
+    - **ACTIVE ↔ INACTIVE** 전환 시 → `startTime`은 무시하고 `lastActive`만 전송
+    - **COMPLETED** (학습 완료 시) → `startTime` / `lastActive` 모두 무시 가능
+
+    해당 API는 사용자의 현재 학습 상태를 Redis에 저장 및 갱신합니다.
+    """
+    )
     public ApiResponse<Void> sessionUpdate(
-            @RequestBody StudySessionSummaryDto summary
+            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "학습 상태 요약 DTO"
+            ) StudySessionSummaryDto summary
+
     ){
         User user=userService.getUserInfo();
         studySessionService.sessionUpdate(user,summary);

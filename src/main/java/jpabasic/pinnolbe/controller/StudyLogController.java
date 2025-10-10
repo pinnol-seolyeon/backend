@@ -44,7 +44,7 @@ public class StudyLogController {
     private final QuestionService questionService;
 
     @GetMapping("/stats")
-    @Operation(summary="이번주/총 학습 완료한 단원 개수")
+    @Operation(summary="이번주/총 학습 완료한 단원 개수(수정 완료)")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
 
@@ -53,7 +53,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/now-studying")
-    @Operation(summary="현재 학습 단원")
+    @Operation(summary="현재 학습 단원(수정 완료)")
     public ResponseEntity<NowStudyingLevelDto> getNowStudyingLevel() {
         User user = userService.getUserInfo();
         NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user.getId());
@@ -61,7 +61,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/progress")
-    @Operation(summary="전체 진행률")
+    @Operation(summary="전체 진행률(수정 완료)")
     public ResponseEntity<Map<String, Double>> getStudyProgress(){
         User user=userService.getUserInfo();
         Double progress=studyLogService.getStudyProgress(user.getId());
@@ -69,7 +69,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/preferred-time")
-    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계")
+    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계(수정 전)")
     public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
         User user = userService.getUserInfo();
         StudyTimeStatsDto stats = studyLogService.analyzeStudyTime(user.getStudyId());
@@ -77,6 +77,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/today")
+    @Operation(summary="오늘 학습한 시간(수정 전)")
     public ResponseEntity<?> getTodayStudyTime() {
         User user = userService.getUserInfo();
         TodayStudyTimeDto result = studyLogService.getTodayStudyTime(user.getId());
@@ -84,7 +85,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/calendar")
-    @Operation(summary="오늘 학습한 시간(n시간 n분)")
+    @Operation(summary="오늘 학습한 시간(n시간 n분)(수정 전)")
     public ResponseEntity<AttendanceDto> getAttendance(
             @RequestParam int year,
             @RequestParam int month
@@ -98,7 +99,7 @@ public class StudyLogController {
 
     // 질문 내용 요약
     @PostMapping("/questions")
-    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수")
+    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
     public ResponseEntity<?> summaryQuestions(){
         User user=userService.getUserInfo();
         String userId=user.getId();
@@ -117,7 +118,7 @@ public class StudyLogController {
 
 
     @GetMapping("/questions/dates")
-    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출")
+    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출(수정 전)")
     public List<LocalDate> getQuestionDates() {
         User user=userService.getUserInfo();
         String userId=user.getId();
@@ -130,7 +131,7 @@ public class StudyLogController {
 
 
     @GetMapping("/questions/history")
-    @Operation(summary="캘린더 해당 날짜 질문 내역")
+    @Operation(summary="캘린더 해당 날짜 질문 내역(수정 전)")
     public List<QueCollection> getDailyQnA(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
