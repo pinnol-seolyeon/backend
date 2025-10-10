@@ -36,7 +36,7 @@ public class SessionInactiveScheduler {
         if(keys==null) return;
 
         for(String key:keys) {
-            StudySession session = redisTemplate.opsForValue().get(key);
+            StudySession session = studySessionService.getStudySession(key);
             if (session == null) continue;
 
             //상태가 INACTIVE 인 경우만 검사

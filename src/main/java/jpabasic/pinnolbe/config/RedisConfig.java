@@ -15,6 +15,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.TimeZone;
+
 @Configuration
 public class RedisConfig {
 
@@ -31,16 +33,25 @@ public class RedisConfig {
     }
 
     @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+        return mapper;
+    }
+
+    @Bean
     public RedisTemplate<String, StudySession> redisTemplate() {
         RedisTemplate<String,StudySession> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        ObjectMapper objectMapper=new ObjectMapper()
-                .registerModule(new JavaTimeModule()) //LocalDateTime 처리
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        ObjectMapper objectMapper=new ObjectMapper()
+//                .registerModule(new JavaTimeModule()) //LocalDateTime 처리
+//                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         GenericJackson2JsonRedisSerializer serializer=
-                new GenericJackson2JsonRedisSerializer(objectMapper);
+                new GenericJackson2JsonRedisSerializer(objectMapper());
 
         //문자열을 redis에 저장할 때 UTF-8 문자열로 직렬화/역직렬화함(원래는 byte로 변환)
         template.setKeySerializer(new StringRedisSerializer());
