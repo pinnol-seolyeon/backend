@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.domain.analyze;
 
+import jpabasic.pinnolbe.domain.BaseEntity;
 import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.StudySession;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class StudySessionLog {
+public class StudySessionLog extends BaseEntity {
 
     @Id
     private String id;
