@@ -91,7 +91,10 @@ public class StudyLogController {
             @RequestParam int month
     ) {
         User user = userService.getUserInfo();
-        YearMonth yearMonth = YearMonth.of(year, month);
+        YearMonth yearMonth = YearMonth.of(year,
+
+
+                month);
         AttendanceDto dto = studyLogService.getAttendanceForMonth(user.getId(), yearMonth);
         return ResponseEntity.ok(dto);
     }

@@ -21,47 +21,31 @@ public class User {
     private String email;
 
     private String role;
-    //가입자(부모)의 이름
-    private String name;
-    //카카오에서 발급한 AccessToken
-    private String accessToken;
 
-//    private String refreshToken;
+    //가입자(아이)의 이름
+    private String name;
 
     @Nullable
     private String studyId;
 
+    @Nullable
     private String studySessionLogId; //최근 학습 상태(진도)
 
     //여태까지 모은 코인 개수
     private int reward=0;
 
-
-    //별도로 입력받아야 할 자녀 정보
-    private String childName;
     //자녀 나이
     private int childAge;
+
     //부모 전화번호
     private String phoneNumber;
+
+    //개인정보 수집 이용 동의여부
+    @Nullable
+    private Boolean agreement;
 
     public User(String studySessionLogId) {
 
     }
 
-
-
-
-
-
-
-//    public User(String username,Long age){
-//        this.username=username;
-//        this.age=age;
-//    }
-
-//    public User(String email,String username,String accessToken){
-//        this.username=username;
-//        this.accessToken=accessToken;
-//        this.email=email;
-//    }
 }
