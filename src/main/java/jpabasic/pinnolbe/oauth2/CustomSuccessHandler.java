@@ -59,6 +59,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtUtil.createJwt(username, role, 5 * 60 * 1000L);
 
         //refresh token 재사용 or 생성
+        System.out.println("‼️refresh Token 로직 시작");
         String refreshToken = "";
         Optional<RefreshToken> token = refreshTokenRepository.findByUsername(username);
         if (token.isPresent()) {
@@ -75,7 +76,11 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
                     userService.saveNewRefreshToken(username, refreshToken);
                 }
-            }
+        }else{ //refreshToken이 null 인 경우
+            refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
+            userService.saveNewRefreshToken(username, refreshToken);
+        }
+
 
 
         //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트

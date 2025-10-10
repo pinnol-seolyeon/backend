@@ -1,15 +1,19 @@
 package jpabasic.pinnolbe.service.login;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.RefreshToken;
-import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.User.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.ChildInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
+import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,11 +26,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, RewardRepository rewardRepository, RefreshTokenRepository refreshTokenRepository) {
+    public UserService(UserRepository userRepository,
+                       RewardRepository rewardRepository,
+                       RefreshTokenRepository refreshTokenRepository,
+                       JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.rewardRepository = rewardRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtUtil=jwtUtil;
     }
 
 
@@ -96,9 +105,9 @@ public class UserService {
 
     @Transactional
     public void saveNewRefreshToken(String username,String refreshToken){
-        User user=userRepository.findByUsername(username);
-        user.setRefreshToken(refreshToken);
-        userRepository.save(user);
+//        User user=userRepository.findByUsername(username);
+//        user.setRefreshToken(refreshToken);
+//        userRepository.save(user);
 
         RefreshToken token=new RefreshToken(refreshToken,username);
         refreshTokenRepository.save(token);
@@ -108,10 +117,61 @@ public class UserService {
 
     @Transactional
     public void saveExistingRefreshToken(String username,String refreshToken){
-        User user=userRepository.findByUsername(username);
-        user.setRefreshToken(refreshToken);
-        userRepository.save(user);
+//        User user=userRepository.findByUsername(username);
+//        user.setRefreshToken(refreshToken);
+//        userRepository.save(user);
+        refreshTokenRepository.save(new RefreshToken(refreshToken,username));
 
         log.info("✅ 기존 user RefreshToken 저장 완료");
+    }
+
+    @Transactional
+    public void logout(HttpServletRequest request, HttpServletResponse response,String refreshToken){
+        //Refresh Token 유효 시 DB에서 제거
+        if(refreshToken!=null){
+            refreshTokenRepository.deleteByToken(refreshToken);
+        }
+
+        ResponseCookie accessCookieDel=deleteAccessToken(request);
+        ResponseCookie refreshCookieDel=deleteRefreshToken(request);
+
+        //응답 헤더에 삭제 쿠키 추가
+        response.addHeader(HttpHeaders.SET_COOKIE,accessCookieDel.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE,refreshCookieDel.toString());
+
+    }
+
+    /**
+     * access token 삭제(로그아웃)
+     * @param request
+     * @return
+     */
+    private ResponseCookie deleteAccessToken(HttpServletRequest request){
+        ResponseCookie accessCookie=ResponseCookie.from("Authorization","")
+                .path("/")
+                .maxAge(0) //즉시 만료
+                .httpOnly(true)
+                /*localhost에서 작동하도록 주석처리해놓음.배포시에는 주석 풀것 ‼️*/
+//                .secure(true)
+                .sameSite("Strict")
+                .build();
+        return accessCookie;
+    }
+
+    /**
+     * refresh token 삭제(로그아웃)
+     * @param request
+     * @return
+     */
+    private ResponseCookie deleteRefreshToken(HttpServletRequest request){
+        ResponseCookie accessCookie=ResponseCookie.from("RefreshToken","")
+                .path("/")
+                .maxAge(0) //즉시 만료
+                .httpOnly(true)
+                /*localhost에서 작동하도록 주석처리해놓음.배포시에는 주석 풀것 ‼️*/
+//                .secure(true)
+                .sameSite("Strict")
+                .build();
+        return accessCookie;
     }
 }
