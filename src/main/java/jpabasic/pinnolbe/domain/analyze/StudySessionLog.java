@@ -3,6 +3,7 @@ package jpabasic.pinnolbe.domain.analyze;
 import jpabasic.pinnolbe.domain.BaseEntity;
 import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.StudySession;
+import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,5 +35,7 @@ public class StudySessionLog extends BaseEntity {
         this.level=level;
         this.totalDuration=0;
     }
+
+
 
 }

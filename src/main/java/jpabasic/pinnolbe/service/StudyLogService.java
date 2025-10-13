@@ -1,11 +1,14 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
+import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
+import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
@@ -15,6 +18,8 @@ import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.StudyLogRepository;
+import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
+import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
@@ -25,6 +30,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import jpabasic.pinnolbe.domain.User;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -48,9 +54,12 @@ public class StudyLogService {
     private final ChapterRepository chapterRepository;
     private final MongoTemplate mongoTemplate;
     private final BookRepository bookRepository;
+    private final StudySessionLogRepository studySessionLogRepository;
+    private final WeeklyAnalysisRepository weeklyAnalysisRepository;
 
 
-
+    @Transactional
+    //오늘 하루 공부 시간대 + 총 시간
     public TodayStudyTimeDto getTodayStudyTime(String userId) {
         LocalDate today = ZonedDateTime.now().toLocalDate();
         LocalDateTime startOfDay = today.atStartOfDay();
@@ -67,6 +76,62 @@ public class StudyLogService {
 
         return new TodayStudyTimeDto(hours, minutes);
     }
+
+    /**
+     * 현재 레벨까지 학습한 시간대 & 시간 weekly_analysis에 저장
+     */
+    public void saveUntilStudyTime(StudySessionLogResponseDto dto) {
+
+        WeeklyAnalysis weeklyAnalysis =
+                weeklyAnalysisRepository.findByUserId(dto.getUserId())
+                        .orElseGet(() -> new WeeklyAnalysis(dto.getUserId()));
+
+        LocalDate todayDate = LocalDate.now();
+        System.out.println("📅 today = " + todayDate + " (" + todayDate.getDayOfWeek() + ")");
+
+        // WeeklyTimeZone이 null이면 초기화
+        if (weeklyAnalysis.getWeeklyTimeZone() == null) {
+            weeklyAnalysis.setWeeklyTimeZone(new WeeklyAnalysis.WeeklyTimeZone(new ArrayList<>()));
+        }
+
+        // DayTimeZones 리스트가 null이면 초기화
+        if (weeklyAnalysis.getWeeklyTimeZone().getDayTimeZones() == null) {
+            weeklyAnalysis.getWeeklyTimeZone().setDayTimeZones(new ArrayList<>());
+        }
+
+        List<WeeklyAnalysis.DayTimeZone> dayTimeZones = weeklyAnalysis.getWeeklyTimeZone().getDayTimeZones();
+        Optional<WeeklyAnalysis.DayTimeZone> existingDayTimeZoneOpt =
+                dayTimeZones.stream()
+                        .filter(dtz -> dtz.getDay().equals(todayDate)) // ✅ LocalDate 기준 비교
+                        .findFirst();
+
+        Map<String, Long> timeZoneDurations = dto.getTimeZoneDurations();
+
+        if (existingDayTimeZoneOpt.isPresent()) {
+            // ✅ 기존 DayTimeZone 업데이트
+            WeeklyAnalysis.DayTimeZone todayTimeZone = existingDayTimeZoneOpt.get();
+            Map<String, Long> existingTimeZone =
+                    Optional.ofNullable(todayTimeZone.getDayTimeZone()).orElse(new HashMap<>());
+
+            timeZoneDurations.forEach((key, newValue) ->
+                    existingTimeZone.put(key, existingTimeZone.getOrDefault(key, 0L) + newValue)
+            );
+
+            todayTimeZone.setDayTimeZone(existingTimeZone);
+        } else {
+            // ✅ 없으면 새로 추가
+            WeeklyAnalysis.DayTimeZone newTimeZone = WeeklyAnalysis.DayTimeZone.builder()
+                    .day(todayDate)
+                    .dayOfWeek(todayDate.getDayOfWeek())
+                    .dayTimeZone(new HashMap<>(timeZoneDurations))
+                    .build();
+
+            dayTimeZones.add(newTimeZone);
+        }
+
+        weeklyAnalysisRepository.save(weeklyAnalysis);
+    }
+
 
 
     public AttendanceDto getAttendanceForMonth(String userId, YearMonth month) {

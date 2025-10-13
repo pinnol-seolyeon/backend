@@ -4,9 +4,11 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "weekly_analysis")
 @Getter
@@ -27,6 +29,7 @@ public class WeeklyAnalysis {
     private FocusData focusData;
     private UnderstandingData understandingData;
     private ExpressionData expressionData;
+    private WeeklyTimeZone weeklyTimeZone;
 
     private LocalDateTime analyzedAt;
 
@@ -65,5 +68,32 @@ public class WeeklyAnalysis {
         private int starScore;
         private int starCount;
     }
+
+    @Getter @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class WeeklyTimeZone{
+        List<DayTimeZone> dayTimeZones;
+    }
+
+    @Getter @Setter
+    @AllArgsConstructor
+    @Builder
+    public static class DayTimeZone{
+        private Map<String,Long> dayTimeZone;
+        private LocalDate day;
+        private DayOfWeek dayOfWeek;
+
+        public DayTimeZone(LocalDate day){
+            this.day=LocalDate.now();
+            this.dayOfWeek=day.getDayOfWeek();
+        }
+    }
+
+    public WeeklyAnalysis(String userId){
+        this.userId = userId;
+    }
+
 
 }
