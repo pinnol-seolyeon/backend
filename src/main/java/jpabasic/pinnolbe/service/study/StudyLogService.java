@@ -1,7 +1,6 @@
-package jpabasic.pinnolbe.service;
+package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
-import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
@@ -35,12 +34,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.data.mongodb.core.query.Query;
 
 
-import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor

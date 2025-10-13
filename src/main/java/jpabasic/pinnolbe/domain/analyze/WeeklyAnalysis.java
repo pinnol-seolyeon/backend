@@ -29,6 +29,7 @@ public class WeeklyAnalysis {
     private FocusData focusData;
     private UnderstandingData understandingData;
     private ExpressionData expressionData;
+    //주간 학습 시간대
     private WeeklyTimeZone weeklyTimeZone;
 
     private LocalDateTime analyzedAt;

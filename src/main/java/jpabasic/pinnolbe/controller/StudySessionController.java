@@ -1,14 +1,12 @@
 package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.analyze.StudySessionSummaryDto;
+import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.global.ApiResponse;
-import jpabasic.pinnolbe.service.StudySessionService;
+import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

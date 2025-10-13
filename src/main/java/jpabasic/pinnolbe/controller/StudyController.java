@@ -5,18 +5,18 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
+import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.service.StudyService;
-import jpabasic.pinnolbe.service.StudySessionService;
+import jpabasic.pinnolbe.service.study.StudyService;
+import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -101,7 +100,7 @@ public class StudyController {
 
 
     // 어떤 책으로 공부할지 선택
-    @GetMapping("")
+    @GetMapping("/book-select")
     @Operation(summary="해당 책의 단원리스트 제공(수정 전)")
     public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
         User user=userService.getUserInfo();
@@ -114,6 +113,14 @@ public class StudyController {
         List<ChaptersDto> progressList=studyService.getCurrentProgress(chapterList,user.getStudyId());
 
         return ResponseEntity.ok(progressList);
+    }
+
+    @GetMapping("/book-select")
+    @Operation(summary="교재 리스트 제공")
+    public ApiResponse<BookListResponseDto> getBookList(){
+        User user=userService.getUserInfo();
+        BookListResponseDto result=studyService.getBookList(user);
+        return ApiResponse.success(null,result);
     }
 
 

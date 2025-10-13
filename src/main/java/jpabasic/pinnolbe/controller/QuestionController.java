@@ -2,13 +2,11 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.question.QueCollection;
-import jpabasic.pinnolbe.dto.question.QAs;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.service.QuestionService;
-import jpabasic.pinnolbe.service.StudyLogService;
+import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,11 +1,11 @@
-package jpabasic.pinnolbe.service;
+package jpabasic.pinnolbe.service.study;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabasic.pinnolbe.domain.Status;
-import jpabasic.pinnolbe.domain.StudySession;
+import jpabasic.pinnolbe.domain.redis.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
-import jpabasic.pinnolbe.domain.analyze.StudySessionSummaryDto;
+import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
