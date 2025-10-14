@@ -366,15 +366,18 @@ public class StudyService {
 
         //현재 진행 중인 교재
         String sessionLogId=user.getStudySessionLogId();
-        Optional<StudySessionLog> optLog=studySessionLogRepository.findById(sessionLogId);
-
-        if(optLog.isPresent()){
-            log=optLog.get();
-            currentBookId=log.getBookId();
-        }else{
-            currentBookId="682829208c776a1ffa92fd4d"; //첫 교재로 하드코딩
+        if (sessionLogId == null) {
+            System.out.println("첫 학습이어서 첫번째 교재 자동 설정");
+            currentBookId = "682829208c776a1ffa92fd4d"; // 첫 교재 하드코딩
+        } else {
+            Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
+            if (optLog.isPresent()) {
+                log = optLog.get();
+                currentBookId = log.getBookId();
+            } else {
+                currentBookId = "682829208c776a1ffa92fd4d"; // fallback
+            }
         }
-
         //dto로 변환
         BookListResponseDto result=new BookListResponseDto(currentBookId,bookList);
         return result;

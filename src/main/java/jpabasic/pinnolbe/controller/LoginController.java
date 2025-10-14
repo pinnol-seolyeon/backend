@@ -15,8 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@Controller
-@RequestMapping("/api/login")
+@RestController
+@RequestMapping("/api/auth")
 @Slf4j
 public class LoginController {
 

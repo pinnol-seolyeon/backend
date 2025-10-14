@@ -15,7 +15,6 @@ import java.util.List;
 
 //MongoDB 저장 시 _class값(패키지 정보) 가 자동 추가되지 않도록 함.. 
 @Configuration
-@EnableMongoAuditing
 public class MongoDBConfig {
 
     @Bean

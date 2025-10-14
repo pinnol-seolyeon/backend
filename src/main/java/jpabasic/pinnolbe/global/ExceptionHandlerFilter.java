@@ -1,65 +1,65 @@
-package jpabasic.pinnolbe.global;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jpabasic.pinnolbe.global.exception.user.CustomException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-
-@Slf4j
-@Component
-@RequiredArgsConstructor
-public class ExceptionHandlerFilter extends OncePerRequestFilter {
-
-    @Override
-    //모든 요청을 가로채서 doFilterInternal 실행
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String uri=request.getRequestURI();
-
-        //Swagger,API Docs 요청은 필터에서 그냥 통과
-        if(uri.startsWith("/swagger-ui")
-            ||uri.startsWith("/v3/api-docs")
-            ||uri.startsWith("/swagger-resources")){
-            filterChain.doFilter(request,response);
-            return;
-        }
-
-        try{
-            filterChain.doFilter(request, response);
-//        }catch(CustomException e){
-//            log.info("TokenException handler filter");
-//            setErrorResponse(HttpStatus.UNAUTHORIZED,response,e);
-        }catch(RuntimeException e){
-            log.info("RuntimeException handler filter");
-            setErrorResponse(HttpStatus.FORBIDDEN,response,e);
-        }
-    }
-
-    private void setErrorResponse(HttpStatus status,HttpServletResponse response,Exception e){
-        response.setStatus(status.value());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        String message=e.getMessage();
-        if(e instanceof CustomException customEx){
-            message=customEx.getErrorCode().getMessage();
-            status=customEx.getErrorCode().getStatus();
-            response.setStatus(status.value());
-        }
-
-        String body = String.format("{\"code\": %d, \"message\": \"%s\"}", status.value(), message);
-        try{
-            response.getWriter().write(body);
-        }catch(IOException ioException){
-            log.error("failed to write error response",ioException);
-        }
-    }
-}
+//package jpabasic.pinnolbe.global;
+//
+//import jakarta.servlet.FilterChain;
+//import jakarta.servlet.ServletException;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpServletResponse;
+//import jpabasic.pinnolbe.global.exception.user.CustomException;
+//import lombok.RequiredArgsConstructor;
+//import lombok.extern.slf4j.Slf4j;
+//import org.springframework.http.HttpStatus;
+//import org.springframework.stereotype.Component;
+//import org.springframework.web.ErrorResponse;
+//import org.springframework.web.filter.OncePerRequestFilter;
+//
+//import java.io.IOException;
+//
+//@Slf4j
+//@Component
+//@RequiredArgsConstructor
+//public class ExceptionHandlerFilter extends OncePerRequestFilter {
+//
+////    @Override
+////    //모든 요청을 가로채서 doFilterInternal 실행
+////    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+////        String uri=request.getRequestURI();
+////
+////        //Swagger,API Docs 요청은 필터에서 그냥 통과
+////        if(uri.startsWith("/swagger-ui")
+////            ||uri.startsWith("/v3/api-docs")
+////            ||uri.startsWith("/swagger-resources")){
+////            filterChain.doFilter(request,response);
+////            return;
+////        }
+////
+////        try{
+////            filterChain.doFilter(request, response);
+//////        }catch(CustomException e){
+//////            log.info("TokenException handler filter");
+//////            setErrorResponse(HttpStatus.UNAUTHORIZED,response,e);
+////        }catch(RuntimeException e){
+////            log.info("RuntimeException handler filter");
+////            setErrorResponse(HttpStatus.FORBIDDEN,response,e);
+////        }
+//    }
+//
+//    private void setErrorResponse(HttpStatus status,HttpServletResponse response,Exception e){
+//        response.setStatus(status.value());
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//
+//        String message=e.getMessage();
+//        if(e instanceof CustomException customEx){
+//            message=customEx.getErrorCode().getMessage();
+//            status=customEx.getErrorCode().getStatus();
+//            response.setStatus(status.value());
+//        }
+//
+//        String body = String.format("{\"code\": %d, \"message\": \"%s\"}", status.value(), message);
+//        try{
+//            response.getWriter().write(body);
+//        }catch(IOException ioException){
+//            log.error("failed to write error response",ioException);
+//        }
+//    }
+//}

@@ -20,15 +20,15 @@ public class WeeklyAnalysisController {
         this.userService = userService;
     }
 
-    @GetMapping("/progress")
-    @Operation(summary="지난주 대비 진행률")
-    public ApiResponse<?> getProgress() {
-        User user=userService.getUserInfo();
-
-        //지난 주 대비 진행률
-
-        //학습 완료한 단원 수
-
-        //현재 교재 레벨
-    }
+//    @GetMapping("/progress")
+//    @Operation(summary="지난주 대비 진행률")
+//    public ApiResponse<?> getProgress() {
+//        User user=userService.getUserInfo();
+//
+//        //지난 주 대비 진행률
+//
+//        //학습 완료한 단원 수
+//
+//        //현재 교재 레벨
+//    }
 }
