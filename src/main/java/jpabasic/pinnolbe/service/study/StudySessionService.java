@@ -102,14 +102,16 @@ public class StudySessionService {
 
         LocalDateTime lastActive=summary.getLastActive();
 
-        // ACTIVE → INACTIVE
+        // ACTIVE → INACTIVE //수정 필요
         if (session.getStatus() == Status.ACTIVE && summary.getStatus() == Status.INACTIVE) {
             System.out.println("🔻 [ACTIVE → INACTIVE] 전환 감지");
+
+            System.out.println("🕒 inactiveSince=" + session.getInactiveSince() + ", lastActive=" + session.getLastActive());
+            //학습한 시간 + 시간대 설정
+            updateTimeZone(session);
             session.setStatus(Status.INACTIVE);
             session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
-            System.out.println("🕒 inactiveSince=" + session.getInactiveSince() + ", lastActive=" + session.getLastActive());
-            updateTimeZone(session);
         }
 
         // INACTIVE → ACTIVE
@@ -147,8 +149,11 @@ public class StudySessionService {
                 : session.getStartTime();
 
         long diffMinutes = Duration.between(lastActive, now).toMinutes();
+        System.out.println("✔️ 총 학습 시간 :"+diffMinutes);
+        
         session.addTotalDuration(diffMinutes);
         session.addDurationToTimeZone(lastActive, now);
+        System.out.println("✔️ 총 학습 시간 및 시간대 누적 완료");
     }
 
     /** idleDuration 계산 */
