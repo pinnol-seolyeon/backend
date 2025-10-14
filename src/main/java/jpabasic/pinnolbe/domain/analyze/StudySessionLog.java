@@ -1,7 +1,7 @@
 package jpabasic.pinnolbe.domain.analyze;
 
+import jpabasic.pinnolbe.domain.BaseEntity;
 import jpabasic.pinnolbe.domain.Status;
-import jpabasic.pinnolbe.domain.StudySession;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,11 +14,12 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class StudySessionLog {
+public class StudySessionLog extends BaseEntity {
 
     @Id
     private String id;
     private String userId;
+    private String bookId;
     private String chapterId;
     private int level;
     private long totalDuration; //누적 학습 시간 (분)
@@ -33,5 +34,7 @@ public class StudySessionLog {
         this.level=level;
         this.totalDuration=0;
     }
+
+
 
 }

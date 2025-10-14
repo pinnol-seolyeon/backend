@@ -1,7 +1,7 @@
-package jpabasic.pinnolbe.domain;
+package jpabasic.pinnolbe.domain.redis;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Null;
+import jpabasic.pinnolbe.domain.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,8 +9,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
-import javax.annotation.Nullable;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +25,7 @@ public class StudySession {
     @Id
     private String key;
     private String userId;
+    private String bookId;
     private String chapterId;
     private int level; //학습 단계
 

@@ -1,15 +1,12 @@
-package jpabasic.pinnolbe.domain.analyze;
+package jpabasic.pinnolbe.dto.analyze;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Null;
 import jpabasic.pinnolbe.domain.Status;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 @Getter
 @Setter

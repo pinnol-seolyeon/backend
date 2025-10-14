@@ -1,6 +1,5 @@
 package jpabasic.pinnolbe.controller;
 
-import com.nimbusds.oauth2.sdk.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
@@ -8,14 +7,13 @@ import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
-import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.QuestionService;
-import jpabasic.pinnolbe.service.StudyLogService;
-import jpabasic.pinnolbe.service.StudyService;
+import jpabasic.pinnolbe.service.study.StudyLogService;
+import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,14 +25,12 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/study")
 @RequiredArgsConstructor
-@Tag(name="학습 분석",description="학습 분석 관련 api")
+@Tag(name="학습 분석(수정 전)",description="학습 분석 관련 api")
 public class StudyLogController {
 
     private final StudyLogService studyLogService;
@@ -44,7 +40,7 @@ public class StudyLogController {
     private final QuestionService questionService;
 
     @GetMapping("/stats")
-    @Operation(summary="이번주/총 학습 완료한 단원 개수(수정 완료)")
+    @Operation(summary="이번주/총 학습 완료한 단원 개수")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
 
@@ -53,7 +49,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/now-studying")
-    @Operation(summary="현재 학습 단원(수정 완료)")
+    @Operation(summary="현재 학습 단원(수정 전)")
     public ResponseEntity<NowStudyingLevelDto> getNowStudyingLevel() {
         User user = userService.getUserInfo();
         NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user.getId());
@@ -61,7 +57,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/progress")
-    @Operation(summary="전체 진행률(수정 완료)")
+    @Operation(summary="전체 진행률(수정 전)")
     public ResponseEntity<Map<String, Double>> getStudyProgress(){
         User user=userService.getUserInfo();
         Double progress=studyLogService.getStudyProgress(user.getId());
@@ -77,7 +73,7 @@ public class StudyLogController {
     }
 
     @GetMapping("/today")
-    @Operation(summary="오늘 학습한 시간(수정 전)")
+    @Operation(summary="오늘 학습 시간대 + 시간(수정 전)")
     public ResponseEntity<?> getTodayStudyTime() {
         User user = userService.getUserInfo();
         TodayStudyTimeDto result = studyLogService.getTodayStudyTime(user.getId());

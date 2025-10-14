@@ -5,18 +5,19 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
+import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
+import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.service.StudyService;
-import jpabasic.pinnolbe.service.StudySessionService;
+import jpabasic.pinnolbe.service.study.StudyService;
+import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study")
@@ -100,32 +100,40 @@ public class StudyController {
 
 
 
-    // 어떤 책으로 공부할지 선택
-    @GetMapping("")
-    @Operation(summary="해당 책의 단원리스트 제공(수정 전)")
-    public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
+//    // 어떤 책으로 공부할지 선택
+//    @GetMapping("/book-select")
+//    @Operation(summary="해당 책의 단원리스트 제공(수정 전)")
+//    public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
+//        User user=userService.getUserInfo();
+//        if(user.getStudyId()==null) {
+//            Study study = studyService.startBook(user, bookId);
+//        }
+//        //Book Document 순회하며 단원명 리스트 받아옴
+//        List<ChaptersDto> chapterList=studyService.getChapterTitles(bookId);
+//        //현재 진도 + 완료한 단원 체크
+//        List<ChaptersDto> progressList=studyService.getCurrentProgress(chapterList,user.getStudyId());
+//
+//        return ResponseEntity.ok(progressList);
+//    }
+
+    @GetMapping("/book-select")
+    @Operation(summary="교재 리스트 제공")
+    public ApiResponse<BookListResponseDto> getBookList(){
         User user=userService.getUserInfo();
-        if(user.getStudyId()==null) {
-            Study study = studyService.startBook(user, bookId);
-        }
-        //Book Document 순회하며 단원명 리스트 받아옴
-        List<ChaptersDto> chapterList=studyService.getChapterTitles(bookId);
-        //현재 진도 + 완료한 단원 체크
-        List<ChaptersDto> progressList=studyService.getCurrentProgress(chapterList,user.getStudyId());
-
-        return ResponseEntity.ok(progressList);
+        BookListResponseDto result=studyService.getBookList(user);
+        return ApiResponse.success(null,result);
     }
 
 
-    @GetMapping("/chapter")
-    @Operation(summary="단원리스트에서 단원 선택후 단원명 GET(수정 전)")
-    public ResponseEntity<String> getChapterTitle(@RequestParam String chapterId){
-        String title=studyService.getChapterTitle(chapterId);
-        return ResponseEntity.ok(title);
+    @GetMapping("/chapter-select")
+    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 제공")
+    public ApiResponse<ChapterListResponseDto> getChapterTitle(
+            @RequestParam String bookId,
+            @RequestParam(defaultValue="0") int page){
+        User user=userService.getUserInfo();
+        ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
+        return ApiResponse.success("챕터 목록 조회 성공",result);
     }
-
-
-
 
 
 
