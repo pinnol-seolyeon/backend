@@ -103,6 +103,7 @@ public class StudyLogService {
                         .findFirst();
 
         Map<String, Long> timeZoneDurations = dto.getTimeZoneDurations();
+        System.out.println("✔️ timeZoneDurations:"+timeZoneDurations);
 
         if (existingDayTimeZoneOpt.isPresent()) {
             // ✅ 기존 DayTimeZone 업데이트
