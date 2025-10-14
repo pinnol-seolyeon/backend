@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class BookListResponseDto {
 
+    private String sessionLogId;
     private String currentBookId;
     private List<Map<String,String>> bookList;
 

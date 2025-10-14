@@ -11,6 +11,7 @@ import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
+import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
@@ -124,15 +125,15 @@ public class StudyController {
     }
 
 
-    @GetMapping("/chapter")
-    @Operation(summary="단원리스트에서 단원 선택후 단원명 GET(수정 전)")
-    public ResponseEntity<String> getChapterTitle(@RequestParam String chapterId){
-        String title=studyService.getChapterTitle(chapterId);
-        return ResponseEntity.ok(title);
+    @GetMapping("/chapter-select")
+    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 제공")
+    public ApiResponse<ChapterListResponseDto> getChapterTitle(
+            @RequestParam String bookId,
+            @RequestParam(defaultValue="0") int page){
+        User user=userService.getUserInfo();
+        ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
+        return ApiResponse.success("챕터 목록 조회 성공",result);
     }
-
-
-
 
 
 

@@ -9,8 +9,11 @@ import jpabasic.pinnolbe.domain.study.UserFeedback;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
+import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponse;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
@@ -22,6 +25,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -379,8 +386,45 @@ public class StudyService {
             }
         }
         //dto로 변환
-        BookListResponseDto result=new BookListResponseDto(currentBookId,bookList);
+        BookListResponseDto result=new BookListResponseDto(sessionLogId,currentBookId,bookList);
         return result;
     }
+
+    /**
+     * 단원 리스트 제공
+     */
+    public ChapterListResponseDto getChapterList(User user, String bookId,int page){
+        String currentChapterId;
+        StudySessionLog log;
+
+        //해당 교재의 모든 chapter List
+        Slice<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId,page,5);
+
+        //현재 진행 중인 chapter
+        String sessionLogId=user.getStudySessionLogId();
+        if (sessionLogId == null) {
+            System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
+            currentChapterId = "682829708c776a1ffa92fd50"; // 첫 교재,첫 챕터 하드코딩
+        } else {
+            Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
+            if (optLog.isPresent()) {
+                log = optLog.get();
+                currentChapterId = log.getChapterId();
+            } else {
+                currentChapterId = "682829708c776a1ffa92fd50"; // fallback
+            }
+        }
+        //dto로 변환
+        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,chapters);
+        return result;
+    }
+
+    private Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
+
+        return slice.map(ChapterListResponseDto.ChapterResponseDto::fromEntity);
+    }
+
 }
 
