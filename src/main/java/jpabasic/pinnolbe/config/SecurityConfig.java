@@ -60,7 +60,7 @@ public class SecurityConfig {
                 //JwtFilter 추가
                 .addFilterBefore(new JwtFilter(jwtUtil,tokenService), UsernamePasswordAuthenticationFilter.class) //UsernamePasswordAuthenticationFilter.class 이전에 JwtFilter 등록
 
-                .addFilterBefore(exceptionHandlerFilter, JwtFilter.class) //필터 단의 예외 처리 handler filter
+//                .addFilterBefore(exceptionHandlerFilter, JwtFilter.class) //필터 단의 예외 처리 handler filter
 
                 //csrf disable
                 .csrf(csrf -> csrf.disable())

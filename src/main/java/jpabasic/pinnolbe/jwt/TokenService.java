@@ -20,18 +20,16 @@ public class TokenService {
 
     @Transactional
     public String reissueAccessToken(String refreshToken, HttpServletResponse response) {
-        if (jwtUtil.isExpired(refreshToken)) {
-            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
-        }
 
         String username = jwtUtil.getUsername(refreshToken);
         System.out.println("😎username: " + username);
         String role = jwtUtil.getRole(refreshToken);
         System.out.println("😎role: " + role);
 
+        //오류 발생
         RefreshToken savedToken = refreshTokenRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_COOKIE));
-
+        String token=savedToken.getToken(); //기존에 저장되어 있던 refresh token
         if (!savedToken.getToken().equals(refreshToken)) {
             throw new CustomException(ErrorCode.NO_COOKIE);
         }

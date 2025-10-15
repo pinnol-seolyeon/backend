@@ -11,7 +11,7 @@ public class UserDto {
     private String username;
     private String name;
     private String role;
-    private String childName;
+
 
     public UserDto(String username, String role) {
         this.username = username;

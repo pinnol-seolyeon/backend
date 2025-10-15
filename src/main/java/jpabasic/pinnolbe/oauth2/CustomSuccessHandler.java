@@ -61,25 +61,38 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //refresh token 재사용 or 생성
         System.out.println("‼️refresh Token 로직 시작");
         String refreshToken = "";
-        Optional<RefreshToken> token = refreshTokenRepository.findByUsername(username);
-        if (token.isPresent()) {
-            String existingToken = token.get().getToken();
-            System.out.println("🖥️ existingToken: " + existingToken);
 
-            if (!jwtUtil.isExpired(existingToken)) {
-                // jwtUtil.isExpired=true인 경우 실행됨
-                refreshToken = existingToken;
-                userService.saveExistingRefreshToken(username, refreshToken);
-            }else {
-                    // ❌ 만료 → 새로 발급
-                    userService.deleteExpiredRefreshToken(token.get());
-                    refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
-                    userService.saveNewRefreshToken(username, refreshToken);
-                }
-        }else{ //refreshToken이 null 인 경우
-            refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
-            userService.saveNewRefreshToken(username, refreshToken);
+        //DB에 기존 토큰 조회
+        Optional<RefreshToken> token = refreshTokenRepository.findByUsername(username);
+
+        if(token.isPresent() && !jwtUtil.isExpired(token.get().getToken())) {
+            //기존 refresh token 유효 -> 그대로 사용
+            refreshToken = token.get().getToken();
+        }else{
+            //새로 발급
+            token.ifPresent(refreshTokenRepository::delete);
+            refreshToken=jwtUtil.createJwt(username, role, 14*24*60 * 60 * 1000L);
+            userService.saveNewRefreshToken(username,refreshToken);
         }
+
+//        if (token.isPresent()) {
+//            String existingToken = token.get().getToken();
+//            System.out.println("🖥️ existingToken: " + existingToken);
+//
+//            if (!jwtUtil.isExpired(existingToken)) { //만료 X
+//                // jwtUtil.isExpired=true인 경우 실행됨
+//                refreshToken = existingToken;
+//                userService.saveExistingRefreshToken(username, refreshToken);
+//            }else { //만료 O
+//                    //  만료 → 새로 발급
+//                    userService.deleteExpiredRefreshToken(token.get());
+//                    refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
+//                    userService.saveNewRefreshToken(username, refreshToken);
+//                }
+//        }else{ //refreshToken이 null 인 경우
+//            refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
+//            userService.saveNewRefreshToken(username, refreshToken);
+//        }
 
 
 
@@ -91,8 +104,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("RefreshToken", refreshToken, 14 * 24 * 60 * 60));//14일
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
-        boolean isFirstLogin = customUserDetails.isFirstLogin();
-        String targetUrl = isFirstLogin ? deployUrl + "/childInfo" : deployUrl + "/main";
+//        boolean isFirstLogin = customUserDetails.isFirstLogin();
+        String targetUrl =  deployUrl + "/main";
 
         response.sendRedirect(targetUrl);
 
