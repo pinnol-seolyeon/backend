@@ -1,8 +1,8 @@
 package jpabasic.pinnolbe.scheduler;
 
 import jpabasic.pinnolbe.domain.Status;
-import jpabasic.pinnolbe.domain.StudySession;
-import jpabasic.pinnolbe.service.StudySessionService;
+import jpabasic.pinnolbe.domain.redis.StudySession;
+import jpabasic.pinnolbe.service.study.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

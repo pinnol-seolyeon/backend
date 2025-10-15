@@ -3,7 +3,6 @@ package jpabasic.pinnolbe.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jpabasic.pinnolbe.global.ExceptionHandlerFilter;
 import jpabasic.pinnolbe.jwt.JwtFilter;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.jwt.TokenService;
@@ -35,14 +34,14 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
     private final TokenService tokenService;
-    private final ExceptionHandlerFilter exceptionHandlerFilter;
+//    private final ExceptionHandlerFilter exceptionHandlerFilter;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,CustomSuccessHandler customSuccessHandler,JwtUtil jwtUtil,ExceptionHandlerFilter exceptionHandlerFilter,TokenService tokenService) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,CustomSuccessHandler customSuccessHandler,JwtUtil jwtUtil,TokenService tokenService) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
         this.tokenService = tokenService;
-        this.exceptionHandlerFilter = exceptionHandlerFilter;
+//        this.exceptionHandlerFilter = exceptionHandlerFilter;
     }
 
     @Bean

@@ -65,6 +65,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //DB에 기존 토큰 조회
         Optional<RefreshToken> token = refreshTokenRepository.findByUsername(username);
 
+
         if(token.isPresent() && !jwtUtil.isExpired(token.get().getToken())) {
             //기존 refresh token 유효 -> 그대로 사용
             refreshToken = token.get().getToken();

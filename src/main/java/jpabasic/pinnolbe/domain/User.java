@@ -25,6 +25,7 @@ public class User {
     //가입자(아이)의 이름
     private String name;
 
+    //현재 학습중인 교재 저장
     @Nullable
     private String studyId;
 

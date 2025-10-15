@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @Document(collection="study")
 @Getter
 @Setter
@@ -28,7 +29,10 @@ public class Study {
     @Field("_id")
     private ObjectId id;
     private String userId;
+    //현재 학습 중인 교재
     private String bookId;
+    //현재 학습 중인 단원
+    private String chapterId;
 
     @Nullable
     private Set<CompletedChapter> completeChapter=new HashSet<>(); //해당 교재에서 학습 완료된 단원id 리스트

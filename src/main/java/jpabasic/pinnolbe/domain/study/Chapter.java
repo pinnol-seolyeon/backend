@@ -17,6 +17,9 @@ public class Chapter {
     @Field("_id")
     private ObjectId id;
     private String chapterTitle;
+    private String bookId;
+    
+    //DB 분리 예정
     private String content;
     private String objective;
     private String imgUrl;
