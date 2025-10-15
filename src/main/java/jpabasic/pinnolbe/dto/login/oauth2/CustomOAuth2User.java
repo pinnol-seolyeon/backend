@@ -47,7 +47,10 @@ public class CustomOAuth2User implements OAuth2User {
     }
 
     //첫 로그인인지 확인
-    public boolean isFirstLogin(){
-        return userDto.getPhoneNumber()==null;
-    }
+//    public boolean isFirstLogin(){
+//        return userDto.
+//    }
+//     public boolean isFirstLogin(){
+//         return userDto.getPhoneNumber()==null;
+//     }
 }

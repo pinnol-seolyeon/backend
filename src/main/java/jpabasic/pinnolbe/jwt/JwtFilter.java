@@ -55,18 +55,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
         String accessToken=getTokenFromCookies(request,"Authorization");
+        System.out.println("🍪 기존 accessToken:"+accessToken);
         String refreshToken=getTokenFromCookies(request,"RefreshToken");
+        System.out.println("🍪 기존 refreshToken:"+refreshToken);
 
         try{
             if(accessToken!=null && !jwtUtil.isExpired(accessToken)){
+                System.out.println("✏️access token 정상");
                 //access token 정상
                 authenticateWithToken(accessToken);
-//                log.info("😎 access token 유효 -> security context 저장 완료");
-            }else if(refreshToken!=null && !jwtUtil.isExpired(refreshToken)){
+                log.info("😎 access token 유효 -> security context 저장 완료");
+            }else if(refreshToken!=null && !jwtUtil.isExpired(refreshToken)){ //refreshToken 존재 && 만료 X
                 //access token 만료 -> refresh token으로 새로 발급
+                System.out.println("✏️ access token 만료 -> refresh token으로 access token 새로 발급 ");
                 String newAccessToken=tokenService.reissueAccessToken(refreshToken,response);
                 authenticateWithToken(newAccessToken);
-//                log.info("😎 access token 재발급 및 securityContext 저장 완료");
+                log.info("😎 access token 재발급 및 securityContext 저장 완료");
             }else {
                 // Refresh Token도 없거나 만료 → 쿠키 삭제 후 재로그인 유도
                 clearAuthCookies(response);

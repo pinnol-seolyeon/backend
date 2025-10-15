@@ -96,15 +96,6 @@ public class UserService {
         log.info("✅ user RefreshToken 생성 후 저장 완료");
     }
 
-    @Transactional
-    public void saveExistingRefreshToken(String username,String refreshToken){
-//        User user=userRepository.findByUsername(username);
-//        user.setRefreshToken(refreshToken);
-//        userRepository.save(user);
-        refreshTokenRepository.save(new RefreshToken(refreshToken,username));
-
-        log.info("✅ 기존 user RefreshToken 저장 완료");
-    }
 
     @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response,String refreshToken){

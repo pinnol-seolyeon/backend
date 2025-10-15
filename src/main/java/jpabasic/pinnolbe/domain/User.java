@@ -35,9 +35,6 @@ public class User {
     //여태까지 모은 코인 개수
     private int reward=0;
 
-    //자녀 나이
-    private int childAge;
-
     //부모 전화번호
     private String phoneNumber;
 

@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserInfoDto {
     private String username;
-    private String childName;
+    private String name;
     private int coin;
 
 
