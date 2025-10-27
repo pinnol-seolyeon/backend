@@ -42,6 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         System.out.println("✅username" + username);
 
         User existData = userRepository.findByUsername(username);
+        System.out.println("✔️ user 를 찾았다아 : "+existData);
 
 
         //기존 데이터 X -> 회원 가입
@@ -67,14 +68,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             existData.setEmail(oAuth2Response.getEmail());
             existData.setName(oAuth2Response.getName());
 
-            userRepository.save(existData);
-
             UserDto userDto = new UserDto();
             userDto.setUsername(existData.getUsername());
             userDto.setName(oAuth2Response.getName());
             userDto.setRole(existData.getRole());;
 
-//            System.out.println("✅유저" + userDto);
+            userRepository.save(existData);
+
+            System.out.println("✅로그인 완료");
             return new CustomOAuth2User(userDto);
 
 

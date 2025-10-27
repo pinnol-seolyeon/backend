@@ -18,9 +18,9 @@ public class StudySessionSummaryDto {
     @Schema(description = "현재 학습 하고 있는 level")
     private int level;
 
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description="해당 레벨 학습 시작 시간(ISO 8601 형식) /start api에서만 신경써주면 됩니다.", example = "2025-10-10T19:20:00")
-    private LocalDateTime startTime;
+//    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+//    @Schema(description="해당 레벨 학습 시작 시간(ISO 8601 형식) /start api에서만 신경써주면 됩니다.", example = "2025-10-10T19:20:00")
+//    private LocalDateTime startTime;
 
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description="해당 레벨 학습 시작 시간(ISO 8601 형식) /update api에서만 신경써주면 됩니다.", example = "2025-10-10T19:20:00")

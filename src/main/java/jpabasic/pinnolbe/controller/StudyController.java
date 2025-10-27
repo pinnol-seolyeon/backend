@@ -54,20 +54,16 @@ public class StudyController {
     private String bucket;
 
 
-    //실제 학습
-    // getStudy 방식 고쳐야 함 -> 현재는 책이 어차피 한 권이므로 상관X
-    // user-study-chapter 관계 수정 필요
-
-    @GetMapping("/start")
-    @Operation(summary="해당 단원 학습하기(수정 전)") //문장 단위로 끊어서 보여주기..
-    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String chapterId){
-        User user=userService.getUserInfo();
-        String studyId=user.getStudyId();
-        System.out.println("🐛🐛"+studyId);
-
-        ChapterDto chapter=studyService.getChapterContents(user,chapterId);
-        return ResponseEntity.ok(chapter);
-    }
+//    @GetMapping("/start")
+//    @Operation(summary="해당 단원 학습하기(AI 연동 전)") //문장 단위로 끊어서 보여주기..
+//    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String chapterId){
+//        User user=userService.getUserInfo();
+//        String studyId=user.getStudyId();
+//        System.out.println("🐛🐛"+studyId);
+//
+//        ChapterDto chapter=studyService.getChapterContents(user,chapterId);
+//        return ResponseEntity.ok(chapter);
+//    }
 
     @PostMapping("/feedback")
     @Operation(summary="유저가 대답하면 AI가 피드백/리액션(수정 전)")
@@ -152,15 +148,6 @@ public class StudyController {
         return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
     }
 
-//    @PostMapping("/heart-beat")
-//    @Operation(summary="heartbeat를 통해 공부시간 측정 및 학습 완료한 단원 파악")
-//    public void heartbeat(@RequestBody HeartBeatRequest req){
-//        User user=userService.getUserInfo();
-//        heartBeatService.handleHeartbeat(
-//                req,
-//                user.getId()
-//        );
-//    }
 
 
     @PostMapping(value="/upload-image",consumes="multipart/form-data")
@@ -224,11 +211,6 @@ public class StudyController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-//    @PostMapping("/send-kakao")
-//    public ResponseEntity<?> sendKakaoFeedback(@RequestParam String kakaoId){
-//        User user=userService.getUserInfo();
-//        studyService.sendFeedback
-//    }
 
 
 

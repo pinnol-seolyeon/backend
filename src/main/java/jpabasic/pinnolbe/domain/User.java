@@ -36,6 +36,7 @@ public class User {
     private int reward=0;
 
     //부모 전화번호
+    @Nullable
     private String phoneNumber;
 
     //개인정보 수집 이용 동의여부

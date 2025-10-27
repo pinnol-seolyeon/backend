@@ -42,6 +42,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static jpabasic.pinnolbe.dto.study.ChapterDto.convertDto;
+
 @Service
 @RequiredArgsConstructor
 public class StudyService {
@@ -71,7 +73,7 @@ public class StudyService {
         String chapterId=chapter.getId().toString();
 
         //Dto로 변환해서 리턴
-        ChapterDto dto=ChapterDto.convertDto(chapterId,chapter);
+        ChapterDto dto= convertDto(chapterId,chapter);
         System.out.println("✅"+dto.getChapterId()); ///objectId
 
         // 본격적인 학습 시작
@@ -80,110 +82,20 @@ public class StudyService {
 
     //학습하고 싶은 단원 선택
     public ChapterDto getChapterContents(User user,String chapterId) {
-        //유저의 Study Document 찾기
-        String studyId=user.getStudyId();
-        ObjectId objectId=new ObjectId(studyId);
-        Study study=studyRepository.findById(objectId)
-                .orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
+        Chapter chapter=chapterRepository.findById(chapterId)
+                .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
-        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
-
-        //해당 챕터 공부한 적 있는지 확인
-        boolean isAlreadyCompleted=completedChapters.stream()
-                .anyMatch(c->c.getChapterId().equals(chapterId));
-
-        if(isAlreadyCompleted){
-            Chapter chapter=getChapterByString(chapterId);
-            ChapterDto dto=ChapterDto.convertDto(chapterId,chapter);
-            System.out.println("✅이미 학습한 단원이예요:"+dto.getChapterId());
-            return dto;
-        }else {
-            ChapterDto dto = getOnceLearned(studyId);
-            System.out.println("✅이제 진도를 나가볼까요?" + dto.getChapterId()); ///objectId
-            return dto;
-
-        }
-
+        //chapter 본문 내용 받아오기
+        ChapterDto chapterDto=convertDto(chapterId,chapter);
+        return chapterDto;
     }
 
 
-    //책에 대한 처음 시작 //수정완료
-    public Study startBook(User user,String bookId){
-        ObjectId objectId=new ObjectId(bookId);
-        Book book=bookRepository.findById(objectId)
-                .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
-
-        List<String> chapters = book.getChapters();
-
-        if (chapters == null || chapters.isEmpty()) {
-            throw new IllegalStateException("책에 단원이 존재하지 않습니다: " + bookId);
-        }
-
-        String firstChapterID = chapters.get(0);
-        ObjectId firstChapter=new ObjectId(firstChapterID);
-
-        Chapter nowChapter=chapterRepository.findById(firstChapter)
-                .orElseThrow(()->new IllegalArgumentException("해당 chapter를 찾을 수 없음"));
-
-        Study study=new Study(user.getId(),bookId,nowChapter);
-        studyRepository.save(study);
-        String studyId=study.getId().toString();
 
 
-        user.setStudyId(studyId);
-        userRepository.save(user);
 
-        return study;
-    }
 
-    //책 선택 후 단원 선택 시, 해당 책의 단원 리스트 제공
-    //수정 : chapterId+chapterTitle만
-    //2차 수정 : 현재 진도 + 학습 완료한 단원 Boolean 값 반환
-    public List<ChaptersDto> getChapterTitles(String bookId){
-        ObjectId objectId=new ObjectId(bookId);
-        Book book=bookRepository.findById(objectId)
-                .orElseThrow(()->new IllegalArgumentException("해당 책이 없음."));
 
-        List<String> chapterIds = book.getChapters();
-        List<ChaptersDto> chapterDtos = new ArrayList<>();
-
-        for (String chapterId : chapterIds) {
-            ObjectId realId=new ObjectId(chapterId);
-            Chapter chapter=chapterRepository.findById(realId)
-                    .orElseThrow(()->new IllegalArgumentException("해당 단원 없음"+chapterId));
-            chapterDtos.add(new ChaptersDto(chapter.getId().toString(),chapter.getChapterTitle()));
-
-        }
-
-        System.out.println("✏️✏️" + chapterDtos);
-        return chapterDtos;
-    }
-
-    //현재진도 + 학습 완료한 단원 Boolean 값 추가
-    public List<ChaptersDto> getCurrentProgress(List<ChaptersDto> chapterDtos,String studyId){
-        Study study=getStudyByString(studyId);
-
-        //completeChapter 리스트의 chapterId에 없는 단원들은 잠금 상태
-        //완료된 단원들의 id 목록
-        Set<CompletedChapter> completed=study.getCompleteChapter();
-        /// completed가 null이면 빈 Set 리턴 ///아니면 스트림 처리 -> Set<String> 생성
-        Set<String> completedIds=completed==null?Set.of():
-                completed.stream().map(CompletedChapter::getChapterId).collect(Collectors.toSet()); //CompletedChapter에서 chapterId만 추출 //스트림 결과를 Set<String>으로 수집
-
-        //현재 진도 단원 ID
-        String currentId=study.getChapter()!=null?study.getChapter().getId().toString():null;
-
-        //각 chapterDto에 상태 반영
-        for(ChaptersDto dto:chapterDtos){
-            String dtoId=dto.getId();
-
-            dto.setIsCompleted(completedIds.contains(dtoId)); //완료 여부
-            dto.setIsCurrent(currentId!=null&&currentId.equals(dtoId)); //현재 진도 여부
-
-        }
-
-        return chapterDtos;
-    }
 
 
 
