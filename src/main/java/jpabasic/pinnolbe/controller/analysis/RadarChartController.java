@@ -1,9 +1,8 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.analysis;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreDto;
-import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.analyze.RadarScoreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

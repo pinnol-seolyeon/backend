@@ -25,12 +25,11 @@ public class WeeklyAnalysis {
 
     private LocalDate weekStartDate;
 
-    private EngagementData engagementData;
-    private FocusData focusData;
-    private UnderstandingData understandingData;
-    private ExpressionData expressionData;
-    //주간 학습 시간대
-    private WeeklyTimeZone weeklyTimeZone;
+    private EngagementData engagementData;//참여도
+    private FocusData focusData;//집중도
+    private UnderstandingData understandingData;//이해도
+    private ExpressionData expressionData;//표현력
+    private WeeklyTimeZone weeklyTimeZone;//주간 학습 시간대+학습 시간(추가된 내용)
 
     private LocalDateTime analyzedAt;
 
@@ -66,8 +65,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private int starScore;
-        private int starCount;
+        private double expressionScore;
     }
 
     @Getter @Setter

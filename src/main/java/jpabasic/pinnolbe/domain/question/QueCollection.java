@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.domain.question;
 
+import jpabasic.pinnolbe.domain.BaseEntity;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import lombok.*;
@@ -19,13 +20,13 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 
-public class QueCollection {
+public class QueCollection extends BaseEntity {
 
     @Id
     private String id;
     private String userId;
 
-    private LocalDateTime date; //질문한 날짜
+//    private LocalDateTime date; //질문한 날짜
     private String chapterId; //단원
 
     private List<String> questions;
@@ -33,10 +34,4 @@ public class QueCollection {
 
 
 
-//    public void addQuestionAnswer(String question){
-//        if(questions==null){
-//            questions=new ArrayList<QuestionAnswer>();
-//        }
-//        questions.add(new QuestionAnswer(question));
-//    }
 }

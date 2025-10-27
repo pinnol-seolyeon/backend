@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.analysis;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,7 +11,7 @@ import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
-import jpabasic.pinnolbe.service.QuestionService;
+import jpabasic.pinnolbe.service.question.QuestionService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;

@@ -1,17 +1,14 @@
-package jpabasic.pinnolbe.service;
+package jpabasic.pinnolbe.service.question;
 
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.question.QAs;
 import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
-import jpabasic.pinnolbe.repository.question.QuestionRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
@@ -21,8 +18,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class QuestionService {
@@ -30,15 +25,18 @@ public class QuestionService {
     private final QueCollectionRepository queCollectionRepository;
     private final AskQuestionTemplate askQuestionTemplate;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
+    private final QuestionAnalyzer questionAnalyzer;
 
     //사용자별 세션 저장소 //메모리에 저장된 질문 세션 관리 -> 일시적으로 관리
     private final Map<String,QuestionSessionDto> sessionStore=new ConcurrentHashMap<>();
 
 
-    public QuestionService(QueCollectionRepository queCollectionRepository, AskQuestionTemplate askQuestionTemplate, WeeklyAnalysisRepository weeklyAnalysisRepository) {
+    public QuestionService(QueCollectionRepository queCollectionRepository, AskQuestionTemplate askQuestionTemplate,
+                           WeeklyAnalysisRepository weeklyAnalysisRepository,QuestionAnalyzer questionAnalyzer) {
         this.queCollectionRepository = queCollectionRepository;
         this.askQuestionTemplate = askQuestionTemplate;
         this.weeklyAnalysisRepository = weeklyAnalysisRepository;
+        this.questionAnalyzer = questionAnalyzer;
     }
 
 
@@ -47,46 +45,52 @@ public class QuestionService {
         String userId= user.getId();
         String question=request.getQuestion();
 
-        // AI에 유저의 질문 전달
         try {
-            QuestionResponse answer = askQuestionTemplate.askQuestionToAI(request);
-            System.out.println("❓질문은 함.");
+            QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
+            String answer=result.getResult();
 
             //사용자 세션 가져오기
             QuestionSessionDto session=sessionStore.computeIfAbsent(userId,k->new QuestionSessionDto());
-            session.add(question,answer.getResult());
+            session.add(question,answer);
 
-            // AI의 답변 내용을 반환
-            return answer;
+            return result;
         }catch(RestClientException e){
             throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
         }
 
     }
 
+    //질문에 따른 표현력 점수 측정 (3단계 학습 완료 시)
+    public double getExpressionScore(List<String> question){
+        //질문에 따른 표현력 점수 측정
+        return QuestionAnalyzer.calculateScores(question);
+    }
+
 
 
 
     //모든 질문+답변 한꺼번에 DB에 저장하기
-    public void saveAllQAs(User user,String chapterId){
+    public List<String> saveAllQAs(User user,String chapterId){
         String userId=user.getId();
         QuestionSessionDto session=sessionStore.get(userId);
 
-        if(session==null||session.getQuestions().isEmpty()) return;
+        if(session==null||session.getQuestions().isEmpty()) return null;
 
         QueCollection doc=new QueCollection();
         doc.setUserId(userId);
         doc.setQuestions(session.getQuestions());
         doc.setAnswers(session.getAnswers());
         doc.setChapterId(chapterId);
-        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-        doc.setDate(nowKST);
+//        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+//        doc.setDate(nowKST);
 
         queCollectionRepository.save(doc);
 
         //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
         sessionStore.remove(userId);
 
+        List<String> questions=doc.getQuestions();
+        return questions;
     }
 
     // 참여도
@@ -116,7 +120,7 @@ public class QuestionService {
             analysis = WeeklyAnalysis.builder()
                     .userId(userId)
                     .weekStartDate(weekStart)
-                    .engagementData(
+                    .engagementData( //참여도
                             WeeklyAnalysis.EngagementData.builder()
                                     .questionCount(totalQuestions)
                                     .build()
@@ -133,9 +137,12 @@ public class QuestionService {
     }
 
     // 표현력
-    public void updateExpressionScore(User user, int newStarScore) {
+    public void updateExpressionScore(User user,List<String> questions) {
         String userId = user.getId();
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul")).with(DayOfWeek.MONDAY);
+
+        //표현력 점수 측정
+        double expressionScores=getExpressionScore(questions);
 
         List<WeeklyAnalysis> analyses =
                 weeklyAnalysisRepository.findAllByUserIdAndWeekStartDate(userId, weekStart);
@@ -148,8 +155,7 @@ public class QuestionService {
                     .weekStartDate(weekStart)
                     .expressionData(
                             WeeklyAnalysis.ExpressionData.builder()
-                                    .starScore(newStarScore)
-                                    .starCount(1)
+                                    .expressionScore(expressionScores)
                                     .build()
                     )
                     .analyzedAt(LocalDateTime.now())
@@ -162,12 +168,12 @@ public class QuestionService {
             }
 
             WeeklyAnalysis.ExpressionData expr = analysis.getExpressionData();
-            int prevTotalScore = expr.getStarScore() * expr.getStarCount();
-            int newCount = expr.getStarCount() + 1;
-            int newAverage = Math.round((float)(prevTotalScore + newStarScore) / newCount);
+            double prevExpression=expr.getExpressionScore();
 
-            expr.setStarScore(newAverage);
-            expr.setStarCount(newCount);
+            //학습 완료 단원 수로 나눠서 평균내기
+            double newScore=
+
+            expr.setExpressionScore(newScore);
             analysis.setAnalyzedAt(LocalDateTime.now());
         }
 
