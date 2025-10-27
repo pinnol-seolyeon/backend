@@ -14,4 +14,6 @@ public interface StudySessionLogRepository extends MongoRepository<StudySessionL
             LocalDateTime startOfDay,
             LocalDateTime endOfDay
     );
+
+    Optional<StudySessionLog> findById(String studySessionLogId);
 }

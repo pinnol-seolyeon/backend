@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
+import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
@@ -361,31 +362,24 @@ public class StudyLogService {
         return progress;
     }
 
-    //현재 학습 중인 교재 + 단원 제공
-    public NowStudyingLevelDto getNowStudyingLevel(String userId){
+    //현재 학습 중인 단원 + 레벨 제공
+    public NowStudyingLevelDto getNowStudyingLevel(String userId,String sessionLogId){
 
-        Study study=studyRepository.findByUserId(userId)
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
-
-        //현재 학습 중인 교재
-        String bookId=study.getBookId();
-        Book book = bookRepository.findById(new ObjectId(bookId))
-                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
-        String title=book.getTitle();
-
-        //현재 진도 단원 ID
-        String currentId=study.getChapter()!=null?study.getChapter().getId().toString():null;
-        List<String> chapters=book.getChapters();
-
-        int index=-0;
-        for(int i=0;i<chapters.size();i++){
-            if(book.getChapters().get(i).equals(currentId)){
-                index=i;
-                break;
-            }
+        StudySessionLog log;
+        Optional<StudySessionLog> logOpt=studySessionLogRepository.findById(sessionLogId);
+        if(logOpt.isPresent()){
+            log=logOpt.get();
+        }else{
+            return null;
         }
 
-        NowStudyingLevelDto result=new NowStudyingLevelDto(title,index);
+        String chapterId=log.getChapterId();
+        int level=log.getLevel();
+
+        Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
+        String chapterTitle=chapter.getChapterTitle();
+
+        NowStudyingLevelDto result=new NowStudyingLevelDto(chapterTitle,level);
         return result;
     }
 
