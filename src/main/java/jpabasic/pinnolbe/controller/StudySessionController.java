@@ -47,7 +47,7 @@ public class StudySessionController {
 
     @PostMapping("/update")
     @Operation(
-            summary = "학습 상태 저장 (ACTIVE / INACTIVE / COMPLETED)",
+            summary = "학습 상태 저장 (ACTIVE / INACTIVE / COMPLETED / EXIT)",
             description = """
     사용자의 학습 세션 상태를 Redis에 갱신합니다.
 
@@ -70,14 +70,6 @@ public class StudySessionController {
         return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
     }
 
-//    @PostMapping("/complete")
-//    @Operation(summary="chapter 학습 완료")
-//    public ApiResponse<Void> complete(
-//            @RequestBody StudySession summary
-//    ){
-//        User user=userService.getUserInfo();
-//        StudySessionService.chapterComplete(user,summary);
-//    }
-//
+
 
 }
