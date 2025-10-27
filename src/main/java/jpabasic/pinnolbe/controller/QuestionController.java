@@ -41,7 +41,7 @@ public class QuestionController {
         return ResponseEntity.ok(response);
     }
 
-    //여태까지 진행한 질문+답변 한꺼번에 DB에 저장 //해당 단원 학습 완료 시 호출
+
     @PostMapping("/saveAll (수정 전)")
     @Operation(summary="여태까지 진행한 질문+답변 DB에 저장",
                 description= """

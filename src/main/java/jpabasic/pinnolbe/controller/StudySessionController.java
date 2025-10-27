@@ -5,6 +5,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.global.ApiResponse;
+import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -23,6 +24,8 @@ public class StudySessionController {
     private UserService userService;
     @Autowired
     private StudyService studyService;
+    @Autowired
+    private WeeklyAnalysisService weeklyAnalysisService;
 
 
     @PostMapping("/start-level")
@@ -54,6 +57,9 @@ public class StudySessionController {
     ✅ 상태별 전송 규칙:
     - **ACTIVE ↔ INACTIVE** 전환 시 → `startTime`은 무시하고 `lastActive`만 전송
     - **COMPLETED** (학습 완료 시) → `startTime` / `lastActive` 모두 무시 가능
+    
+    ✅ 6단계까지 해당 chapter 학습 완료 시:
+    - isCompleted=true
 
     해당 API는 사용자의 현재 학습 상태를 Redis에 저장 및 갱신합니다.
     """
@@ -65,9 +71,16 @@ public class StudySessionController {
 
     ){
         User user=userService.getUserInfo();
-        studySessionService.sessionUpdate(user,summary);
+        if(!summary.isCompleted()){ //isCompleted=false인 경우 //아직 해당 단원 학습 완료X
+            studySessionService.sessionUpdate(user,summary);
+            return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
+        }else{
+            //해당 단원 학습 모두 완료한 경우
+            studyService.finishChapter(summary);
+            weeklyAnalysisService.saveCompletedChapters(user,summary.getChapterId());
+            return ApiResponse.success("해당 chapter 학습을 완료했어요.",null);
+        }
 
-        return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
     }
 
 

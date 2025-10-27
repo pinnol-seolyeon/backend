@@ -6,6 +6,7 @@ import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.domain.study.UserFeedback;
+import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
@@ -127,25 +128,31 @@ public class StudyService {
     }
 
 
-    //학습 완료 //학습 완료 시 나오는 화면 or 나오는 로직 설정해야..
-    public void finishChapter(String chapterId,String studyId){
-        Chapter chapter=getChapterByString(chapterId);
-        ObjectId objectId=new ObjectId(studyId);
-        Study study=studyRepository.findById(objectId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+    //학습 완료
+    public void finishChapter(StudySessionSummaryDto summaryDto){
+        Chapter chapter=getChapterByString(summaryDto.getChapterId());
+        Chapter nextChapter;
 
-        if(study.getCompleteChapter()==null){
-            study.setCompleteChapter(new HashSet<>());
+        //로그 생성
+        StudySessionLog log=new StudySessionLog();
+        log.setUserId(summaryDto.getUserId());
+
+        //다음 챕터 탐색
+        Optional<Chapter> nextChapterOpt=chapterRepository
+                .findByBookIdAndOrder(chapter.getBookId(),chapter.getOrder()+1);
+
+        //학습해야할 다음 단원을 담은 StudySessionLog 생성
+        if(nextChapterOpt.isPresent()){
+            nextChapter=nextChapterOpt.get();
+
+            log.setBookId(chapter.getBookId());
+            log.setChapterId(String.valueOf(nextChapter.getId()));
+            log.setLevel(1);
+        }else{ //이미 해당 교재의 모든 단원을 마무리함
+            log.setBookId(null);
+            log.setChapterId(null);
         }
-
-        //완료된 단원 리스트에 추가
-        study.getCompleteChapter().add(new CompletedChapter(chapterId,LocalDateTime.now()));
-
-        //현재 학습중인 단원 제거 or 다음 단원으로 교체
-//        study.setChapter(null);
-        study.setChapter(getNextChapter(study));
-
-        studyRepository.save(study);
+        studySessionLogRepository.save(log);
     }
 
     // 학습 참여도 (총 학습 완료 단원 수, 이번주 학습 완료 단원 수) 가져오기

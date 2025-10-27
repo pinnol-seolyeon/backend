@@ -95,23 +95,6 @@ public class StudyController {
     }
 
 
-
-//    // 어떤 책으로 공부할지 선택
-//    @GetMapping("/book-select")
-//    @Operation(summary="해당 책의 단원리스트 제공(수정 전)")
-//    public ResponseEntity<List<ChaptersDto>> startBook(@RequestParam String bookId){
-//        User user=userService.getUserInfo();
-//        if(user.getStudyId()==null) {
-//            Study study = studyService.startBook(user, bookId);
-//        }
-//        //Book Document 순회하며 단원명 리스트 받아옴
-//        List<ChaptersDto> chapterList=studyService.getChapterTitles(bookId);
-//        //현재 진도 + 완료한 단원 체크
-//        List<ChaptersDto> progressList=studyService.getCurrentProgress(chapterList,user.getStudyId());
-//
-//        return ResponseEntity.ok(progressList);
-//    }
-
     @GetMapping("/book-select")
     @Operation(summary="교재 리스트 제공")
     public ApiResponse<BookListResponseDto> getBookList(){

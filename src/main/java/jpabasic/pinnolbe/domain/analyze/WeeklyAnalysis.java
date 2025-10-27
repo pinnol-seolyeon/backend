@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ public class WeeklyAnalysis {
     private UnderstandingData understandingData;//이해도
     private ExpressionData expressionData;//표현력
     private WeeklyTimeZone weeklyTimeZone;//주간 학습 시간대+학습 시간(추가된 내용)
+
+    private List<String> completedChapters=new ArrayList<>(); //학습완료한 chapter들
 
     private LocalDateTime analyzedAt;
 

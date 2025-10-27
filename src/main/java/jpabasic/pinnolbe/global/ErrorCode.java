@@ -31,7 +31,12 @@ public enum ErrorCode {
     STUDY_SESSION_LOG_NOT_FOUND(HttpStatus.NOT_FOUND,"session-002","StudySessionLog 엔티티가 없어요."),
 
     //chapter 관련
-    CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-001","해당 chapter내용을 찾을 수 없어요.");
+    CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-001","해당 chapter내용을 찾을 수 없어요."),
+
+    //weekly-analysis 관련
+    WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)");
+
+
 
 
     private final HttpStatus status;

@@ -14,6 +14,7 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
+//학습자의 현 진도 저장
 public class StudySessionLog extends BaseEntity {
 
     @Id

@@ -31,4 +31,7 @@ public class StudySessionSummaryDto {
 
     @Schema(description="학습 상태 - INACTIVE = 유저가 5분 이상 움직이지 않을 때")
     private Status status;
+
+    @Schema(description="해당 단원의 모든 레벨 학습 완료")
+    private boolean isCompleted=false;
 }

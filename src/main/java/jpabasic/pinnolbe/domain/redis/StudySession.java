@@ -20,6 +20,7 @@ import java.util.Map;
 @RedisHash(value="studySession",timeToLive=3600) //1시간 TTL
 @NoArgsConstructor
 @AllArgsConstructor
+//학습자의 상세 학습 상태 저장
 public class StudySession {
 
     @Id

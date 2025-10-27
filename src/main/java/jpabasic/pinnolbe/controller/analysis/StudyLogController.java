@@ -43,7 +43,6 @@ public class StudyLogController {
     @Operation(summary="이번주/총 학습 완료한 단원 개수")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
-
         StudyStatsDto stats = studyService.getStudyStats(user.getId());
         return ResponseEntity.ok(stats);
     }

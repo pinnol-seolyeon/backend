@@ -16,4 +16,6 @@ public interface ChapterRepository extends MongoRepository<Chapter, ObjectId> {
     //Slice는 다음 페이지가 있는지 여부만 체크
     Slice<Chapter> findByBookId(String bookId, Pageable pageable);
     Optional<Chapter> findById(String chapterId);
+
+    Optional<Chapter> findByBookIdAndOrder(String bookId, int order);
 }

@@ -28,4 +28,6 @@ public class Chapter {
     private String objectiveAnswer;
     private String summary;
     private String topic;
+    
+    private int order; //챕터 순서
 }
