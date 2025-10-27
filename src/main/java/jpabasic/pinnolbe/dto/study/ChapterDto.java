@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class ChapterDto {
+    private String studySessionLogId;
     private String chapterId;
     private String chapterTitle;
     private String content;
