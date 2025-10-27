@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
@@ -17,6 +18,7 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
+import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
@@ -61,6 +63,8 @@ public class StudyService {
   WebClient webClient;
     @Autowired
     private StudySessionLogRepository studySessionLogRepository;
+    @Autowired
+    private WeeklyAnalysisRepository weeklyAnalysisRepository;
 
 
     //이미 학습했던 단원 다시 클릭
@@ -155,24 +159,30 @@ public class StudyService {
         studySessionLogRepository.save(log);
     }
 
-    // 학습 참여도 (총 학습 완료 단원 수, 이번주 학습 완료 단원 수) 가져오기
+    // 학습 참여도 (이번주 학습 완료 단원 수) 가져오기
     public StudyStatsDto getStudyStats(String userId) {
-        Study study = studyRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+        //이번주 weeklyAnalysis 엔티티 가져오기
+        WeeklyAnalysis weeklyAnalysis;
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
+        List<WeeklyAnalysis> listOpt = weeklyAnalysisRepository
+                .findAllByUserIdAndWeekStartDate(userId, weekStart);
+        if(listOpt.isEmpty()){
+            throw new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND);
+        }else{
+            weeklyAnalysis=listOpt.get(0);
+        }
 
-        Set<CompletedChapter> completed = study.getCompleteChapter();
-        if (completed == null) return new StudyStatsDto(0, 0);
+        List<String> completed=weeklyAnalysis.getCompletedChapters();
+        if (completed == null) return new StudyStatsDto(0);
 
         int total = completed.size();
 
-        LocalDate now = LocalDate.now();
-        LocalDate weekStart = now.with(DayOfWeek.MONDAY);
+//        int weekly = (int) completed.stream()
+//                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
+//                .count();
 
-        int weekly = (int) completed.stream()
-                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
-                .count();
-
-        return new StudyStatsDto(total, weekly);
+        return new StudyStatsDto(total);
     }
 
     //학습 완료 후 다음 단원으로 이동

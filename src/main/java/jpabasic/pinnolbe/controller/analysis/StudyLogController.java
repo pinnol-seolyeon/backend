@@ -40,7 +40,7 @@ public class StudyLogController {
     private final QuestionService questionService;
 
     @GetMapping("/stats")
-    @Operation(summary="이번주/총 학습 완료한 단원 개수")
+    @Operation(summary="이번주 학습 완료한 단원 개수")
     public ResponseEntity<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
         StudyStatsDto stats = studyService.getStudyStats(user.getId());

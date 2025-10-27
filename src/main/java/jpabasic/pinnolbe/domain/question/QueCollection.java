@@ -26,7 +26,7 @@ public class QueCollection extends BaseEntity {
     private String id;
     private String userId;
 
-//    private LocalDateTime date; //질문한 날짜
+    private LocalDateTime date; //질문한 날짜
     private String chapterId; //단원
 
     private List<String> questions;
