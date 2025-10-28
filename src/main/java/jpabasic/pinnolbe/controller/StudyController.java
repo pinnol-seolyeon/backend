@@ -116,20 +116,20 @@ public class StudyController {
 
 
 
-    @PostMapping("/finish")
-    @Operation(summary="학습완료(수정 전)")
-    public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
-        User user=userService.getUserInfo();
-        String studyId=user.getStudyId();
-        String chapterTitle=studyService.getChapterTitle(chapterId);
-
-        try {
-            studyService.finishChapter(chapterId, studyId);
-        }catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-        return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
-    }
+//    @PostMapping("/finish")
+//    @Operation(summary="학습완료(수정 전)")
+//    public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
+//        User user=userService.getUserInfo();
+//        String studyId=user.getStudyId();
+//        String chapterTitle=studyService.getChapterTitle(chapterId);
+//
+//        try {
+//            studyService.finishChapter(chapterId, studyId);
+//        }catch(Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//        return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
+//    }
 
 
 

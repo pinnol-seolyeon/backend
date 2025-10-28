@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.global.ApiResponse;
@@ -42,7 +43,7 @@ public class StudySessionController {
         //학습 상태 저장할 Redis(세부 학습내용), studysessionLog(현 학습 상황) 생성 및 확인
         String studySessionLogId=studySessionService.startLevel(user,level,chapterId);
         //학습할 내용 가져오기
-        ChapterDto chapterContents=studyService.getChapterContents(user,chapterId);
+        ChapterDto chapterContents=studyService.getChapterContents(chapterId);
         chapterContents.setStudySessionLogId(studySessionLogId);
 
         return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",chapterContents);
@@ -64,7 +65,7 @@ public class StudySessionController {
     해당 API는 사용자의 현재 학습 상태를 Redis에 저장 및 갱신합니다.
     """
     )
-    public ApiResponse<Void> sessionUpdate(
+    public ApiResponse<StudySessionLogResponseDto> sessionUpdate(
             @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "학습 상태 요약 DTO"
             ) StudySessionSummaryDto summary
@@ -72,8 +73,8 @@ public class StudySessionController {
     ){
         User user=userService.getUserInfo();
         if(!summary.isCompleted()){ //isCompleted=false인 경우 //아직 해당 단원 학습 완료X
-            studySessionService.sessionUpdate(user,summary);
-            return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",null);
+            StudySessionLogResponseDto result=studySessionService.sessionUpdate(user,summary);
+            return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",result);
         }else{
             //해당 단원 학습 모두 완료한 경우
             studyService.finishChapter(summary);

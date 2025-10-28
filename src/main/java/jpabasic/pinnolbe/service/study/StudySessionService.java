@@ -193,13 +193,14 @@ public class StudySessionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        String studySessionId = user.getStudySessionLogId();
-        StudySessionLog existingLog = studySessionLogRepository.findById(studySessionId)
+        String currentLogId = user.getStudySessionLogId();
+        StudySessionLog existingLog = studySessionLogRepository.findById(currentLogId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
 
+        //기존 sessionLog에 저장되어 있던 학습시간+redis에 신규로 저장되어 있던 학습시간
         long newDuration = existingLog.getTotalDuration() + session.getTotalDuration();
         existingLog.setTotalDuration(newDuration);
-
+        //기존 sessionLog에 저장되어 있던 timeZone 별 학습시간+redis에 신규로 저장되어 있던 timeZone별 학습시간
         mergeTimeZoneDuration(existingLog, session);
         existingLog.setStatus(session.getStatus());
         StudySessionLog result=studySessionLogRepository.save(existingLog);

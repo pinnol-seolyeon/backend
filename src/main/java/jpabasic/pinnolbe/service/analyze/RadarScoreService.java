@@ -101,9 +101,9 @@ public class RadarScoreService {
 
         // 표현력
         double avgStarScore = dataList.stream()
-                .mapToInt(d -> Optional.ofNullable(d.getExpressionData())
-                        .map(WeeklyAnalysis.ExpressionData::getStarScore)
-                        .orElse(0))
+                .mapToDouble(d -> Optional.ofNullable(d.getExpressionData())
+                        .map(WeeklyAnalysis.ExpressionData::getExpressionScore)
+                        .orElse((double) 0))
                 .average()
                 .orElse(0.0);
 

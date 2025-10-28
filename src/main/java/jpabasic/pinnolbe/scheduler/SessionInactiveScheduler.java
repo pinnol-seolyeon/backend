@@ -45,7 +45,7 @@ public class SessionInactiveScheduler {
 
                 if (minutesInactive >= INACTIVE_LIMIT_MINUTES) {
                     //10분 이상 INACTIVE 상태 유지 -> 강제 종료 처리
-                    session.setStatus(Status.EXITED);
+                    session.setStatus(Status.INACTIVE);
                     log.info("[SessionCleanup] 세션 만료됨: " + key + " (" + minutesInactive + "분 동안 INACTIVE)");
 
                     studySessionService.saveToDatabase(session);

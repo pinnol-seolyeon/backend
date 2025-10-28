@@ -86,7 +86,7 @@ public class StudyService {
     }
 
     //학습하고 싶은 단원 선택
-    public ChapterDto getChapterContents(User user,String chapterId) {
+    public ChapterDto getChapterContents(String chapterId) {
         Chapter chapter=chapterRepository.findById(chapterId)
                 .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
@@ -157,21 +157,18 @@ public class StudyService {
             log.setChapterId(null);
         }
         studySessionLogRepository.save(log);
+        System.out.println("✔️ 학습 완료 : 다음 진도 sessionLog 생성 완료");
     }
 
     // 학습 참여도 (이번주 학습 완료 단원 수) 가져오기
     public StudyStatsDto getStudyStats(String userId) {
         //이번주 weeklyAnalysis 엔티티 가져오기
-        WeeklyAnalysis weeklyAnalysis;
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
                 .with(DayOfWeek.MONDAY);
-        List<WeeklyAnalysis> listOpt = weeklyAnalysisRepository
-                .findAllByUserIdAndWeekStartDate(userId, weekStart);
-        if(listOpt.isEmpty()){
-            throw new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND);
-        }else{
-            weeklyAnalysis=listOpt.get(0);
-        }
+
+        WeeklyAnalysis weeklyAnalysis =
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
+                        .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
 
         List<String> completed=weeklyAnalysis.getCompletedChapters();
         if (completed == null) return new StudyStatsDto(0);
@@ -308,6 +305,7 @@ public class StudyService {
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
+                System.out.println("✔️ 현재 진행중인 교재가 있음");
                 log = optLog.get();
                 currentBookId = log.getBookId();
             } else {
@@ -338,6 +336,7 @@ public class StudyService {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
                 log = optLog.get();
+                System.out.println("currentChapterId 가져오기");
                 currentChapterId = log.getChapterId();
             } else {
                 currentChapterId = "682829708c776a1ffa92fd50"; // fallback

@@ -15,5 +15,7 @@ public interface StudySessionLogRepository extends MongoRepository<StudySessionL
             LocalDateTime endOfDay
     );
 
+    List<StudySessionLog> findByUserId(String userId);
+
     Optional<StudySessionLog> findById(String studySessionLogId);
 }

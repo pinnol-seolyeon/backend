@@ -1,11 +1,13 @@
 package jpabasic.pinnolbe.service.question;
 
+import org.springframework.stereotype.Component;
+
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.time.DateUtils.round;
-
+@Component
 public class QuestionAnalyzer {
 
 

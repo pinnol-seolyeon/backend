@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface WeeklyAnalysisRepository extends MongoRepository<WeeklyAnalysis, String> {
     List<WeeklyAnalysis> findAllByUserIdAndWeekStartDate(String userId, LocalDate weekStartDate);
     Optional<WeeklyAnalysis> findByUserId(String userId);
+    Optional<WeeklyAnalysis> findByUserIdAndWeekStartDate(String userId, LocalDate weekStartDate);
 }

@@ -170,8 +170,9 @@ public class QuestionService {
             WeeklyAnalysis.ExpressionData expr = analysis.getExpressionData();
             double prevExpression=expr.getExpressionScore();
 
-            //학습 완료 단원 수로 나눠서 평균내기
-            double newScore=
+            //학습 완료 단원 수로 나눠서 평균내기 -> expression score 갱신
+            int completedSize=analysis.getCompletedChapters().size();
+            double newScore=prevExpression/completedSize;
 
             expr.setExpressionScore(newScore);
             analysis.setAnalyzedAt(LocalDateTime.now());

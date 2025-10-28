@@ -127,7 +127,7 @@ public class StudyLogService {
 
             dayTimeZones.add(newTimeZone);
         }
-
+        System.out.println("weekly Analysis에 저장할 현재 레벨까지의 학습시간:"+weeklyAnalysis);
         weeklyAnalysisRepository.save(weeklyAnalysis);
     }
 
@@ -365,16 +365,15 @@ public class StudyLogService {
     //현재 학습 중인 단원 + 레벨 제공
     public NowStudyingLevelDto getNowStudyingLevel(String userId,String sessionLogId){
 
-        StudySessionLog log;
-        Optional<StudySessionLog> logOpt=studySessionLogRepository.findById(sessionLogId);
-        if(logOpt.isPresent()){
-            log=logOpt.get();
-        }else{
-            return null;
-        }
+        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
+        StudySessionLog latestLog=list.stream()
+                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
+                .orElse(null);
 
-        String chapterId=log.getChapterId();
-        int level=log.getLevel();
+        String chapterId=latestLog.getChapterId();
+        int level=latestLog.getLevel();
+
+
 
         Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
         String chapterTitle=chapter.getChapterTitle();

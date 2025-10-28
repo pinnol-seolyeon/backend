@@ -36,6 +36,8 @@ public class WeeklyAnalysis {
 
     private LocalDateTime analyzedAt;
 
+
+
     @Getter @Setter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -95,6 +97,11 @@ public class WeeklyAnalysis {
 
     public WeeklyAnalysis(String userId){
         this.userId = userId;
+    }
+
+    public WeeklyAnalysis(String userId,LocalDate weekStartDate){
+        this.userId = userId;
+        this.weekStartDate = weekStartDate;
     }
 
 
