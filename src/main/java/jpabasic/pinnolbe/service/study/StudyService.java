@@ -133,7 +133,7 @@ public class StudyService {
 
 
     //학습 완료
-    public void finishChapter(StudySessionSummaryDto summaryDto){
+    public void finishChapter(User user,StudySessionSummaryDto summaryDto){
         Chapter chapter=getChapterByString(summaryDto.getChapterId());
         Chapter nextChapter;
 
@@ -156,7 +156,11 @@ public class StudyService {
             log.setBookId(null);
             log.setChapterId(null);
         }
-        studySessionLogRepository.save(log);
+        StudySessionLog sessionLog=studySessionLogRepository.save(log);
+        String id=sessionLog.getId();
+
+        user.setStudySessionLogId(id);
+        userRepository.save(user);
         System.out.println("✔️ 학습 완료 : 다음 진도 sessionLog 생성 완료");
     }
 

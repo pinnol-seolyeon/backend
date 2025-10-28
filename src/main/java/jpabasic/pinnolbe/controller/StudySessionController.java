@@ -77,7 +77,7 @@ public class StudySessionController {
             return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",result);
         }else{
             //해당 단원 학습 모두 완료한 경우
-            studyService.finishChapter(summary);
+            studyService.finishChapter(user,summary);
             weeklyAnalysisService.saveCompletedChapters(user,summary.getChapterId());
             return ApiResponse.success("해당 chapter 학습을 완료했어요.",null);
         }
