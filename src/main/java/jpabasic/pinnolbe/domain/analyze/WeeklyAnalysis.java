@@ -83,6 +83,7 @@ public class WeeklyAnalysis {
 
     @Getter @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DayTimeZone{
         private Map<String,Long> dayTimeZone;

@@ -78,11 +78,14 @@ public class StudyLogService {
     /**
      * 현재 레벨까지 학습한 시간대 & 시간 weekly_analysis에 저장
      */
-    public void saveUntilStudyTime(StudySessionLogResponseDto dto) {
+    public WeeklyAnalysis saveUntilStudyTime(StudySessionLogResponseDto dto) {
+        String userId=dto.getUserId();
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
 
         WeeklyAnalysis weeklyAnalysis =
-                weeklyAnalysisRepository.findByUserId(dto.getUserId())
-                        .orElseGet(() -> new WeeklyAnalysis(dto.getUserId()));
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
+                        .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
 
         LocalDate todayDate = LocalDate.now();
         System.out.println("📅 today = " + todayDate + " (" + todayDate.getDayOfWeek() + ")");
@@ -128,7 +131,8 @@ public class StudyLogService {
             dayTimeZones.add(newTimeZone);
         }
         System.out.println("weekly Analysis에 저장할 현재 레벨까지의 학습시간:"+weeklyAnalysis);
-        weeklyAnalysisRepository.save(weeklyAnalysis);
+        WeeklyAnalysis result=weeklyAnalysisRepository.save(weeklyAnalysis);
+        return result;
     }
 
 
@@ -363,17 +367,18 @@ public class StudyLogService {
     }
 
     //현재 학습 중인 단원 + 레벨 제공
-    public NowStudyingLevelDto getNowStudyingLevel(String userId,String sessionLogId){
+    public NowStudyingLevelDto getNowStudyingLevel(User user,String sessionLogId){
 
-        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
-        StudySessionLog latestLog=list.stream()
-                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
-                .orElse(null);
+//        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
+//        StudySessionLog latestLog=list.stream()
+//                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
+//                .orElse(null);
+
+        String studySessionLogId=user.getStudySessionLogId();
+        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
 
         String chapterId=latestLog.getChapterId();
         int level=latestLog.getLevel();
-
-
 
         Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
         String chapterTitle=chapter.getChapterTitle();

@@ -23,11 +23,11 @@ public class WeeklyAnalysisService {
         this.weeklyAnalysisRepository = weeklyAnalysisRepository;
     }
 
-    public void saveCompletedChapters(User user, String chapterId){
+    public void saveCompletedChapters(User user, String chapterId,String weeklyAnalysisId){
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
                 .with(DayOfWeek.MONDAY);
         WeeklyAnalysis analysis =
-                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(user.getId(), weekStart)
+                weeklyAnalysisRepository.findByIdAndWeekStartDate(weeklyAnalysisId, weekStart)
                         .orElseGet(() -> new WeeklyAnalysis(user.getId(), weekStart));
 
         //기존 완료 리스트 가져오기

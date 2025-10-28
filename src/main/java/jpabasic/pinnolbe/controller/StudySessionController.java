@@ -76,9 +76,12 @@ public class StudySessionController {
             StudySessionLogResponseDto result=studySessionService.sessionUpdate(user,summary);
             return ApiResponse.success("redis에 현 공부 상태 저장 갱신을 완료했어요.",result);
         }else{
+            //COMPLETED 처리 로직
+            StudySessionLogResponseDto result=studySessionService.sessionUpdate(user,summary);
+            String weeklyId=result.getWeeklyAnalysisId();
             //해당 단원 학습 모두 완료한 경우
             studyService.finishChapter(user,summary);
-            weeklyAnalysisService.saveCompletedChapters(user,summary.getChapterId());
+            weeklyAnalysisService.saveCompletedChapters(user,summary.getChapterId(),weeklyId);
             return ApiResponse.success("해당 chapter 학습을 완료했어요.",null);
         }
 

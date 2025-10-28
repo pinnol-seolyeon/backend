@@ -18,6 +18,7 @@ public class StudySessionLogResponseDto {
     private String id;
     private String userId;
     private String chapterId;
+    private String weeklyAnalysisId;
     private int level;
     private long totalDuration;
     private Map<String,Long> timeZoneDurations;

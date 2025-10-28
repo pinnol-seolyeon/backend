@@ -134,12 +134,10 @@ public class StudyService {
 
     //학습 완료
     public void finishChapter(User user,StudySessionSummaryDto summaryDto){
+
+        StudySessionLog log;
         Chapter chapter=getChapterByString(summaryDto.getChapterId());
         Chapter nextChapter;
-
-        //로그 생성
-        StudySessionLog log=new StudySessionLog();
-        log.setUserId(summaryDto.getUserId());
 
         //다음 챕터 탐색
         Optional<Chapter> nextChapterOpt=chapterRepository
@@ -149,10 +147,16 @@ public class StudyService {
         if(nextChapterOpt.isPresent()){
             nextChapter=nextChapterOpt.get();
 
+            log=new StudySessionLog();
+            log.setUserId(summaryDto.getUserId());
             log.setBookId(chapter.getBookId());
             log.setChapterId(String.valueOf(nextChapter.getId()));
             log.setLevel(1);
+
+            System.out.println("✔️ log 업데이트: "+ log);
         }else{ //이미 해당 교재의 모든 단원을 마무리함
+            log=new StudySessionLog();
+            log.setUserId(summaryDto.getUserId());
             log.setBookId(null);
             log.setChapterId(null);
         }
