@@ -29,12 +29,16 @@ public enum ErrorCode {
     // study session 관련
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"session-001","기존의 study session 기록이 없어요."),
     STUDY_SESSION_LOG_NOT_FOUND(HttpStatus.NOT_FOUND,"session-002","StudySessionLog 엔티티가 없어요."),
+    SESSION_LOG_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"session-003","세션 로그 삭제에 오류가 발생했어요."),
 
     //chapter 관련
     CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-001","해당 chapter내용을 찾을 수 없어요."),
 
     //weekly-analysis 관련
     WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)");
+
+    //
+
 
 
 

@@ -140,6 +140,15 @@ public class StudySessionService {
             WeeklyAnalysis weeklyAnalysis=studyLogService.saveUntilStudyTime(dto);
             String weeklyId= weeklyAnalysis.getId();
             dto.setWeeklyAnalysisId(weeklyId);
+
+            //해당 레벨 학습 완료 -> 해당 레벨의 studySessionLog 삭제
+            String sessionLogId=dto.getId();
+            try {
+                studySessionLogRepository.deleteById(sessionLogId);
+            }catch(Exception e) {
+                throw new CustomException(ErrorCode.SESSION_LOG_DELETE_ERROR);
+            }
+
             return dto;
         }
 
