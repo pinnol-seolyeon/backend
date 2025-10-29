@@ -13,6 +13,7 @@ import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
+import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ErrorCode;
@@ -347,18 +348,14 @@ public class StudyLogService {
     }
 
     //전체 진행률
-    public double getStudyProgress(String userId){
+    public double getStudyProgress(User user){
 
-        //전체 단원 개수
+        //전체 단원 개수(모든 교재 포함)
         int count=(int)mongoTemplate.count(new Query(), Chapter.class);
 
         //내가 학습 완료한 단원 개수
-        int completedChapters=0;
-        Study study=studyRepository.findByUserId(userId)
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
-        if (study.getCompleteChapter() != null) {
-            completedChapters=study.getCompleteChapter().size();
-        }
+        StudyStatsDto dto=studyService.getStudyStats(user.getId());
+        int completedChapters=dto.getTotalCompleted();
 
         //진행률 계산
         double progress=((double)completedChapters/count)*100;

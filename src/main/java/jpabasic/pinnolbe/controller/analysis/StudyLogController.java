@@ -59,10 +59,10 @@ public class StudyLogController {
 
     @GetMapping("/overall-progress")
     @Operation(summary="전체 진행률")
-    public ResponseEntity<Map<String, Double>> getStudyProgress(){
+    public ApiResponse<Double> getStudyProgress(){
         User user=userService.getUserInfo();
-        Double progress=studyLogService.getStudyProgress(user.getId());
-        return ResponseEntity.ok(Map.of("전체 진행률",progress));
+        Double progress=studyLogService.getStudyProgress(user);
+        return ApiResponse.success("전체 진행률입니다.",progress);
     }
 
     @GetMapping("/preferred-time")
