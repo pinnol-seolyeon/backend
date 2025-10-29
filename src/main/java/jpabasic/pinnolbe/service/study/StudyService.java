@@ -67,23 +67,6 @@ public class StudyService {
     private WeeklyAnalysisRepository weeklyAnalysisRepository;
 
 
-    //이미 학습했던 단원 다시 클릭
-    public ChapterDto getOnceLearned(String studyId) {
-
-        ObjectId objectId=new ObjectId(studyId);
-        Study study=studyRepository.findById(objectId).orElseThrow(()-> new IllegalArgumentException("Study documentation 조회 오류"));
-
-        // 전까지 완료했던 데부터 시작..
-        Chapter chapter = study.getChapter();
-        String chapterId=chapter.getId().toString();
-
-        //Dto로 변환해서 리턴
-        ChapterDto dto= convertDto(chapterId,chapter);
-        System.out.println("✅"+dto.getChapterId()); ///objectId
-
-        // 본격적인 학습 시작
-        return dto;
-    }
 
     //학습하고 싶은 단원 선택
     public ChapterDto getChapterContents(String chapterId) {
@@ -94,21 +77,6 @@ public class StudyService {
         ChapterDto chapterDto=convertDto(chapterId,chapter);
         return chapterDto;
     }
-
-
-
-
-
-
-
-
-
-
-    public String getChapterTitle(String chapterId){
-        Chapter chapter=getChapterByString(chapterId);
-        return chapter.getChapterTitle();
-    }
-
 
 
     ///chapterRepository에 S3 image url 저장

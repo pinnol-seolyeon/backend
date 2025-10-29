@@ -4,15 +4,15 @@ import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
-import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
-import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
+import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.CompletedChapter;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
+import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ErrorCode;
@@ -58,21 +58,39 @@ public class StudyLogService {
 
     @Transactional
     //오늘 하루 공부 시간대 + 총 시간
-    public TodayStudyTimeDto getTodayStudyTime(String userId) {
+    public List<StudyTimeDetailDto> getTodayStudyTime(User user) {
         LocalDate today = ZonedDateTime.now().toLocalDate();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+//        LocalDateTime startOfDay = today.atStartOfDay();
+//        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
-        List<StudyLog> logs = studyLogRepository.findByUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
+        WeeklyAnalysis analysis =
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(user.getId(), weekStart)
+                        .orElse(null);
+        if (analysis==null||analysis.getWeeklyTimeZone()==null){
+            return null;
+        }
 
-        long totalMinutes = logs.stream()
-                .mapToLong(log -> Duration.between(log.getStartTime(), log.getEndTime()).toMinutes())
-                .sum();
+        List<StudyTimeDetailDto> result = new ArrayList<>();
 
-        int hours = (int) totalMinutes / 60;
-        int minutes = (int) totalMinutes % 60;
+        // weeklyTimeZone 안의 dayTimeZones 배열 순회
+        for (WeeklyAnalysis.DayTimeZone dayZone : analysis.getWeeklyTimeZone().getDayTimeZones()) {
+            DayOfWeek dayOfWeek = dayZone.getDayOfWeek(); // "WEDNESDAY"
 
-        return new TodayStudyTimeDto(hours, minutes);
+            if (dayZone.getDayTimeZone() == null) continue;
+
+            for (Map.Entry<String, Long> entry : dayZone.getDayTimeZone().entrySet()) {
+                String timeZone = entry.getKey();  // "AFTERNOON"
+                Long minutes = entry.getValue();   // 7
+
+                result.add(new StudyTimeDetailDto(dayOfWeek, timeZone, minutes));
+            }
+        }
+
+        return result;
+
+
     }
 
     /**
@@ -347,18 +365,14 @@ public class StudyLogService {
     }
 
     //전체 진행률
-    public double getStudyProgress(String userId){
+    public double getStudyProgress(User user){
 
-        //전체 단원 개수
+        //전체 단원 개수(모든 교재 포함)
         int count=(int)mongoTemplate.count(new Query(), Chapter.class);
 
         //내가 학습 완료한 단원 개수
-        int completedChapters=0;
-        Study study=studyRepository.findByUserId(userId)
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
-        if (study.getCompleteChapter() != null) {
-            completedChapters=study.getCompleteChapter().size();
-        }
+        StudyStatsDto dto=studyService.getStudyStats(user.getId());
+        int completedChapters=dto.getTotalCompleted();
 
         //진행률 계산
         double progress=((double)completedChapters/count)*100;
