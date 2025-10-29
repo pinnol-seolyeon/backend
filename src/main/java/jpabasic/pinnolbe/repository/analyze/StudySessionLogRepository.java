@@ -18,4 +18,5 @@ public interface StudySessionLogRepository extends MongoRepository<StudySessionL
     List<StudySessionLog> findByUserId(String userId);
 
     Optional<StudySessionLog> findById(String studySessionLogId);
+    List<StudySessionLog> findByChapterIdAndUserId(String chapterId, String userId);
 }

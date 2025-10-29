@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 @Getter
@@ -24,11 +25,15 @@ public class StudySessionLogResponseDto {
     private Map<String,Long> timeZoneDurations;
     private LocalDateTime createdAt;
 
-    public StudySessionLogResponseDto toDto(StudySessionLog studySessionLog) {
+
+    public static StudySessionLogResponseDto toStudySessionLog(StudySessionLog studySessionLog) {
         StudySessionLogResponseDto dto=new StudySessionLogResponseDto();
         dto.setId(studySessionLog.getId());
+        dto.setUserId(studySessionLog.getUserId());
+        dto.setChapterId(studySessionLog.getChapterId());
+        dto.setLevel(studySessionLog.getLevel());
         dto.setTotalDuration(studySessionLog.getTotalDuration());
-        dto.setTimeZoneDurations(studySessionLog.getTimeZoneDurations());
+        dto.setTimeZoneDurations(new HashMap<>(studySessionLog.getTimeZoneDurations()));
         dto.setCreatedAt(studySessionLog.getCreatedAt());
         return dto;
     }

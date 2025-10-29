@@ -134,10 +134,19 @@ public class StudyService {
 
     //학습 완료
     public void finishChapter(User user,StudySessionSummaryDto summaryDto){
-
+        String chapterId=summaryDto.getChapterId();
+        String userId= summaryDto.getUserId();
         StudySessionLog log;
-        Chapter chapter=getChapterByString(summaryDto.getChapterId());
+        Chapter chapter=getChapterByString(chapterId);
         Chapter nextChapter;
+
+        //6단계까지 완료 -> 완료한 단원의 StudySessionLog 모두 삭제
+        List<StudySessionLog> list = studySessionLogRepository.findByChapterIdAndUserId(chapterId, userId);
+        try {
+            studySessionLogRepository.deleteAll(list);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.SESSION_LOG_DELETE_ERROR);
+        }
 
         //다음 챕터 탐색
         Optional<Chapter> nextChapterOpt=chapterRepository

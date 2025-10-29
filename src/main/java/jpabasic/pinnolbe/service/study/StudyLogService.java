@@ -369,13 +369,13 @@ public class StudyLogService {
     //현재 학습 중인 단원 + 레벨 제공
     public NowStudyingLevelDto getNowStudyingLevel(User user,String sessionLogId){
 
-//        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
-//        StudySessionLog latestLog=list.stream()
-//                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
-//                .orElse(null);
+        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
+        StudySessionLog latestLog=list.stream()
+                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
+                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND)); //현재 진행 중인 레벨 없음
 
-        String studySessionLogId=user.getStudySessionLogId();
-        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
+//        String studySessionLogId=user.getStudySessionLogId();
+//        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
 
         String chapterId=latestLog.getChapterId();
         int level=latestLog.getLevel();

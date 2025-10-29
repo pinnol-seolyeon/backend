@@ -79,8 +79,12 @@ public class StudySessionController {
             //COMPLETED 처리 로직
             StudySessionLogResponseDto result=studySessionService.sessionUpdate(user,summary);
             String weeklyId=result.getWeeklyAnalysisId();
+
             //해당 단원 학습 모두 완료한 경우
             studyService.finishChapter(user,summary);
+            //해당 chapter studySessionLog 모두 삭제
+
+            //완료한 단원 weeklyAnalysis에 저장
             weeklyAnalysisService.saveCompletedChapters(user,summary.getChapterId(),weeklyId);
             return ApiResponse.success("해당 chapter 학습을 완료했어요.",null);
         }

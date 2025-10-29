@@ -27,14 +27,15 @@ public class WeeklyAnalysisService {
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
                 .with(DayOfWeek.MONDAY);
         WeeklyAnalysis analysis =
-                weeklyAnalysisRepository.findByIdAndWeekStartDate(weeklyAnalysisId, weekStart)
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(user.getId(), weekStart)
                         .orElseGet(() -> new WeeklyAnalysis(user.getId(), weekStart));
 
         //기존 완료 리스트 가져오기
         List<String> completed=analysis.getCompletedChapters();
-        if(!completed.contains(chapterId)){
+        if(!completed.contains(chapterId)) {
             completed.add(chapterId);
         }
+
 
         analysis.setCompletedChapters(completed);
         weeklyAnalysisRepository.save(analysis);

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/study")
+@RequestMapping("/api/study-log")
 @RequiredArgsConstructor
 @Tag(name="학습 분석",description="학습 분석 관련 api")
 public class StudyLogController {
@@ -40,7 +40,7 @@ public class StudyLogController {
     private final QueCollectionRepository queCollectionRepository;
     private final QuestionService questionService;
 
-    @GetMapping("/stats")
+    @GetMapping("/this-week/chapters")
     @Operation(summary="이번주 학습 완료한 단원 개수")
     public ApiResponse<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
@@ -54,11 +54,11 @@ public class StudyLogController {
         User user = userService.getUserInfo();
         String sessionLogId=user.getStudySessionLogId();
         NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user,sessionLogId);
-        return ApiResponse.success("이번 주 학습 완료한 단원 개수입니다.",result);
+        return ApiResponse.success("현재 학습중인 단원과 레벨입니다.",result);
     }
 
-    @GetMapping("/progress")
-    @Operation(summary="전체 진행률(수정 전)")
+    @GetMapping("/overall-progress")
+    @Operation(summary="전체 진행률")
     public ResponseEntity<Map<String, Double>> getStudyProgress(){
         User user=userService.getUserInfo();
         Double progress=studyLogService.getStudyProgress(user.getId());

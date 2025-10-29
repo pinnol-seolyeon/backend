@@ -114,7 +114,7 @@ public class StudySessionService {
             session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
 
-            saveToDatabase(session);
+//            saveToDatabase(session);
         }
 
         // INACTIVE → ACTIVE
@@ -126,28 +126,25 @@ public class StudySessionService {
             session.setLastActive(lastActive);
             System.out.println("⏱️ idleDuration 추가: " + minutes + "분");
 
-            saveToDatabase(session);
+//            saveToDatabase(session);
         }
 
         // COMPLETE
         if (summary.getStatus() == Status.COMPLETED) {
             System.out.println("🏁 [COMPLETE] 감지 - DB 저장 로직 실행");
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
-            boolean deleted=redisTemplate.delete(key); //redis 세션 삭제
+            System.out.println("✔️ dto: "+ dto);
+            //redis 세션 삭제
+            boolean deleted=redisTemplate.delete(key);
+            //user필드 studySessionLogId 삭제
+            user.setStudySessionLogId(null);
+            userRepository.save(user);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
             //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
             WeeklyAnalysis weeklyAnalysis=studyLogService.saveUntilStudyTime(dto);
             String weeklyId= weeklyAnalysis.getId();
             dto.setWeeklyAnalysisId(weeklyId);
-
-            //해당 레벨 학습 완료 -> 해당 레벨의 studySessionLog 삭제
-            String sessionLogId=dto.getId();
-            try {
-                studySessionLogRepository.deleteById(sessionLogId);
-            }catch(Exception e) {
-                throw new CustomException(ErrorCode.SESSION_LOG_DELETE_ERROR);
-            }
 
             return dto;
         }
@@ -157,6 +154,7 @@ public class StudySessionService {
 
         return null;
     }
+
 
     /** 총 학습 시간 및 시간대 누적 */
     private void updateTimeZone(StudySession session) {
@@ -224,9 +222,8 @@ public class StudySessionService {
         existingLog.setStatus(session.getStatus());
         StudySessionLog result=studySessionLogRepository.save(existingLog);
 
-        StudySessionLogResponseDto dto=new StudySessionLogResponseDto();
         System.out.println("✅ [saveToDatabase] 저장 완료, totalDuration=" + newDuration);
-        return dto.toDto(result);
+        return StudySessionLogResponseDto.toStudySessionLog(result);
     }
 
     /** timeZoneDuration 병합 */
