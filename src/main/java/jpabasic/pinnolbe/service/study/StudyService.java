@@ -2,10 +2,12 @@ package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.domain.study.UserFeedback;
+import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
@@ -16,6 +18,7 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
+import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
@@ -60,6 +63,8 @@ public class StudyService {
   WebClient webClient;
     @Autowired
     private StudySessionLogRepository studySessionLogRepository;
+    @Autowired
+    private WeeklyAnalysisRepository weeklyAnalysisRepository;
 
 
     //이미 학습했던 단원 다시 클릭
@@ -81,7 +86,7 @@ public class StudyService {
     }
 
     //학습하고 싶은 단원 선택
-    public ChapterDto getChapterContents(User user,String chapterId) {
+    public ChapterDto getChapterContents(String chapterId) {
         Chapter chapter=chapterRepository.findById(chapterId)
                 .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
@@ -127,45 +132,71 @@ public class StudyService {
     }
 
 
-    //학습 완료 //학습 완료 시 나오는 화면 or 나오는 로직 설정해야..
-    public void finishChapter(String chapterId,String studyId){
+    //학습 완료
+    public void finishChapter(User user,StudySessionSummaryDto summaryDto){
+        String chapterId=summaryDto.getChapterId();
+        String userId= summaryDto.getUserId();
+        StudySessionLog log;
         Chapter chapter=getChapterByString(chapterId);
-        ObjectId objectId=new ObjectId(studyId);
-        Study study=studyRepository.findById(objectId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+        Chapter nextChapter;
 
-        if(study.getCompleteChapter()==null){
-            study.setCompleteChapter(new HashSet<>());
+        //6단계까지 완료 -> 완료한 단원의 StudySessionLog 모두 삭제
+        List<StudySessionLog> list = studySessionLogRepository.findByChapterIdAndUserId(chapterId, userId);
+        try {
+            studySessionLogRepository.deleteAll(list);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.SESSION_LOG_DELETE_ERROR);
         }
 
-        //완료된 단원 리스트에 추가
-        study.getCompleteChapter().add(new CompletedChapter(chapterId,LocalDateTime.now()));
+        //다음 챕터 탐색
+        Optional<Chapter> nextChapterOpt=chapterRepository
+                .findByBookIdAndOrder(chapter.getBookId(),chapter.getOrder()+1);
 
-        //현재 학습중인 단원 제거 or 다음 단원으로 교체
-//        study.setChapter(null);
-        study.setChapter(getNextChapter(study));
+        //학습해야할 다음 단원을 담은 StudySessionLog 생성
+        if(nextChapterOpt.isPresent()){
+            nextChapter=nextChapterOpt.get();
 
-        studyRepository.save(study);
+            log=new StudySessionLog();
+            log.setUserId(summaryDto.getUserId());
+            log.setBookId(chapter.getBookId());
+            log.setChapterId(String.valueOf(nextChapter.getId()));
+            log.setLevel(1);
+
+            System.out.println("✔️ log 업데이트: "+ log);
+        }else{ //이미 해당 교재의 모든 단원을 마무리함
+            log=new StudySessionLog();
+            log.setUserId(summaryDto.getUserId());
+            log.setBookId(null);
+            log.setChapterId(null);
+        }
+        StudySessionLog sessionLog=studySessionLogRepository.save(log);
+        String id=sessionLog.getId();
+
+        user.setStudySessionLogId(id);
+        userRepository.save(user);
+        System.out.println("✔️ 학습 완료 : 다음 진도 sessionLog 생성 완료");
     }
 
-    // 학습 참여도 (총 학습 완료 단원 수, 이번주 학습 완료 단원 수) 가져오기
+    // 학습 참여도 (이번주 학습 완료 단원 수) 가져오기
     public StudyStatsDto getStudyStats(String userId) {
-        Study study = studyRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 user의 Study를 찾을 수 없어요"));
+        //이번주 weeklyAnalysis 엔티티 가져오기
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
 
-        Set<CompletedChapter> completed = study.getCompleteChapter();
-        if (completed == null) return new StudyStatsDto(0, 0);
+        WeeklyAnalysis weeklyAnalysis =
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
+                        .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
+
+        List<String> completed=weeklyAnalysis.getCompletedChapters();
+        if (completed == null) return new StudyStatsDto(0);
 
         int total = completed.size();
 
-        LocalDate now = LocalDate.now();
-        LocalDate weekStart = now.with(DayOfWeek.MONDAY);
+//        int weekly = (int) completed.stream()
+//                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
+//                .count();
 
-        int weekly = (int) completed.stream()
-                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
-                .count();
-
-        return new StudyStatsDto(total, weekly);
+        return new StudyStatsDto(total);
     }
 
     //학습 완료 후 다음 단원으로 이동
@@ -291,6 +322,7 @@ public class StudyService {
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
+                System.out.println("✔️ 현재 진행중인 교재가 있음");
                 log = optLog.get();
                 currentBookId = log.getBookId();
             } else {
@@ -321,6 +353,7 @@ public class StudyService {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
                 log = optLog.get();
+                System.out.println("currentChapterId 가져오기");
                 currentChapterId = log.getChapterId();
             } else {
                 currentChapterId = "682829708c776a1ffa92fd50"; // fallback

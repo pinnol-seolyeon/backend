@@ -12,6 +12,8 @@ public class QuestionSessionDto {
 
     private List<String> questions=new ArrayList<>();
     private List<String> answers=new ArrayList<>();
+    private List<Double> scores=new ArrayList<>();
+
 
 
     public void add(String question,String answer){

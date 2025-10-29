@@ -1,10 +1,7 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.analysis;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
-import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.analyze.RadarScoreService;
@@ -12,13 +9,7 @@ import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/quiz-result")

@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.analysis;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,8 +10,9 @@ import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
+import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
-import jpabasic.pinnolbe.service.QuestionService;
+import jpabasic.pinnolbe.service.question.QuestionService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -28,9 +29,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/study")
+@RequestMapping("/api/study-log")
 @RequiredArgsConstructor
-@Tag(name="학습 분석(수정 전)",description="학습 분석 관련 api")
+@Tag(name="학습 분석",description="학습 분석 관련 api")
 public class StudyLogController {
 
     private final StudyLogService studyLogService;
@@ -39,25 +40,25 @@ public class StudyLogController {
     private final QueCollectionRepository queCollectionRepository;
     private final QuestionService questionService;
 
-    @GetMapping("/stats")
-    @Operation(summary="이번주/총 학습 완료한 단원 개수")
-    public ResponseEntity<StudyStatsDto> getStudyStats() {
+    @GetMapping("/this-week/chapters")
+    @Operation(summary="이번주 학습 완료한 단원 개수")
+    public ApiResponse<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
-
         StudyStatsDto stats = studyService.getStudyStats(user.getId());
-        return ResponseEntity.ok(stats);
+        return ApiResponse.success("이번 주 학습 완료한 단원 개수입니다.",stats);
     }
 
     @GetMapping("/now-studying")
-    @Operation(summary="현재 학습 단원(수정 전)")
-    public ResponseEntity<NowStudyingLevelDto> getNowStudyingLevel() {
+    @Operation(summary="현재 단원 레벨")
+    public ApiResponse<NowStudyingLevelDto> getNowStudyingLevel() {
         User user = userService.getUserInfo();
-        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user.getId());
-        return ResponseEntity.ok(result);
+        String sessionLogId=user.getStudySessionLogId();
+        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user,sessionLogId);
+        return ApiResponse.success("현재 학습중인 단원과 레벨입니다.",result);
     }
 
-    @GetMapping("/progress")
-    @Operation(summary="전체 진행률(수정 전)")
+    @GetMapping("/overall-progress")
+    @Operation(summary="전체 진행률")
     public ResponseEntity<Map<String, Double>> getStudyProgress(){
         User user=userService.getUserInfo();
         Double progress=studyLogService.getStudyProgress(user.getId());

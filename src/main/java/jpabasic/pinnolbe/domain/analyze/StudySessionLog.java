@@ -8,12 +8,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Document(collection="studySessionLog")
 @Getter
 @Setter
 @NoArgsConstructor
+//학습자의 현 진도 저장
 public class StudySessionLog extends BaseEntity {
 
     @Id
@@ -23,7 +25,7 @@ public class StudySessionLog extends BaseEntity {
     private String chapterId;
     private int level;
     private long totalDuration; //누적 학습 시간 (분)
-    private Map<String,Long> timeZoneDurations; //각 학습 시간대 누적 시간 (분)
+    private Map<String,Long> timeZoneDurations= new HashMap<>(); //각 학습 시간대 누적 시간 (분)
     private Status status;
 
     public StudySessionLog(
@@ -33,6 +35,7 @@ public class StudySessionLog extends BaseEntity {
         this.chapterId=chapterId;
         this.level=level;
         this.totalDuration=0;
+        this.timeZoneDurations=new HashMap<>();
     }
 
 

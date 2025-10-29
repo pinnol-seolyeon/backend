@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,14 +26,17 @@ public class WeeklyAnalysis {
 
     private LocalDate weekStartDate;
 
-    private EngagementData engagementData;
-    private FocusData focusData;
-    private UnderstandingData understandingData;
-    private ExpressionData expressionData;
-    //주간 학습 시간대
-    private WeeklyTimeZone weeklyTimeZone;
+    private EngagementData engagementData;//참여도
+    private FocusData focusData;//집중도
+    private UnderstandingData understandingData;//이해도
+    private ExpressionData expressionData;//표현력
+    private WeeklyTimeZone weeklyTimeZone;//주간 학습 시간대+학습 시간(추가된 내용)
+
+    private List<String> completedChapters=new ArrayList<>(); //학습완료한 chapter들
 
     private LocalDateTime analyzedAt;
+
+
 
     @Getter @Setter
     @NoArgsConstructor
@@ -66,8 +70,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private int starScore;
-        private int starCount;
+        private double expressionScore;
     }
 
     @Getter @Setter
@@ -80,6 +83,7 @@ public class WeeklyAnalysis {
 
     @Getter @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DayTimeZone{
         private Map<String,Long> dayTimeZone;
@@ -94,6 +98,11 @@ public class WeeklyAnalysis {
 
     public WeeklyAnalysis(String userId){
         this.userId = userId;
+    }
+
+    public WeeklyAnalysis(String userId,LocalDate weekStartDate){
+        this.userId = userId;
+        this.weekStartDate = weekStartDate;
     }
 
 

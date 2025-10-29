@@ -1,11 +1,7 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.analysis;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.login.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

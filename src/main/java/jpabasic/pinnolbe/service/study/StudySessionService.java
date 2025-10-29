@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service.study;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jpabasic.pinnolbe.domain.Status;
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.redis.StudySession;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
@@ -112,6 +113,8 @@ public class StudySessionService {
             session.setStatus(Status.INACTIVE);
             session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
+
+//            saveToDatabase(session);
         }
 
         // INACTIVE → ACTIVE
@@ -122,24 +125,36 @@ public class StudySessionService {
             session.setStatus(Status.ACTIVE);
             session.setLastActive(lastActive);
             System.out.println("⏱️ idleDuration 추가: " + minutes + "분");
+
+//            saveToDatabase(session);
         }
 
         // COMPLETE
         if (summary.getStatus() == Status.COMPLETED) {
             System.out.println("🏁 [COMPLETE] 감지 - DB 저장 로직 실행");
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
-            boolean deleted=redisTemplate.delete(key); //redis 세션 삭제
+            System.out.println("✔️ dto: "+ dto);
+            //redis 세션 삭제
+            boolean deleted=redisTemplate.delete(key);
+            //user필드 studySessionLogId 삭제
+            user.setStudySessionLogId(null);
+            userRepository.save(user);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
-            //레벨 학습완료 후, 해당 레벨 학습 시간 학습 분석에 저장
-            studyLogService.saveUntilStudyTime(dto);
+            //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
+            WeeklyAnalysis weeklyAnalysis=studyLogService.saveUntilStudyTime(dto);
+            String weeklyId= weeklyAnalysis.getId();
+            dto.setWeeklyAnalysisId(weeklyId);
+
             return dto;
         }
 
         redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
         System.out.println("💾 Redis 세션 갱신 완료 key=" + key);
+
         return null;
     }
+
 
     /** 총 학습 시간 및 시간대 누적 */
     private void updateTimeZone(StudySession session) {
@@ -193,20 +208,22 @@ public class StudySessionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        String studySessionId = user.getStudySessionLogId();
-        StudySessionLog existingLog = studySessionLogRepository.findById(studySessionId)
+        String currentLogId = user.getStudySessionLogId();
+        StudySessionLog existingLog = studySessionLogRepository.findById(currentLogId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
 
+
+
+        //기존 sessionLog에 저장되어 있던 학습시간+redis에 신규로 저장되어 있던 학습시간
         long newDuration = existingLog.getTotalDuration() + session.getTotalDuration();
         existingLog.setTotalDuration(newDuration);
-
+        //기존 sessionLog에 저장되어 있던 timeZone 별 학습시간+redis에 신규로 저장되어 있던 timeZone별 학습시간
         mergeTimeZoneDuration(existingLog, session);
         existingLog.setStatus(session.getStatus());
         StudySessionLog result=studySessionLogRepository.save(existingLog);
 
-        StudySessionLogResponseDto dto=new StudySessionLogResponseDto();
         System.out.println("✅ [saveToDatabase] 저장 완료, totalDuration=" + newDuration);
-        return dto.toDto(result);
+        return StudySessionLogResponseDto.toStudySessionLog(result);
     }
 
     /** timeZoneDuration 병합 */

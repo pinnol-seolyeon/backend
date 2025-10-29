@@ -9,6 +9,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudyStatsDto {
     private int totalCompleted;
-    private int weeklyCompleted;
+//    private int weeklyCompleted;
 
 }

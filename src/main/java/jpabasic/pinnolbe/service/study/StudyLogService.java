@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
+import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
@@ -77,11 +78,14 @@ public class StudyLogService {
     /**
      * 현재 레벨까지 학습한 시간대 & 시간 weekly_analysis에 저장
      */
-    public void saveUntilStudyTime(StudySessionLogResponseDto dto) {
+    public WeeklyAnalysis saveUntilStudyTime(StudySessionLogResponseDto dto) {
+        String userId=dto.getUserId();
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
 
         WeeklyAnalysis weeklyAnalysis =
-                weeklyAnalysisRepository.findByUserId(dto.getUserId())
-                        .orElseGet(() -> new WeeklyAnalysis(dto.getUserId()));
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
+                        .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
 
         LocalDate todayDate = LocalDate.now();
         System.out.println("📅 today = " + todayDate + " (" + todayDate.getDayOfWeek() + ")");
@@ -126,8 +130,9 @@ public class StudyLogService {
 
             dayTimeZones.add(newTimeZone);
         }
-
-        weeklyAnalysisRepository.save(weeklyAnalysis);
+        System.out.println("weekly Analysis에 저장할 현재 레벨까지의 학습시간:"+weeklyAnalysis);
+        WeeklyAnalysis result=weeklyAnalysisRepository.save(weeklyAnalysis);
+        return result;
     }
 
 
@@ -361,31 +366,24 @@ public class StudyLogService {
         return progress;
     }
 
-    //현재 학습 중인 교재 + 단원 제공
-    public NowStudyingLevelDto getNowStudyingLevel(String userId){
+    //현재 학습 중인 단원 + 레벨 제공
+    public NowStudyingLevelDto getNowStudyingLevel(User user,String sessionLogId){
 
-        Study study=studyRepository.findByUserId(userId)
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_NOT_FOUND));
+        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
+        StudySessionLog latestLog=list.stream()
+                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
+                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND)); //현재 진행 중인 레벨 없음
 
-        //현재 학습 중인 교재
-        String bookId=study.getBookId();
-        Book book = bookRepository.findById(new ObjectId(bookId))
-                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
-        String title=book.getTitle();
+//        String studySessionLogId=user.getStudySessionLogId();
+//        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
 
-        //현재 진도 단원 ID
-        String currentId=study.getChapter()!=null?study.getChapter().getId().toString():null;
-        List<String> chapters=book.getChapters();
+        String chapterId=latestLog.getChapterId();
+        int level=latestLog.getLevel();
 
-        int index=-0;
-        for(int i=0;i<chapters.size();i++){
-            if(book.getChapters().get(i).equals(currentId)){
-                index=i;
-                break;
-            }
-        }
+        Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
+        String chapterTitle=chapter.getChapterTitle();
 
-        NowStudyingLevelDto result=new NowStudyingLevelDto(title,index);
+        NowStudyingLevelDto result=new NowStudyingLevelDto(chapterTitle,level);
         return result;
     }
 
