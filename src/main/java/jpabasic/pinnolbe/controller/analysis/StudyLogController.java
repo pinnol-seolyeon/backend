@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
-import jpabasic.pinnolbe.dto.analyze.TodayStudyTimeDto;
+import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
@@ -25,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -73,12 +72,12 @@ public class StudyLogController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/today")
-    @Operation(summary="오늘 학습 시간대 + 시간(수정 전)")
-    public ResponseEntity<?> getTodayStudyTime() {
+    @GetMapping("/weekly-pattern")
+    @Operation(summary="주간 학습 패턴")
+    public ApiResponse<List<StudyTimeDetailDto>> getTodayStudyTime() {
         User user = userService.getUserInfo();
-        TodayStudyTimeDto result = studyLogService.getTodayStudyTime(user.getId());
-        return ResponseEntity.ok(result);
+        List<StudyTimeDetailDto> result = studyLogService.getTodayStudyTime(user);
+        return ApiResponse.success("이번 주 주간 학습 패턴",result);
     }
 
     @GetMapping("/calendar")
