@@ -94,7 +94,7 @@ public class QuestionService {
         return questions;
     }
 
-    // 참여도
+    // 참여도(질문 개수)
     public void updateWeeklyQuestionCount(User user) {
         String userId = user.getId();
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
@@ -150,43 +150,44 @@ public class QuestionService {
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul")).with(DayOfWeek.MONDAY);
 
         //표현력 점수 측정
-        double expressionScores=getExpressionScore(questions);
+        double newScore=getExpressionScore(questions);
 
-        List<WeeklyAnalysis> analyses =
-                weeklyAnalysisRepository.findAllByUserIdAndWeekStartDate(userId, weekStart);
+        WeeklyAnalysis analysis = weeklyAnalysisRepository
+                .findByUserIdAndWeekStartDate(userId, weekStart)
+                .orElseGet(() -> WeeklyAnalysis.builder()
+                        .userId(userId)
+                        .weekStartDate(weekStart)
+                        .expressionData(new WeeklyAnalysis.ExpressionData())
+                        .analyzedAt(LocalDateTime.now())
+                        .build());
 
-        WeeklyAnalysis analysis;
-        if (analyses.isEmpty()) {
-            // 첫 별점이므로 그대로 저장
-            analysis = WeeklyAnalysis.builder()
-                    .userId(userId)
-                    .weekStartDate(weekStart)
-                    .expressionData(
-                            WeeklyAnalysis.ExpressionData.builder()
-                                    .expressionScore(expressionScores)
-                                    .build()
-                    )
-                    .analyzedAt(LocalDateTime.now())
-                    .build();
-        } else {
-            analysis = analyses.get(0);
-
-            if (analysis.getExpressionData() == null) {
-                analysis.setExpressionData(new WeeklyAnalysis.ExpressionData());
-            }
-
-            WeeklyAnalysis.ExpressionData expr = analysis.getExpressionData();
-            double prevExpression=expr.getExpressionScore();
-
-            //학습 완료 단원 수로 나눠서 평균내기 -> expression score 갱신
-            int completedSize=analysis.getCompletedChapters().size();
-            double newScore=prevExpression/completedSize;
-
-            expr.setExpressionScore(newScore);
-            analysis.setAnalyzedAt(LocalDateTime.now());
+        //expressionData 초기화
+        if (analysis.getExpressionData() == null) {
+            analysis.setExpressionData(new WeeklyAnalysis.ExpressionData());
         }
+        WeeklyAnalysis.ExpressionData expr = analysis.getExpressionData();
+
+        //이전 점수 가져오기
+        double prevScore=expr.getExpressionScore();
+
+        //completedChapters가 null일 경우 대비
+        List<String> completed = analysis.getCompletedChapters();
+        int completedSize = (completed != null) ? completed.size() : 0;
+
+        //평균 계산 : (이전 평균*완료 단원 수+새 점수)/(완료 단원 수 +1)
+        double updatedScore;
+        if(completedSize==0){
+            updatedScore=newScore;
+        }else{
+            updatedScore=(prevScore*completedSize+newScore)/(completedSize+1);
+        }
+        //저장
+        expr.setExpressionScore(updatedScore);
+        analysis.setExpressionData(expr);
+        analysis.setAnalyzedAt(LocalDateTime.now());
 
         weeklyAnalysisRepository.save(analysis);
+        System.out.println("✅ [" + userId + "] 이번주 표현력 점수 업데이트 완료: " + updatedScore);
     }
 
 
