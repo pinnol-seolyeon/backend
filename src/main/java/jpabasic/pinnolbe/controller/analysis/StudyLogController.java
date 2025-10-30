@@ -6,6 +6,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
+import jpabasic.pinnolbe.dto.question.QueCollectionResponseDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
@@ -130,50 +131,20 @@ public class StudyLogController {
 
 
     @GetMapping("/questions/history")
-    @Operation(summary="캘린더 해당 날짜 질문 내역(수정 전)")
-    public List<QueCollection> getDailyQnA(
+    @Operation(summary="캘린더 해당 날짜 질문 내역 조회",
+                description="date는 ISO type")
+    public ApiResponse<List<QueCollectionResponseDto>> getDailyQnA(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        User user=userService.getUserInfo();
-        String userId=user.getId();
+        User user = userService.getUserInfo();
+        String userId = user.getId();
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
-        return queCollectionRepository.findByUserIdAndDateBetween(userId, start, end);
+        List<QueCollection> queCollection = queCollectionRepository.findAllByUserIdAndCreatedAtBetween(userId, start, end);
+        List<QueCollectionResponseDto> dto = QueCollectionResponseDto.fromList(queCollection);
+        return ApiResponse.success("조회 성공", dto);
     }
-
-
-
-
-
-
-//    //질문 내용 그대로 전달
-//    @GetMapping("/all-questions/today")
-//    @Operation(summary="질문 내용 그대로 전달")
-//    public ResponseEntity<?> getTodayQuestions(){
-//        User user=userService.getUserInfo();
-//        List<String> todayQAs=studyLogService.getTodayCollections(userId);
-//    }
-
-
-
-
-//    @GetMapping("/today/{userId}")
-//    public TodayStudyTypeResponse getTodayStudyInfo(@PathVariable String userId) {
-//        LocalDate today = LocalDate.now();
-//        List<StudyLog> logs = studyLogService.getTodayStudyType(userId);
-//
-//        Duration total = logs.stream()
-//                .map(log -> Duration.between(log.getStartTime(), log.getEndTime()))
-//                .reduce(Duration.ZERO, Duration::plus);
-//
-//        int hours = (int) total.toHours();
-//        int minutes = total.toMinutesPart();
-//
-//        String type = studyLogService.getTodayStudyType(userId);
-//        return new TodayStudyTypeResponse(hours, minutes, type);
-//    }
-
 
 }
 
