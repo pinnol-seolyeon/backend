@@ -9,11 +9,12 @@ import java.util.Date;
 @Data
 public class QuestionRequest {
 
+    private final String conversation_id;
     private final String question;
 
     @JsonCreator
-    public QuestionRequest(@JsonProperty("question")String question) {
+    public QuestionRequest(@JsonProperty("conversation_id")String conversation_id, @JsonProperty("question")String question) {
+        this.conversation_id = conversation_id;
         this.question = question;
     }
-
 }

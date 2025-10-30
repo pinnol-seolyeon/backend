@@ -3,6 +3,7 @@ package jpabasic.pinnolbe.domain.analyze;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -26,9 +27,13 @@ public class WeeklyAnalysis {
 
     private LocalDate weekStartDate;
 
+    @Field("engagementData")
     private EngagementData engagementData;//참여도
+    @Field("focusData")
     private FocusData focusData;//집중도
+    @Field("understandingData")
     private UnderstandingData understandingData;//이해도
+    @Field("expressionData")
     private ExpressionData expressionData;//표현력
     private WeeklyTimeZone weeklyTimeZone;//주간 학습 시간대+학습 시간(추가된 내용)
 
@@ -43,7 +48,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class EngagementData {
-        private int questionCount;
+        private int questionCount=0;
     }
 
     @Getter @Setter

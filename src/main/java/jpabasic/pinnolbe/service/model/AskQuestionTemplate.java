@@ -23,7 +23,6 @@ public class AskQuestionTemplate {
     public QuestionResponse askQuestionToAI(QuestionRequest questionRequest) {
 
         RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -32,13 +31,11 @@ public class AskQuestionTemplate {
         ResponseEntity<QuestionResponse> response = restTemplate.exchange(
                 fastApiEndpoint+"/chat", HttpMethod.POST, request, QuestionResponse.class
         );
-
-
-        System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
+//        System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
 
         QuestionResponse body=response.getBody();
-        System.out.println("🧪 응답 객체 = " + body);
-        System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
+//        System.out.println("🧪 응답 객체 = " + body);
+//        System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
         return body;
     }
 
