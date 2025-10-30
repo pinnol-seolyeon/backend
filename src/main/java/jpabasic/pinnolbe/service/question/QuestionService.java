@@ -41,9 +41,9 @@ public class QuestionService {
 
 
     //질문 내용을 AI 모델에게 전달
-    public QuestionResponse askQuestion(QuestionRequest request, User user){
+    public QuestionResponse askQuestion(String question, User user){
         String userId= user.getId();
-        String question=request.getQuestion();
+        QuestionRequest request=new QuestionRequest(user.getId(),question);
 
         try {
             QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
@@ -52,6 +52,7 @@ public class QuestionService {
             //사용자 세션 가져오기
             QuestionSessionDto session=sessionStore.computeIfAbsent(userId,k->new QuestionSessionDto());
             session.add(question,answer);
+            System.out.println("QuestionSession:"+session);
 
             return result;
         }catch(RestClientException e){
@@ -65,8 +66,6 @@ public class QuestionService {
         //질문에 따른 표현력 점수 측정
         return QuestionAnalyzer.calculateScores(question);
     }
-
-
 
 
     //모든 질문+답변 한꺼번에 DB에 저장하기

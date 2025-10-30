@@ -33,16 +33,16 @@ public class QuestionController {
 
 
     @PostMapping("")
-    @Operation(summary="AI에게 물어보기(모델호출)")
-    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody QuestionRequest questionRequest) {
+    @Operation(summary="질문하기")
+    public ResponseEntity<QuestionResponse> askQuestion(@RequestBody String question) {
         User user=userService.getUserInfo();
         //AI로부터 응답받기
-        QuestionResponse response=questionService.askQuestion(questionRequest,user);
+        QuestionResponse response=questionService.askQuestion(question,user);
         return ResponseEntity.ok(response);
     }
 
 
-    @PostMapping("/saveAll (수정 전)")
+    @PostMapping("/save-all")
     @Operation(summary="여태까지 진행한 질문+답변 DB에 저장",
                 description= """
                         학습하기 3단계 완료 시 해당 api 호출 (session에 저장해두었던 질문/답변/점수 DB에 저장)
@@ -52,10 +52,13 @@ public class QuestionController {
         try {
             //질문한 내용들 DB에 저장
             List<String> questions=questionService.saveAllQAs(user, chapterId);
+            System.out.println("✔️ 질문한 내용들 DB에 저장 완료");
             //weeklyAnalysis에 질문개수 업데이트 (참여도)
             questionService.updateWeeklyQuestionCount(user);
+            System.out.println("✔️weeklyAnalysis에 질문 개수 업데이트");
             //오늘 질문&답변 리스트 보여주기
             List<String> todayQAs = studyLogService.getTodayCollections(user.getId());
+            System.out.println("✔️오늘 질문&답변 리스트 보여주기");
             //WeeklyAnalysis에 표현력 업데이트
             if (!todayQAs.isEmpty()) {
                 questionService.updateExpressionScore(user, questions);
