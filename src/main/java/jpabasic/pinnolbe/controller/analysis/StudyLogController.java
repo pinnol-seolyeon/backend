@@ -65,13 +65,13 @@ public class StudyLogController {
         return ApiResponse.success("전체 진행률입니다.",progress);
     }
 
-    @GetMapping("/preferred-time")
-    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계(수정 전)")
-    public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
-        User user = userService.getUserInfo();
-        StudyTimeStatsDto stats = studyLogService.analyzeStudyTime(user.getStudyId());
-        return ResponseEntity.ok(stats);
-    }
+//    @GetMapping("/preferred-time")
+//    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계(수정 전)")
+//    public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
+//        User user = userService.getUserInfo();
+//        StudyTimeStatsDto stats = studyLogService.analyzeStudyTime(user.getStudyId());
+//        return ResponseEntity.ok(stats);
+//    }
 
     @GetMapping("/weekly-pattern")
     @Operation(summary="주간 학습 패턴")
@@ -81,44 +81,44 @@ public class StudyLogController {
         return ApiResponse.success("이번 주 주간 학습 패턴",result);
     }
 
-    @GetMapping("/calendar")
-    @Operation(summary="오늘 학습한 시간(n시간 n분)(수정 전)")
-    public ResponseEntity<AttendanceDto> getAttendance(
-            @RequestParam int year,
-            @RequestParam int month
-    ) {
-        User user = userService.getUserInfo();
-        YearMonth yearMonth = YearMonth.of(year,
+//    @GetMapping("/calendar")
+//    @Operation(summary="오늘 학습한 시간(n시간 n분)(수정 전)")
+//    public ResponseEntity<AttendanceDto> getAttendance(
+//            @RequestParam int year,
+//            @RequestParam int month
+//    ) {
+//        User user = userService.getUserInfo();
+//        YearMonth yearMonth = YearMonth.of(year,
+//
+//
+//                month);
+//        AttendanceDto dto = studyLogService.getAttendanceForMonth(user.getId(), yearMonth);
+//        return ResponseEntity.ok(dto);
+//    }
 
 
-                month);
-        AttendanceDto dto = studyLogService.getAttendanceForMonth(user.getId(), yearMonth);
-        return ResponseEntity.ok(dto);
-    }
-
-
-    // 질문 내용 요약
-    @PostMapping("/questions")
-    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
-    public ResponseEntity<?> summaryQuestions(){
-        User user=userService.getUserInfo();
-        String userId=user.getId();
-
-        //오늘 한 질문들
-        List<String> todayQAs=studyLogService.getTodayCollections(userId);
-        if(todayQAs.isEmpty()){
-            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
-        }
-        //질문 요약 api 호출
-        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
-
-        return ResponseEntity.ok(result);
-    }
+//    // 질문 내용 요약
+//    @PostMapping("/questions")
+//    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
+//    public ResponseEntity<?> summaryQuestions(){
+//        User user=userService.getUserInfo();
+//        String userId=user.getId();
+//
+//        //오늘 한 질문들
+//        List<String> todayQAs=studyLogService.getTodayCollections(userId);
+//        if(todayQAs.isEmpty()){
+//            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
+//        }
+//        //질문 요약 api 호출
+//        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
+//
+//        return ResponseEntity.ok(result);
+//    }
 
 
 
     @GetMapping("/questions/dates")
-    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출(수정 전)")
+    @Operation(summary="학습 분석 화면에 표시할 질문 캘린더 날짜 추출")
     public List<LocalDate> getQuestionDates() {
         User user=userService.getUserInfo();
         String userId=user.getId();
