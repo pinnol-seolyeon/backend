@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,8 +36,9 @@ public QuestionController(QuestionService questionService, UserService userServi
 
     @PostMapping("")
     @Operation(summary="질문하기")
-    public ApiResponse<QuestionResponse> askQuestion(@RequestBody String question) {
+    public ApiResponse<QuestionResponse> askQuestion(@RequestBody Map<String,String> q) {
         User user=userService.getUserInfo();
+        String question=q.get("question");
         //AI로부터 응답받기
         QuestionResponse response=questionService.askQuestion(question,user);
         return ApiResponse.success("질문 저장 완료",response);
