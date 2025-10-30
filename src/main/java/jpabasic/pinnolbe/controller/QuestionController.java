@@ -25,7 +25,7 @@ public class QuestionController {
     private final UserService userService;
     private final StudyLogService studyLogService;
 
-    public QuestionController(QuestionService questionService, UserService userService, StudyLogService studyLogService) {
+public QuestionController(QuestionService questionService, UserService userService, StudyLogService studyLogService) {
         this.questionService = questionService;
         this.userService = userService;
         this.studyLogService = studyLogService;

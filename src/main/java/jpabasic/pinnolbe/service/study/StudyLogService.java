@@ -354,8 +354,7 @@ public class StudyLogService {
         List<QueCollection> todayQuestions=new ArrayList<>();
 
         for(QueCollection collection:collections){
-
-            LocalDateTime questionDate=collection.getDate();
+            LocalDateTime questionDate=collection.getCreatedAt();
             if (!questionDate.isBefore(startOfDay) && questionDate.isBefore(endOfDay)) {
                 todayQuestions.add(collection);
                 System.out.println("📅todayQuestions:"+todayQuestions);

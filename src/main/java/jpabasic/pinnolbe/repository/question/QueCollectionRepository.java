@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.repository.question;
 
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -15,9 +16,13 @@ public interface QueCollectionRepository extends MongoRepository<QueCollection, 
 
     List<QueCollection> findByUserIdAndDateBetween(String userId, LocalDateTime start, LocalDateTime end);
 
-    List<QueCollection> findAllByUserIdAndDateBetween(
+
+    List<QueCollection> findAllByUserIdAndCreatedAtBetween(
             String userId,
             LocalDateTime start,
             LocalDateTime end
     );
+
+
+
 }
