@@ -69,13 +69,61 @@ public class StudyService {
 
 
     //학습하고 싶은 단원 선택
-    public ChapterDto getChapterContents(String chapterId) {
+    public Map<String,String> getChapterContents(String chapterId,int level) {
         Chapter chapter=chapterRepository.findById(chapterId)
                 .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
         //chapter 본문 내용 받아오기
         ChapterDto chapterDto=convertDto(chapterId,chapter);
-        return chapterDto;
+        Map<String,String> result=getLevelContents(level,chapterDto);
+        return result;
+    }
+
+    /// level 별로 학습할 컨텐츠 제공
+    Map<String,String> getLevelContents(int level,ChapterDto chapterDto){
+        Map<String,String> result=new HashMap<>();
+        String chapterId=chapterDto.getChapterId();
+        result.put("chapterId",chapterId);
+
+        switch(level){
+            case 1: {
+                String chapterTitle=chapterDto.getChapterTitle();
+                result.put("chapterTitle",chapterTitle);
+                break;
+            }
+            case 2:{
+                String objective = chapterDto.getObjective();
+                String objectiveQuestion = chapterDto.getObjectiveQuestion();
+                result.put("objective", objective);
+                result.put("objectiveQuestion", objectiveQuestion);
+                System.out.println("result" + result);
+                break;
+            }
+            case 3:{
+                String content=chapterDto.getContent();
+                String imgUrl=chapterDto.getImgUrl();
+                result.put("content",content);
+                result.put("imgUrl",imgUrl);
+                System.out.println("result:"+result);
+                break;
+            }
+            case 4:break;
+            case 5:{
+                String summary=chapterDto.getSummary();
+                String summaryImgUrl=chapterDto.getSummaryImgUrl();
+                result.put("summary",summary);
+                result.put("summaryImgUrl",summaryImgUrl);
+                System.out.println("result:"+result);
+                break;
+            }
+            case 6:{
+                String topic=chapterDto.getTopic();
+                result.put("topic", topic);
+                System.out.println("result:"+result);
+                break;
+            }
+        }
+        return result;
     }
 
 
