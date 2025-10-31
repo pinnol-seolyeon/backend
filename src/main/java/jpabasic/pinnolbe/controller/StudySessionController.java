@@ -35,7 +35,7 @@ public class StudySessionController {
                         현재는 하드코딩된 내용을 임의로 가져와서 localStorage에 저장해놓음. 
                         ai 적용 시, 로직 수정될 예정 
                         """)
-    public ApiResponse<ChapterDto> startLevel(
+    public ApiResponse<Map<String,String>> startLevel(
             @RequestParam int level,
             @RequestParam String chapterId){
 
@@ -43,10 +43,10 @@ public class StudySessionController {
         //학습 상태 저장할 Redis(세부 학습내용), studysessionLog(현 학습 상황) 생성 및 확인
         String studySessionLogId=studySessionService.startLevel(user,level,chapterId);
         //학습할 내용 가져오기
-        ChapterDto chapterContents=studyService.getChapterContents(chapterId);
-        chapterContents.setStudySessionLogId(studySessionLogId);
+        Map<String,String> levelContents=studyService.getChapterContents(chapterId,level);
+        levelContents.put("studySessionLogId",studySessionLogId);
 
-        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",chapterContents);
+        return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",levelContents);
     }
 
     @PostMapping("/update")
