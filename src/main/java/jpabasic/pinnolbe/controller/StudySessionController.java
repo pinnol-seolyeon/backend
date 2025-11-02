@@ -61,6 +61,9 @@ public class StudySessionController {
     
     ✅ 6단계까지 해당 chapter 학습 완료 시:
     - isCompleted=true
+    
+    ✅ 학습분석 "집중도"에서 감점되는 점수 :
+    - minusFocusingScore → double 타입으로 1 or 2
 
     해당 API는 사용자의 현재 학습 상태를 Redis에 저장 및 갱신합니다.
     """
@@ -90,6 +93,9 @@ public class StudySessionController {
         }
 
     }
+
+
+
 
 
 

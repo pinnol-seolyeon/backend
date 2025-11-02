@@ -16,14 +16,10 @@ import java.util.List;
 @RequestMapping("/api/quiz-result")
 public class QuizAnalyzeController {
 
-    private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final QuizService quizService;
-    private final UserService userService;
 
-    public QuizAnalyzeController(WeeklyAnalysisRepository weeklyAnalysisRepository, RadarScoreService radarScoreService, QuizService quizService, UserService userService) {
-        this.weeklyAnalysisRepository = weeklyAnalysisRepository;
+    public QuizAnalyzeController(QuizService quizService) {
         this.quizService = quizService;
-        this.userService = userService;
     }
 
     // 이해도
