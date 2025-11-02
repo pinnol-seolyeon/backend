@@ -68,20 +68,19 @@ public class StudyService {
 
 
     //학습하고 싶은 단원 선택
-    public Map<String,?> getChapterContents(String chapterId,int level) {
+    public Map<String,Object> getChapterContents(String chapterId,int level) {
         Chapter chapter=chapterRepository.findById(chapterId)
                 .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
         //chapter 본문 내용 받아오기
         ChapterDto chapterDto=convertDto(chapterId,chapter);
-        Map<String,?> result=getLevelContents(level,chapterDto);
+        Map<String,Object> result=getLevelContents(level,chapterDto);
         return result;
     }
 
     /// level 별로 학습할 컨텐츠 제공
-    Map<String,?> getLevelContents(int level,ChapterDto chapterDto){
-        Map<String,String> result=new HashMap<>();
-        Map<String,List<Quiz>> quizes=new HashMap<>();
+    Map<String,Object> getLevelContents(int level,ChapterDto chapterDto){
+        Map<String,Object> result=new HashMap<>();
         String chapterId=chapterDto.getChapterId();
         result.put("chapterId",chapterId);
 
@@ -109,6 +108,7 @@ public class StudyService {
             }
             case 4:
                 List<Quiz> quiz=quizService.getQuiz(chapterId,5);
+                Map<String,Object> quizes=new HashMap<>();
                 quizes.put("quiz",quiz);
                 System.out.println("result:"+result);
                 return quizes;

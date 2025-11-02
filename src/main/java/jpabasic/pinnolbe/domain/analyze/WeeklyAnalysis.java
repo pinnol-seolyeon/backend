@@ -75,7 +75,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private double expressionScore;
+        private double expressionScore=0;
     }
 
     @Getter @Setter

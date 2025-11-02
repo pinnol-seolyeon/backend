@@ -35,7 +35,7 @@ public class QuizService {
         return all.stream().limit(limit).collect(Collectors.toList());
     }
 
-    public void upsertUnderstandingAndFocus(List<QuizAnalyzeDto> results) {
+    public void upsertUnderstanding(List<QuizAnalyzeDto> results) {
         User user = userService.getUserInfo();
         String userId = user.getId();
 
@@ -49,11 +49,6 @@ public class QuizService {
                 .filter(r -> r.getUserAnswer() != null
                         && r.getUserAnswer().equals(r.getCorrectAnswer()))
                 .count();
-        double newAvgSec = results.stream()
-                .mapToLong(QuizAnalyzeDto::getResponseTime)
-                .average()
-                .orElse(0.0) / 1000.0;
-        double newSumSec = newAvgSec * newTotal;    // 이번 호출분 응답시간 합
 
         // --- 2) 기존 문서 조회 ---
         List<WeeklyAnalysis> list = weeklyAnalysisRepository
@@ -69,14 +64,6 @@ public class QuizService {
                             WeeklyAnalysis.UnderstandingData.builder()
                                     .correct(newCorrect)
                                     .total(newTotal)
-                                    .build()
-                    )
-                    .focusData(
-                            // 여기서 sumResponseTime, count 필드를 추가했다고 가정
-                            WeeklyAnalysis.FocusData.builder()
-                                    .averageResponseTime(newAvgSec)
-                                    .sumResponseTime(newSumSec)
-                                    .count(newTotal)
                                     .build()
                     )
                     .analyzedAt(now)
@@ -96,28 +83,6 @@ public class QuizService {
                     WeeklyAnalysis.UnderstandingData.builder()
                             .correct(prevCorrect + newCorrect)
                             .total(prevTotal   + newTotal)
-                            .build()
-            );
-
-            // --- 집중도 누적 (가중 평균) ---
-            double prevSumSec = Optional.ofNullable(analysis.getFocusData())
-                    .map(WeeklyAnalysis.FocusData::getSumResponseTime)
-                    .orElse(0.0);
-            int prevCount = Optional.ofNullable(analysis.getFocusData())
-                    .map(WeeklyAnalysis.FocusData::getCount)
-                    .orElse(0);
-
-            double totalSumSec = prevSumSec + newSumSec;
-            int totalCount     = prevCount + newTotal;
-            double accAvgSec   = totalCount == 0
-                    ? 0.0
-                    : totalSumSec / totalCount;
-
-            analysis.setFocusData(
-                    WeeklyAnalysis.FocusData.builder()
-                            .sumResponseTime(totalSumSec)
-                            .count(totalCount)
-                            .averageResponseTime(accAvgSec)
                             .build()
             );
 
