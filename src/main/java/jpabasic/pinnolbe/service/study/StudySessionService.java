@@ -114,22 +114,11 @@ public class StudySessionService {
             session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
 
-            //INACTIVE가 되는 순간 집중도 점수 2점 감점 api 호출
-            double minusScore=summary.getMinusFocusingScore();
-            if(minusScore==1){
-                //session 상에 업데이트
-                double oldFocusingScore=session.getFocusingScore();
-                session.setFocusingScore(oldFocusingScore-1); //최소 0점
-                
-                //weeklyAnalysis에 업데이트
-                studyLogService.focusScoreUpdate(user,session.getFocusingScore());
-            }else if(minusScore==2){
-                double oldFocusingScore=session.getFocusingScore();
-                session.setFocusingScore(oldFocusingScore-2); //최소 0점
-                
-                //WeeklyAnalysis에 업데이트
-                studyLogService.focusScoreUpdate(user,session.getFocusingScore());
-            }
+            //INACTIVE가 되는 순간 집중도 점수 감점
+            double newScore=summary.getMinusFocusingScore()+session.getFocusingScore(); //나중에 5점에서 감점될 점수
+            session.setFocusingScore(newScore);
+            //weeklyAnalysis에 업데이트
+            studyLogService.focusScoreUpdate(user,newScore);
 
 //            saveToDatabase(session);
         }

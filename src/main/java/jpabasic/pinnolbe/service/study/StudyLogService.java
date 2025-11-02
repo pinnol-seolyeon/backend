@@ -105,9 +105,16 @@ public class StudyLogService {
                 weeklyAnalysisRepository.findByUserIdAndWeekStartDate(user.getId(), weekStart)
                         .orElseGet(() -> new WeeklyAnalysis(user.getId(), weekStart));
 
-        WeeklyAnalysis.FocusData newData = WeeklyAnalysis.FocusData.builder()
-                .focusingScore(focusingScore).build();
-        analysis.setFocusData(newData);
+        //기존 점수 가져오기
+        double oldScore=analysis.getFocusData().getFocusingScore();
+
+        //새로운 점수 가져오기
+        double newScore=oldScore+focusingScore;
+
+        //새로운 점수를 객체에 반영
+        analysis.getFocusData().setFocusingScore(newScore);
+
+        //변경 내용 저장
         weeklyAnalysisRepository.save(analysis);
     }
 

@@ -56,7 +56,15 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class FocusData {
-        private double focusingScore=5;
+        private double focusingScore; //weeklyAnalysis에는 5점에서 감점이 될 점수가 저장됨.
+
+        public void setFocusingScore(double focusingScore) {
+            if (focusingScore < 0){
+                this.focusingScore=0;
+            }else{
+                this.focusingScore=focusingScore;
+            }
+        }
     }
 
     @Getter @Setter
@@ -107,6 +115,8 @@ public class WeeklyAnalysis {
         this.userId = userId;
         this.weekStartDate = weekStartDate;
     }
+
+
 
 
 }
