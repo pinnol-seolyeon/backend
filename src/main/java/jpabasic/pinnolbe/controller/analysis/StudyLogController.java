@@ -124,44 +124,18 @@ public class StudyLogController {
         return ApiResponse.success("조회 성공", dto);
     }
 
-//    @PostMapping("/focus-data")
-//    @Operation(summary="집중력 정보 측정",
-//            description= """
-//                        학습하기 중 집중력 data 측정
-//                        - 핀놀 웹사이트 닫음
-//                        - 다른 웹 탭 클릭해서 전환
-//                        - 핀놀 내 사이드바 다른 메뉴 클릭
-//                        - inactive 5분 이상
-//                        => 2점 감점
-//
-//                        - 한 화면에 오래 머묾(무반응) -> 1점 감점
-//                        """)
-//    public ApiResponse<String> calculateFocusingData(
-//            @RequestParam int deduction){
-//
-//        User user=userService.getUserInfo();
-//        //학습 상태 저장할 Redis(세부 학습내용), studysessionLog(현 학습 상황) 생성 및 확인
-//        if(deduction==2){
-//            studyLogService.focusScoreUpdate(user);
-//        }else if(deduction==1){
-//            studyLogService.focusScoreMinusOne(user);
-//        }else{
-//            return ApiResponse.fail("감점할 점수를 잘못 전달했어요.",400);
-//        }
-//        return ApiResponse.success("집중도에서"+ deduction+"점을 감점했어요",null);
-//    }
 
     @GetMapping("/radar-score")
-    @Operation(summary="engagement/focus/understanding/expression 학습분석 내용 제공(수정 전)")
-    public ResponseEntity<RadarScoreDto> getRadarScore() {
-        return ResponseEntity.ok(radarScoreService.getThisWeekRadarScore());
+    @Operation(summary="이번 주 engagement/focus/understanding/expression 학습분석 내용 제공")
+    public ApiResponse<RadarScoreDto> getRadarScore() {
+        return ApiResponse.success("이번 주 이해도 분석 내용입니다.",radarScoreService.getThisWeekRadarScore());
     }
 
     // 지난주 데이터까지
     @GetMapping("/radar-score/compare")
-    @Operation(summary="학습 분석 지난주와 비교(수정 전)")
-    public ResponseEntity<RadarScoreComparisonDto> getRadarComparison() {
-        return ResponseEntity.ok(radarScoreService.getThisAndLastWeekRadarScore());
+    @Operation(summary="이번 주 & 저번 주 engagement/focus/understanding/expression 학습분석 내용 제공")
+    public ApiResponse<RadarScoreComparisonDto> getRadarComparison() {
+        return ApiResponse.success("이번 주 이해도 분석 내용입니다.",radarScoreService.getThisAndLastWeekRadarScore());
     }
 
 }

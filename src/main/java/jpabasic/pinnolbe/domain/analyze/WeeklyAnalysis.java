@@ -114,6 +114,11 @@ public class WeeklyAnalysis {
     public WeeklyAnalysis(String userId,LocalDate weekStartDate){
         this.userId = userId;
         this.weekStartDate = weekStartDate;
+        this.completedChapters=new ArrayList<>();
+        this.engagementData=new EngagementData();
+        this.focusData=new FocusData();
+        this.understandingData=new UnderstandingData();
+        this.expressionData=new ExpressionData();
     }
 
 
