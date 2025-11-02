@@ -3,10 +3,7 @@ package jpabasic.pinnolbe.service.study;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
-import jpabasic.pinnolbe.domain.study.Book;
-import jpabasic.pinnolbe.domain.study.Chapter;
-import jpabasic.pinnolbe.domain.study.Study;
-import jpabasic.pinnolbe.domain.study.UserFeedback;
+import jpabasic.pinnolbe.domain.study.*;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
@@ -23,6 +20,7 @@ import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
+import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
@@ -58,6 +56,7 @@ public class StudyService {
   private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
   private final AskQuestionTemplate askQuestionTemplate;
+  private final QuizService quizService;
 
   @Autowired
   WebClient webClient;
@@ -69,19 +68,19 @@ public class StudyService {
 
 
     //학습하고 싶은 단원 선택
-    public Map<String,String> getChapterContents(String chapterId,int level) {
+    public Map<String,Object> getChapterContents(String chapterId,int level) {
         Chapter chapter=chapterRepository.findById(chapterId)
                 .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
 
         //chapter 본문 내용 받아오기
         ChapterDto chapterDto=convertDto(chapterId,chapter);
-        Map<String,String> result=getLevelContents(level,chapterDto);
+        Map<String,Object> result=getLevelContents(level,chapterDto);
         return result;
     }
 
     /// level 별로 학습할 컨텐츠 제공
-    Map<String,String> getLevelContents(int level,ChapterDto chapterDto){
-        Map<String,String> result=new HashMap<>();
+    Map<String,Object> getLevelContents(int level,ChapterDto chapterDto){
+        Map<String,Object> result=new HashMap<>();
         String chapterId=chapterDto.getChapterId();
         result.put("chapterId",chapterId);
 
@@ -107,7 +106,12 @@ public class StudyService {
                 System.out.println("result:"+result);
                 break;
             }
-            case 4:break;
+            case 4:
+                List<Quiz> quiz=quizService.getQuiz(chapterId,5);
+                Map<String,Object> quizes=new HashMap<>();
+                quizes.put("quiz",quiz);
+                System.out.println("result:"+result);
+                return quizes;
             case 5:{
                 String summary=chapterDto.getSummary();
                 String summaryImgUrl=chapterDto.getSummaryImgUrl();

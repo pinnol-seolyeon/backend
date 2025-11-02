@@ -32,10 +32,10 @@ public class StudySessionController {
     @PostMapping("/start-level")
     @Operation(summary="특정 레벨 공부 시작",
                 description= """
-                        현재는 하드코딩된 내용을 임의로 가져와서 localStorage에 저장해놓음. 
-                        ai 적용 시, 로직 수정될 예정 
+                        현재는 하드코딩된 내용을 임의로 가져와서 localStorage에 저장해놓음.
+                        ai 적용 시, 로직 수정될 예정
                         """)
-    public ApiResponse<Map<String,String>> startLevel(
+    public ApiResponse<Map<String,Object>> startLevel(
             @RequestParam int level,
             @RequestParam String chapterId){
 
@@ -43,7 +43,7 @@ public class StudySessionController {
         //학습 상태 저장할 Redis(세부 학습내용), studysessionLog(현 학습 상황) 생성 및 확인
         String studySessionLogId=studySessionService.startLevel(user,level,chapterId);
         //학습할 내용 가져오기
-        Map<String,String> levelContents=studyService.getChapterContents(chapterId,level);
+        Map<String,Object> levelContents=studyService.getChapterContents(chapterId,level);
         levelContents.put("studySessionLogId",studySessionLogId);
 
         return ApiResponse.success("redis에 현 공부 상태 저장을 완료했어요.",levelContents);
@@ -61,6 +61,9 @@ public class StudySessionController {
     
     ✅ 6단계까지 해당 chapter 학습 완료 시:
     - isCompleted=true
+    
+    ✅ 학습분석 "집중도"에서 감점되는 점수 :
+    - minusFocusingScore → double 타입으로 1 or 2
 
     해당 API는 사용자의 현재 학습 상태를 Redis에 저장 및 갱신합니다.
     """
@@ -90,6 +93,9 @@ public class StudySessionController {
         }
 
     }
+
+
+
 
 
 

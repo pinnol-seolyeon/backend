@@ -4,6 +4,8 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreDto;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +30,10 @@ public class RadarScoreService {
         String userId = user.getId();
         LocalDate thisWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
 
-        List<WeeklyAnalysis> thisWeekDocs = weeklyAnalysisRepository
-                .findAllByUserIdAndWeekStartDate(userId, thisWeekStart);
+        WeeklyAnalysis analysis = weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, thisWeekStart)
+                .orElseThrow(() -> new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
 
-        return toRadarScore(thisWeekDocs);
+        return toRadarScore(analysis);
     }
 
     public RadarScoreComparisonDto getThisAndLastWeekRadarScore() {
@@ -40,76 +42,50 @@ public class RadarScoreService {
         LocalDate thisWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
         LocalDate lastWeekStart = thisWeekStart.minusWeeks(1);
 
-        List<WeeklyAnalysis> thisWeekDocs = weeklyAnalysisRepository
-                .findAllByUserIdAndWeekStartDate(userId, thisWeekStart);
-        List<WeeklyAnalysis> lastWeekDocs = weeklyAnalysisRepository
-                .findAllByUserIdAndWeekStartDate(userId, lastWeekStart);
+        WeeklyAnalysis thisWeek = weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, thisWeekStart)
+                .orElseThrow(() -> new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
+        WeeklyAnalysis lastWeek = weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, lastWeekStart)
+                .orElseThrow(() -> new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
 
         RadarScoreComparisonDto dto = new RadarScoreComparisonDto();
-        dto.setThisWeek(toRadarScore(thisWeekDocs));
-        dto.setLastWeek(toRadarScore(lastWeekDocs));
+        dto.setThisWeek(toRadarScore(thisWeek));
+        dto.setLastWeek(toRadarScore(lastWeek));
         return dto;
     }
 
-    private RadarScoreDto toRadarScore(List<WeeklyAnalysis> dataList) {
+    private RadarScoreDto toRadarScore(WeeklyAnalysis analysis) {
         RadarScoreDto dto = new RadarScoreDto();
 
         // 참여도
-        int totalQuestions = dataList.stream()
-                .mapToInt(d -> Optional.ofNullable(d.getEngagementData()).map(WeeklyAnalysis.EngagementData::getQuestionCount).orElse(0))
-                .sum();
-        dto.setEngagement(Math.min(5.0, totalQuestions * 0.5) / 5.0);
+        int totalQuestions = analysis.getEngagementData().getQuestionCount();
+        dto.setEngagement(Math.min(5.0, totalQuestions * 0.5));
 
         // 이해도 (누적 correct/total)
-        int correct = dataList.stream()
-                .mapToInt(d -> Optional.ofNullable(d.getUnderstandingData())
-                        .map(WeeklyAnalysis.UnderstandingData::getCorrect)
-                        .orElse(0))
-                .sum();
-        int total = dataList.stream()
-                .mapToInt(d -> Optional.ofNullable(d.getUnderstandingData())
-                        .map(WeeklyAnalysis.UnderstandingData::getTotal)
-                        .orElse(0))
-                .sum();
-        dto.setUnderstanding(total == 0 ? 0.0 : (double) correct / total);
+        int correct = analysis.getUnderstandingData().getCorrect();
+        int total = analysis.getUnderstandingData().getTotal();
 
-        // 집중도 (sumResponseTime/count 기반 가중평균)
-        double totalSumSec = dataList.stream()
-                .map(WeeklyAnalysis::getFocusData)
-                .filter(Objects::nonNull)
-                .mapToDouble(WeeklyAnalysis.FocusData::getSumResponseTime)
-                .sum();
-        int totalCount = dataList.stream()
-                .map(WeeklyAnalysis::getFocusData)
-                .filter(Objects::nonNull)
-                .mapToInt(WeeklyAnalysis.FocusData::getCount)
-                .sum();
+        double understandingScore = total == 0 ? 0.0 : ((double) correct / total) * 5.0;
+        dto.setUnderstanding(understandingScore);
 
-        double avgResponseTime = totalCount == 0
-                ? Double.NaN
-                : totalSumSec / totalCount;
+        // 집중도
+        double focusingScore=5;
+        double deductingScore = analysis.getFocusData().getFocusingScore();
 
-        double focus;
-        if (Double.isNaN(avgResponseTime)) {
-            focus = 0.0;
-        } else {
-            // 채점 기준: 3초 이하는 만점, 이후 선형 감점
-            double focusScore = Math.max(0, 5.0 - Math.max(0, avgResponseTime - 3.0));
-            focus = focusScore / 5.0;
+        //completedChapters=0인 경우, focusingScore는 0점.(측정된 게 아무것도 없기때문)
+        if (analysis.getCompletedChapters().isEmpty()) {
+            dto.setFocus(null);
+        }else{
+            focusingScore-=deductingScore;
+            if(focusingScore<0) {
+                focusingScore = 0;
+            }
+            focusingScore = focusingScore / analysis.getCompletedChapters().size();
+            dto.setFocus(focusingScore);
         }
-        dto.setFocus(focus);
 
         // 표현력
-        double avgStarScore = dataList.stream()
-                .mapToDouble(d -> Optional.ofNullable(d.getExpressionData())
-                        .map(WeeklyAnalysis.ExpressionData::getExpressionScore)
-                        .orElse((double) 0))
-                .average()
-                .orElse(0.0);
-
-        double expressionScore = Math.min(5.0, avgStarScore); // 혹시 모르니 제한 유지
-        dto.setExpression(expressionScore / 5.0); // 정규화
-
+        double expressionScore = analysis.getExpressionData().getExpressionScore();
+        dto.setExpression(expressionScore); // 정규화
         return dto;
     }
 }

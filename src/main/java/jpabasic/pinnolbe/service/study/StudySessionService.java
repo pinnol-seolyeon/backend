@@ -114,6 +114,12 @@ public class StudySessionService {
             session.setInactiveSince(lastActive);
             session.setLastActive(lastActive);
 
+            //INACTIVE가 되는 순간 집중도 점수 감점
+            double newScore=summary.getMinusFocusingScore()+session.getFocusingScore(); //나중에 5점에서 감점될 점수
+            session.setFocusingScore(newScore);
+            //weeklyAnalysis에 업데이트
+            studyLogService.focusScoreUpdate(user,newScore);
+
 //            saveToDatabase(session);
         }
 

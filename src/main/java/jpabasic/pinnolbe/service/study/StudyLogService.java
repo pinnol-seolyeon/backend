@@ -93,6 +93,32 @@ public class StudyLogService {
 
     }
 
+
+    /**
+     * weeklyAnalysis에 focusing score 그때그때 저장
+     */
+    public void focusScoreUpdate(User user, double focusingScore){
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
+
+        WeeklyAnalysis analysis =
+                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(user.getId(), weekStart)
+                        .orElseGet(() -> new WeeklyAnalysis(user.getId(), weekStart));
+
+        //기존 점수 가져오기
+        double oldScore=analysis.getFocusData().getFocusingScore();
+
+        //새로운 점수 가져오기
+        double newScore=oldScore+focusingScore;
+
+        //새로운 점수를 객체에 반영
+        analysis.getFocusData().setFocusingScore(newScore);
+
+        //변경 내용 저장
+        weeklyAnalysisRepository.save(analysis);
+    }
+
+
     /**
      * 현재 레벨까지 학습한 시간대 & 시간 weekly_analysis에 저장
      */

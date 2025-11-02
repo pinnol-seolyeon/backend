@@ -4,15 +4,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.question.QueCollection;
-import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
+import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
+import jpabasic.pinnolbe.dto.analyze.RadarScoreDto;
 import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
 import jpabasic.pinnolbe.dto.question.QueCollectionResponseDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
-import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.service.analyze.RadarScoreService;
 import jpabasic.pinnolbe.service.question.QuestionService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.study.StudyService;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +39,7 @@ public class StudyLogController {
     private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final QuestionService questionService;
+    private final RadarScoreService radarScoreService;
 
     @GetMapping("/this-week/chapters")
     @Operation(summary="이번주 학습 완료한 단원 개수")
@@ -65,14 +66,6 @@ public class StudyLogController {
         return ApiResponse.success("전체 진행률입니다.",progress);
     }
 
-//    @GetMapping("/preferred-time")
-//    @Operation(summary = "선호 학습 시간대 및 요일별 학습 통계(수정 전)")
-//    public ResponseEntity<StudyTimeStatsDto> getStudyTimeStats() {
-//        User user = userService.getUserInfo();
-//        StudyTimeStatsDto stats = studyLogService.analyzeStudyTime(user.getStudyId());
-//        return ResponseEntity.ok(stats);
-//    }
-
     @GetMapping("/weekly-pattern")
     @Operation(summary="주간 학습 패턴")
     public ApiResponse<List<StudyTimeDetailDto>> getTodayStudyTime() {
@@ -81,39 +74,24 @@ public class StudyLogController {
         return ApiResponse.success("이번 주 주간 학습 패턴",result);
     }
 
-//    @GetMapping("/calendar")
-//    @Operation(summary="오늘 학습한 시간(n시간 n분)(수정 전)")
-//    public ResponseEntity<AttendanceDto> getAttendance(
-//            @RequestParam int year,
-//            @RequestParam int month
-//    ) {
-//        User user = userService.getUserInfo();
-//        YearMonth yearMonth = YearMonth.of(year,
-//
-//
-//                month);
-//        AttendanceDto dto = studyLogService.getAttendanceForMonth(user.getId(), yearMonth);
-//        return ResponseEntity.ok(dto);
-//    }
 
+    // 질문 내용 요약
+    @PostMapping("/questions")
+    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
+    public ResponseEntity<?> summaryQuestions(){
+        User user=userService.getUserInfo();
+        String userId=user.getId();
 
-//    // 질문 내용 요약
-//    @PostMapping("/questions")
-//    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
-//    public ResponseEntity<?> summaryQuestions(){
-//        User user=userService.getUserInfo();
-//        String userId=user.getId();
-//
-//        //오늘 한 질문들
-//        List<String> todayQAs=studyLogService.getTodayCollections(userId);
-//        if(todayQAs.isEmpty()){
-//            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
-//        }
-//        //질문 요약 api 호출
-//        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
-//
-//        return ResponseEntity.ok(result);
-//    }
+        //오늘 한 질문들
+        List<String> todayQAs=studyLogService.getTodayCollections(userId);
+        if(todayQAs.isEmpty()){
+            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
+        }
+        //질문 요약 api 호출
+        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
+
+        return ResponseEntity.ok(result);
+    }
 
 
 
@@ -144,6 +122,20 @@ public class StudyLogController {
         List<QueCollection> queCollection = queCollectionRepository.findAllByUserIdAndCreatedAtBetween(userId, start, end);
         List<QueCollectionResponseDto> dto = QueCollectionResponseDto.fromList(queCollection);
         return ApiResponse.success("조회 성공", dto);
+    }
+
+
+    @GetMapping("/radar-score")
+    @Operation(summary="이번 주 engagement/focus/understanding/expression 학습분석 내용 제공")
+    public ApiResponse<RadarScoreDto> getRadarScore() {
+        return ApiResponse.success("이번 주 이해도 분석 내용입니다.",radarScoreService.getThisWeekRadarScore());
+    }
+
+    // 지난주 데이터까지
+    @GetMapping("/radar-score/compare")
+    @Operation(summary="이번 주 & 저번 주 engagement/focus/understanding/expression 학습분석 내용 제공")
+    public ApiResponse<RadarScoreComparisonDto> getRadarComparison() {
+        return ApiResponse.success("이번 주 이해도 분석 내용입니다.",radarScoreService.getThisAndLastWeekRadarScore());
     }
 
 }

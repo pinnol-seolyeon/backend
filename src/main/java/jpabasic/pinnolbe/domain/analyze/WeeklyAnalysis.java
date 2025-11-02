@@ -56,9 +56,15 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class FocusData {
-        private double averageResponseTime;
-        private double sumResponseTime;
-        private int count;
+        private double focusingScore; //weeklyAnalysis에는 5점에서 감점이 될 점수가 저장됨.
+
+        public void setFocusingScore(double focusingScore) {
+            if (focusingScore < 0){
+                this.focusingScore=0;
+            }else{
+                this.focusingScore=focusingScore;
+            }
+        }
     }
 
     @Getter @Setter
@@ -66,8 +72,8 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class UnderstandingData {
-        private int correct;
-        private int total;
+        private int correct=0;
+        private int total=0;
     }
 
     @Getter @Setter
@@ -75,7 +81,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     @Builder
     public static class ExpressionData {
-        private double expressionScore;
+        private double expressionScore=0;
     }
 
     @Getter @Setter
@@ -108,7 +114,14 @@ public class WeeklyAnalysis {
     public WeeklyAnalysis(String userId,LocalDate weekStartDate){
         this.userId = userId;
         this.weekStartDate = weekStartDate;
+        this.completedChapters=new ArrayList<>();
+        this.engagementData=new EngagementData();
+        this.focusData=new FocusData();
+        this.understandingData=new UnderstandingData();
+        this.expressionData=new ExpressionData();
     }
+
+
 
 
 }

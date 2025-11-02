@@ -44,6 +44,7 @@ public class StudySession {
     private long totalDuration; //누적 학습 시간 (분)
     private Map<String,Long> timeZoneDurations=new HashMap<>(); //각 학습 시간대 누적 시간 (분)
     private LocalDateTime inactiveSince; //비활성화 시작 시간
+    private double focusingScore=0; //집중도 점수 (기본 5점 만점)
     private Status status;
 
     //특정 레벨 학습 시작 시
@@ -57,6 +58,8 @@ public class StudySession {
         this.idleDuration= 0;
 
     }
+
+
 
     public void addIdleDuration(long minutes){
         this.idleDuration+=minutes;
