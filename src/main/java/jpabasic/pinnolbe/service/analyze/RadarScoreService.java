@@ -4,6 +4,8 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreComparisonDto;
 import jpabasic.pinnolbe.dto.analyze.RadarScoreDto;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +30,10 @@ public class RadarScoreService {
         String userId = user.getId();
         LocalDate thisWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
 
-        List<WeeklyAnalysis> thisWeekDocs = weeklyAnalysisRepository
-                .findAllByUserIdAndWeekStartDate(userId, thisWeekStart);
+        WeeklyAnalysis analysis=weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,thisWeekStart)
+                .orElseThrow(()->new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
 
-        return toRadarScore(thisWeekDocs);
+        return toRadarScore(analysis);
     }
 
     public RadarScoreComparisonDto getThisAndLastWeekRadarScore() {
@@ -51,14 +53,12 @@ public class RadarScoreService {
         return dto;
     }
 
-    private RadarScoreDto toRadarScore(List<WeeklyAnalysis> dataList) {
+    private RadarScoreDto toRadarScore(WeeklyAnalysis analysis) {
         RadarScoreDto dto = new RadarScoreDto();
 
         // 참여도
-        int totalQuestions = dataList.stream()
-                .mapToInt(d -> Optional.ofNullable(d.getEngagementData()).map(WeeklyAnalysis.EngagementData::getQuestionCount).orElse(0))
-                .sum();
-        dto.setEngagement(Math.min(5.0, totalQuestions * 0.5) / 5.0);
+        int totalQuestions=analysis.getEngagementData().getQuestionCount();
+        dto.setEngagement(Math.min(5.0, totalQuestions * 0.5));
 
         // 이해도 (누적 correct/total)
         int correct = dataList.stream()
@@ -100,16 +100,8 @@ public class RadarScoreService {
         dto.setFocus(focus);
 
         // 표현력
-        double avgStarScore = dataList.stream()
-                .mapToDouble(d -> Optional.ofNullable(d.getExpressionData())
-                        .map(WeeklyAnalysis.ExpressionData::getExpressionScore)
-                        .orElse((double) 0))
-                .average()
-                .orElse(0.0);
-
-        double expressionScore = Math.min(5.0, avgStarScore); // 혹시 모르니 제한 유지
-        dto.setExpression(expressionScore / 5.0); // 정규화
-
+        double expressionScore=analysis.getExpressionData().getExpressionScore();
+        dto.setExpression(expressionScore); // 정규화
         return dto;
     }
 }
