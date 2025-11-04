@@ -100,18 +100,18 @@ public class TossPaymentService {
         }
     }
 
-//    /**
-//     * 결제 취소 요청
-//     */
-//    @Transactional
-//    public String requestPaymentCancel(String paymentKey,String cancelReason){
-//        RestTemplate template=new RestTemplate();
-//        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
-//
-//        HttpHeaders headers=new HttpHeaders();
-//        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
-//        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//
-//    }
+    /**
+     * 결제 취소 요청
+     */
+    @Transactional
+    public String requestPaymentCancel(String paymentKey,String cancelReason){
+        RestTemplate template=new RestTemplate();
+        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
+
+        HttpHeaders headers=new HttpHeaders();
+        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
+        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+    }
 }
