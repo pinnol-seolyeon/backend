@@ -1,10 +1,14 @@
 package jpabasic.pinnolbe.domain;
 
 import com.mongodb.lang.Nullable;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jpabasic.pinnolbe.domain.study.Study;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection="user")
 @RequiredArgsConstructor
@@ -43,8 +47,16 @@ public class User {
     @Nullable
     private Boolean agreement;
 
-    public User(String studySessionLogId) {
+    @Schema(description="결제 내역")
+    private List<Payment> payments=new ArrayList<>();
 
+    public void addPayment(Payment payment){
+        if(payments==null){
+            payments=new ArrayList<>();
+        }
+        payments.add(payment);
     }
+
+
 
 }

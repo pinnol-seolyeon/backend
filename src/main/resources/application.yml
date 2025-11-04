@@ -38,3 +38,8 @@ myapp:
 jwt:
   secret: ${JWT_SECRET}
 
+payments:
+  toss:
+    success_url: http://localhost:8080/success
+    fail_url: http://localhost:8080/fail
+    secret-key: ${WIDGET_SECRET_KEY}

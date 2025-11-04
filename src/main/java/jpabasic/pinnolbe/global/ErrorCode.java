@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.global;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -35,16 +36,21 @@ public enum ErrorCode {
     CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-001","해당 chapter내용을 찾을 수 없어요."),
 
     //weekly-analysis 관련
-    WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)");
+    WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)"),
 
-    //
+    //결제 관련
+    PAYMENT_ERROR(HttpStatus.NOT_FOUND,"payment-001","결제 정보를 찾을 수 없습니다."),
+    PAYMENT_ERROR_ORDER_PRICE(HttpStatus.BAD_REQUEST,"payment-002","요청 금액이 실제 금액과 일치하지 않습니다."),
+    PAYMENT_ERROR_ORDER_PAY_TYPE(HttpStatus.BAD_REQUEST,"payment-003","결제 타입이 올바르지 않습니다."),
+    PAYMENT_ERROR_ORDER_NAME(HttpStatus.BAD_REQUEST,"payment-004","결제 이름이 올바르지 않습니다."),
 
-
-
-
+    //DB관련
+    DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요.");
 
     private final HttpStatus status;
     private final String code;
     private final String message;
+
+
 
 }
