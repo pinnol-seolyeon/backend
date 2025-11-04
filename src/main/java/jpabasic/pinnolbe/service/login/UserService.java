@@ -70,13 +70,13 @@ public class UserService {
 
     //유저 정보 받아오기
     @Transactional
-    public UserInfoDto getUserInfoDto(User user){
+    public UserInfoDto getUserInfoDto(User user,String userId){
 
         return new UserInfoDto(
+                userId,
                 user.getUsername(),
                 user.getName(),
                 user.getReward()
-
         );
     }
 

@@ -43,7 +43,8 @@ public class UserController {
     @GetMapping
     public ResponseEntity<UserInfoDto> getUserInfoDto() {
         User user=userService.getUserInfo();
-        UserInfoDto userInfo=userService.getUserInfoDto(user);
+        String userId=user.getId();
+        UserInfoDto userInfo=userService.getUserInfoDto(user,userId);
         return ResponseEntity.ok(userInfo);
     }
 
