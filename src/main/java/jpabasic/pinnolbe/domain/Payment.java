@@ -3,16 +3,14 @@ package jpabasic.pinnolbe.domain;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jpabasic.pinnolbe.dto.payment.PayType;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="payment")
 @Schema(description="결제 정보 엔티티")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,6 +26,8 @@ public class Payment{
     private String userId;
     private String customerEmail;
     private String customerName;
+
+    private String payFailReason;
 
     private String createDate;
 

@@ -46,6 +46,7 @@ public enum ErrorCode {
     PAYMENT_ERROR_ORDER_PRICE(HttpStatus.BAD_REQUEST,"payment-002","요청 금액이 실제 금액과 일치하지 않습니다."),
     PAYMENT_ERROR_ORDER_PAY_TYPE(HttpStatus.BAD_REQUEST,"payment-003","결제 타입이 올바르지 않습니다."),
     PAYMENT_ERROR_ORDER_NAME(HttpStatus.BAD_REQUEST,"payment-004","결제 이름이 올바르지 않습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"payment-005","해당 결제 정보가 없습니다."),
 
     //DB관련
     DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요.");

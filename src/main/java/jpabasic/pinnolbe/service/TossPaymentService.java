@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.Payment;
+import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
@@ -29,6 +30,22 @@ public class TossPaymentService {
 
     @Value("${payments.toss.fail_url}")
     private String failCallBackUrl;
+
+    @Transactional
+    public PaymentFailResDto requestFail(String errorCode,String errorMsg,String orderId){
+        Payment payment=paymentRepository.findByOrderId(orderId)
+                .orElseThrow(()-> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+        payment.setPaySuccessYn("N");
+        payment.setPayFailReason(errorMsg);
+        paymentRepository.save(payment);
+
+        return PaymentFailResDto
+                .builder()
+                .orderId(orderId)
+                .errorCode(errorCode)
+                .errorMsg(errorMsg)
+                .build();
+    }
 
     @Transactional
     public PaymentResponseDto requestPayments(PaymentRequestDto paymentRequestDto) {
