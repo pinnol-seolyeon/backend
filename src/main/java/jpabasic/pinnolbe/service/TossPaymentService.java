@@ -11,9 +11,16 @@ import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jpabasic.pinnolbe.dto.payment.OrderNameType;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +39,9 @@ public class TossPaymentService {
     private String failCallBackUrl;
 
     @Transactional
+    /**
+     * 결제 실패
+     */
     public PaymentFailResDto requestFail(String errorCode,String errorMsg,String orderId){
         Payment payment=paymentRepository.findByOrderId(orderId)
                 .orElseThrow(()-> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
@@ -48,6 +58,9 @@ public class TossPaymentService {
     }
 
     @Transactional
+    /**
+     * 결제 승인
+     */
     public PaymentResponseDto requestPayments(PaymentRequestDto paymentRequestDto) {
         Long amount=paymentRequestDto.getAmount();
         String payType=paymentRequestDto.getPayType().getName();
@@ -86,4 +99,19 @@ public class TossPaymentService {
             throw new CustomException(ErrorCode.DB_ERROR_SAVE);
         }
     }
+
+//    /**
+//     * 결제 취소 요청
+//     */
+//    @Transactional
+//    public String requestPaymentCancel(String paymentKey,String cancelReason){
+//        RestTemplate template=new RestTemplate();
+//        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
+//
+//        HttpHeaders headers=new HttpHeaders();
+//        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
+//        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//
+//    }
 }
