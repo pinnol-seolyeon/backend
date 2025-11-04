@@ -37,6 +37,9 @@ public enum ErrorCode {
 
     //weekly-analysis 관련
     WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)"),
+    LAST_WEEK_WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-002","지난 주 학습 기록이 없어요."),
+
+    //
 
     //결제 관련
     PAYMENT_ERROR(HttpStatus.NOT_FOUND,"payment-001","결제 정보를 찾을 수 없습니다."),

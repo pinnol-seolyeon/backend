@@ -2,7 +2,9 @@ package jpabasic.pinnolbe.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 
+@Getter
 public enum OrderNameType {
     MONTH("한 달 결제"),
     YEAR("일년 결제");
@@ -13,10 +15,6 @@ public enum OrderNameType {
         this.name = name;
     }
 
-    @JsonValue
-    public static String getName() {
-        return name;
-    }
 
     @JsonCreator
     public static OrderNameType from(String value) {

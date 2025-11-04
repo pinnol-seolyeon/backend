@@ -45,7 +45,7 @@ public class TossPaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PAY_TYPE);
         }
 
-        if(!orderName.equals(OrderNameType.getName())){
+        if(!orderName.equals("MONTH") && !orderName.equals("YEAR")){
             throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NAME);
         }
 
