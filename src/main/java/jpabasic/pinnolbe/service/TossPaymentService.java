@@ -5,17 +5,14 @@ import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
+import jpabasic.pinnolbe.repository.PaymentRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
+import jpabasic.pinnolbe.dto.payment.OrderNameType;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +20,8 @@ import java.util.Map;
 public class TossPaymentService {
 
     private final UserRepository userRepository;
-    @Value("${toss.secret-key}")
+    private final PaymentRepository paymentRepository;
+    @Value("${payments.toss.secret-key}")
     private String tossSecretKey;
 
     @Value("${payments.toss.success_url}")
@@ -35,7 +33,7 @@ public class TossPaymentService {
     @Transactional
     public PaymentResponseDto requestPayments(PaymentRequestDto paymentRequestDto) {
         Long amount=paymentRequestDto.getAmount();
-        String payType=paymentRequestDto.getPayType().name();
+        String payType=paymentRequestDto.getPayType().getName();
         String customerEmail=paymentRequestDto.getCustomerEmail();
         String orderName=paymentRequestDto.getOrderName();
 
@@ -47,10 +45,9 @@ public class TossPaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PAY_TYPE);
         }
 
-//        if(!orderName.equals(OrderNameType.상품명1.name()) &&
-//                !orderName.equals(OrderNameType.상품명1.name())){
-//            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NAME);
-//        }
+        if(!orderName.equals(OrderNameType.getName())){
+            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NAME);
+        }
 
         PaymentResponseDto paymentRes;
         try{
@@ -62,9 +59,11 @@ public class TossPaymentService {
                                 throw new CustomException(ErrorCode.USER_NOT_FOUND);
                             }
                     );
-            paymentRes =payment.toDto();
+            paymentRes =payment.toDto("Y");
             paymentRes.setSuccessUrl(successCallBackUrl);
             paymentRes.setFailUrl(failCallBackUrl);
+
+            paymentRepository.save(payment);
             return paymentRes;
         }catch(Exception e){
             throw new CustomException(ErrorCode.DB_ERROR_SAVE);

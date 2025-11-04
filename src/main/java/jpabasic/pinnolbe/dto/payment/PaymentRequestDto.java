@@ -13,11 +13,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentRequestDto {
-    @Schema(description="지불방법")
+    @Schema(description="지불방법", example="CARD",allowableValues = {"CARD"})
     private PayType payType;
     @Schema(description="지불금액")
     private Long amount;
-    @Schema(description = "주문 상품 이름")
+    @Schema(description = "주문 상품 이름",example="MONTH",allowableValues = {"MONTH","YEAR"})
     private String orderName;
     @Schema(description="구매자 이메일")
     private String customerEmail;

@@ -31,7 +31,7 @@ public class Payment{
 
     private String createDate;
 
-    public PaymentResponseDto toDto(){
+    public PaymentResponseDto toDto(String paySuccessYn){
         return PaymentResponseDto.builder()
                 .payType(payType.name())
                 .amount(amount)
@@ -40,6 +40,7 @@ public class Payment{
                 .customerEmail(customerEmail)
                 .customerName(customerName)
                 .createDate(createDate)
+                .paySuccessYn(paySuccessYn)
                 .build();
     }
 }

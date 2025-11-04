@@ -8,10 +8,7 @@ import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.service.TossPaymentService;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -26,13 +23,9 @@ public class PaymentController {
     @PostMapping
     @Operation(summary="결제 요청",description = "결제 요청에 필요한 값들을 반환")
     public ApiResponse<PaymentResponseDto> requestPayments(
-            @Parameter(description = "요청 객체",required = true) @ModelAttribute PaymentRequestDto paymentReq
+            @Parameter(description = "요청 객체",required = true) @RequestBody PaymentRequestDto paymentReq
     ){
-        try{
             PaymentResponseDto result=tossPaymentService.requestPayments(paymentReq);
             return ApiResponse.success("결제 승인 완료",result);
-        }catch(Exception e){
-            throw new CustomException(ErrorCode.PAYMENT_ERROR);
-        }
     }
 }
