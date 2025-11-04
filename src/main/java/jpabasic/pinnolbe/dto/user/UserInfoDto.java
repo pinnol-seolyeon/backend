@@ -7,12 +7,19 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class UserInfoDto {
+    private String userId;
     private String username;
     private String name;
     private int coin;
 
+
+    public UserInfoDto(String userId,String username, String name, int reward) {
+        this.userId = userId;
+        this.username = username;
+        this.name = name;
+        this.coin = reward;
+    }
 
 }
