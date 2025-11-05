@@ -22,4 +22,6 @@ public class SesController {
     public void sendAlarm(@PathVariable String id, @RequestBody SseSendRequest request) {
         sseService.sendToClient(id,request.eventName(),request.data());
     }
+
+
 }

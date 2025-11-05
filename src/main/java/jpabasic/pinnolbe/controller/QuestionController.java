@@ -8,11 +8,14 @@ import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.question.QuestionService;
+import jpabasic.pinnolbe.service.question.SseService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +29,15 @@ public class QuestionController {
     private final QuestionService questionService;
     private final UserService userService;
     private final StudyLogService studyLogService;
+    private final SseService sseService;
 
-public QuestionController(QuestionService questionService, UserService userService, StudyLogService studyLogService) {
+public QuestionController(
+        QuestionService questionService, UserService userService,
+        StudyLogService studyLogService,SseService sseService) {
         this.questionService = questionService;
         this.userService = userService;
         this.studyLogService = studyLogService;
+        this.sseService = sseService;
     }
 
 
@@ -44,6 +51,16 @@ public QuestionController(QuestionService questionService, UserService userServi
         return ApiResponse.success("질문 저장 완료",response);
     }
 
+    @GetMapping(value="/stream",produces= MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary="질문하기 실시간 응답")
+    public SseEmitter streamChat(
+            @RequestParam String question
+    ){
+//        User user=userService.getUserInfo();
+//        String userId=user.getId();
+        String userId="테스트";
+        return sseService.askQuestionStream(question,userId);
+    }
           
     @PostMapping("/save-all")
     @Operation(summary="여태까지 진행한 질문+답변 DB에 저장 및 표현력&참여도 측정",

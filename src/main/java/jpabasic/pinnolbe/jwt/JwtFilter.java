@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final List<String> EXCLUDE_URLS = List.of(
             "/", "/loginForm", "/api/oauth", "/swagger-ui", "/health-check",
-            "/v3/api-docs", "/swagger-resources", "/api/SSE"
+            "/v3/api-docs", "/swagger-resources", "/api/SSE","/api/question"
     );
 
 
