@@ -90,7 +90,7 @@ public class SecurityConfig {
 
                 //경로별 인가 작업
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui/**","/health-check","/v3/api-docs/**","/swagger-resources/**")
+                        .requestMatchers("/","/loginForm","/api/oauth/**","/swagger-ui/**","/health-check","/v3/api-docs/**","/swagger-resources/**","/api/SSE/**")
                         .permitAll()
                         .anyRequest().authenticated()
 
