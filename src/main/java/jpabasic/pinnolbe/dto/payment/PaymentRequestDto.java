@@ -1,9 +1,8 @@
 package jpabasic.pinnolbe.dto.payment;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jpabasic.pinnolbe.domain.Payment;
+import jpabasic.pinnolbe.domain.payment.Payment;
 import lombok.*;
-import jpabasic.pinnolbe.dto.payment.PayType;
 
 import java.time.LocalDate;
 import java.util.UUID;

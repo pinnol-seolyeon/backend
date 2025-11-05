@@ -2,7 +2,7 @@ package jpabasic.pinnolbe.domain;
 
 import com.mongodb.lang.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jpabasic.pinnolbe.domain.study.Study;
+import jpabasic.pinnolbe.domain.payment.Payment;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

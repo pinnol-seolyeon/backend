@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.payment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -6,8 +6,6 @@ import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ApiResponse;
-import jpabasic.pinnolbe.global.ErrorCode;
-import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.service.TossPaymentService;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,13 +40,13 @@ public class PaymentController {
         return ApiResponse.success("결제 승인 완료",result);
     }
 
-    @PostMapping("/cancel")
-    @Operation(summary="결제 취소",description = "완료된 결제 건에 대해 결제 취소 요청")
-    public ApiResponse<String> cancelPayment(
-            @Parameter(description = "토스 측 주문 고유 번호",required = true) @RequestParam String paymentKey,
-            @Parameter(description="결제 취소 사유",required = true) @RequestParam String cancelReason
-    ){
-        String result=tossPaymentService.requestPaymentCancel(paymentKey,cancelReason);
-        return ApiResponse.success("결제 취소 요청 완료",result);
-    }
+    @GetMapping("/success")
+    @Operation(summary="결제 성공 리다이렉트",description="결제 성공 시 paymentKey 등 반환")
+    public ApiResponse<PaymentResponseDto> successPayment(
+            PaymentResponseDto request
+            )
+            tossPaymentService.successPayment(request)
+
+
+
 }

@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.domain;
+package jpabasic.pinnolbe.domain.payment;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jpabasic.pinnolbe.dto.payment.PayType;

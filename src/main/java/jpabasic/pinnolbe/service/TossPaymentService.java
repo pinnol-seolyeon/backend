@@ -1,26 +1,29 @@
 package jpabasic.pinnolbe.service;
 
-import jpabasic.pinnolbe.domain.Payment;
+import jpabasic.pinnolbe.domain.payment.Payment;
+import jpabasic.pinnolbe.dto.payment.PaymentCancelDto;
 import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
-import jpabasic.pinnolbe.repository.PaymentRepository;
+import jpabasic.pinnolbe.repository.payment.PaymentRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jpabasic.pinnolbe.dto.payment.OrderNameType;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class TossPaymentService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     @Value("${payments.toss.secret-key}")
-    private String tossSecretKey;
+    private String testSecretApiKey;
 
     @Value("${payments.toss.success_url}")
     private String successCallBackUrl;
@@ -38,10 +41,14 @@ public class TossPaymentService {
     @Value("${payments.toss.fail_url}")
     private String failCallBackUrl;
 
-    @Transactional
-    /**
+    @Value("${payments.toss.cancel_url}")
+    private String tossOriginalUrl;
+
+
+    /*
      * 결제 실패
      */
+    @Transactional
     public PaymentFailResDto requestFail(String errorCode,String errorMsg,String orderId){
         Payment payment=paymentRepository.findByOrderId(orderId)
                 .orElseThrow(()-> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
@@ -104,7 +111,7 @@ public class TossPaymentService {
      * 결제 취소 요청
      */
     @Transactional
-    public String requestPaymentCancel(String paymentKey,String cancelReason){
+    public boolean requestPaymentCancel(String paymentKey,String cancelReason){
         RestTemplate template=new RestTemplate();
         URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
 
@@ -112,6 +119,36 @@ public class TossPaymentService {
         byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
         headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        JSONObject param=new JSONObject();
+        param.put("cancelReason",cancelReason);
+
+        PaymentCancelDto paymentCancelDto;
+        try{
+            paymentCancelDto=template.postForObject(
+                    uri,
+                    new HttpEntity<>(param,headers),
+                    PaymentCancelDto.class
+            );
+        }catch(Exception e){
+            throw new CustomException(ErrorCode.PAYMENT_CANCEL_ERROR);
+        }
+
+        if(paymentCancelDto==null) return false;
+
+        Long cancelAmount=paymentCancelDto.getCancels()[0].getCancelAmount();
+        try{
+            paymentRepository
+                    .findByPaymentKey(paymentKey)
+                    .filter(P->P.getAmount().equals(cancelAmount))
+                    .orElseThrow(()->new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NOTFOUND))
+                    .getCustomer()
+                    .addCancelPayment(paymentCancelDto.toCancelPayment());
+            return true;
+        }catch(Exception e){
+            throw new CustomException(ErrorCode.DB_ERROR_SAVE);
+        }
 
     }
 }

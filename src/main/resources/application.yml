@@ -43,3 +43,4 @@ payments:
     success_url: http://localhost:8080/success
     fail_url: http://localhost:8080/fail
     secret-key: ${WIDGET_SECRET_KEY}
+    cancel_url: https://api.tosspayments.com/v1/payments
