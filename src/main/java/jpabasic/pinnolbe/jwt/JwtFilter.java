@@ -42,9 +42,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String requestUri = request.getRequestURI();
         String path=request.getRequestURI();
+//
+//        String requestUri = request.getRequestURI();
+//        String accessToken = null;
+//        String refreshToken = null;
 
-        // 🔹 허용 경로일 경우 → JWT 검사하지 않고 그냥 통과
-        if (EXCLUDE_URLS.stream().anyMatch(path::startsWith)) {
+
+        //Swagger,API Docs 요청은 필터에서 그냥 통과
+        if(requestUri.startsWith("/swagger-ui")
+                ||requestUri.startsWith("/v3/api-docs")
+                ||requestUri.startsWith("/swagger-resources")){
+            filterChain.doFilter(request,response);
+            return;
+        }
+
+        // health-check bypass
+        if (requestUri.equals("/health-check")) {
             filterChain.doFilter(request, response);
             return;
         }
