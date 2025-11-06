@@ -1,32 +1,27 @@
 package jpabasic.pinnolbe.domain.question;
 
 import jpabasic.pinnolbe.domain.BaseEntity;
-import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Document(collection="queCollection")
-//@NoArgsConstructor
-//@RequiredArgsConstructor
 @Getter
 @Setter
-@RequiredArgsConstructor
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class QueCollection extends BaseEntity {
 
     @Id
     private String id;
     private String userId;
 
-    private LocalDateTime date; //질문한 날짜
+    private LocalDate date; //질문한 날짜
     private String chapterId; //단원
 
     private List<String> questions;

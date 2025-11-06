@@ -3,13 +3,15 @@ package jpabasic.pinnolbe.service.question;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.question.QuestionSessionDto;
+import jpabasic.pinnolbe.dto.question.QuestionTempCache;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 
 import java.time.DayOfWeek;
@@ -26,44 +28,47 @@ public class QuestionService {
     private final AskQuestionTemplate askQuestionTemplate;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final QuestionAnalyzer questionAnalyzer;
+    private final QuestionTempCache tempCache;
 
     //사용자별 세션 저장소 //메모리에 저장된 질문 세션 관리 -> 일시적으로 관리
-    private final Map<String, QuestionSessionDto> sessionStore = new ConcurrentHashMap<>();
+    private final Map<String, QuestionTempCache> sessionStore = new ConcurrentHashMap<>();
 
 
     public QuestionService(QueCollectionRepository queCollectionRepository, AskQuestionTemplate askQuestionTemplate,
-                           WeeklyAnalysisRepository weeklyAnalysisRepository, QuestionAnalyzer questionAnalyzer) {
+                           WeeklyAnalysisRepository weeklyAnalysisRepository, QuestionAnalyzer questionAnalyzer,
+                           QuestionTempCache tempCache) {
         this.queCollectionRepository = queCollectionRepository;
         this.askQuestionTemplate = askQuestionTemplate;
         this.weeklyAnalysisRepository = weeklyAnalysisRepository;
         this.questionAnalyzer = questionAnalyzer;
+        this.tempCache = tempCache;
     }
 
 
-    //질문 내용을 AI 모델에게 전달
-    public QuestionResponse askQuestion(String question, User user) {
-        String userId = user.getId();
-        QuestionRequest request = new QuestionRequest(null,userId, question);
+//    //질문 내용을 AI 모델에게 전달
+//    public QuestionResponse askQuestion(String question, User user) {
+//        String userId = user.getId();
+//        QuestionRequest request = new QuestionRequest(null,userId, question);
+//
+//        try {
+//            QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
+//            String answer = result.getResult();
+//
+//            //세션에 저장
+//            saveQuestionSession(question, answer,userId);
+//            return result;
+//        } catch (RestClientException e) {
+//            throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
+//        }
+//    }
 
-        try {
-            QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
-            String answer = result.getResult();
-
-            //세션에 저장
-            saveQuestionSession(question, answer,userId);
-            return result;
-        } catch (RestClientException e) {
-            throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
-        }
-    }
-
-    //질문 내용 session에 저장
-    public void saveQuestionSession(String question,String answer,String userId) {
-        //사용자 세션 가져오기
-        QuestionSessionDto session = sessionStore.computeIfAbsent(userId, k -> new QuestionSessionDto());
-        session.add(question, answer);
-        System.out.println("QuestionSession:" + session);
-    }
+//    //질문 내용 session에 저장
+//    public void saveQuestionSession(String question,String answer,String userId) {
+//        //사용자 세션 가져오기
+//        QuestionTempCache session = sessionStore.computeIfAbsent(userId, k -> new QuestionTempCache());
+//        session.add(question, answer);
+//        System.out.println("QuestionSession:" + session);
+//    }
 
 
     //질문에 따른 표현력 점수 측정 (3단계 학습 완료 시)
@@ -75,29 +80,86 @@ public class QuestionService {
     }
 
 
-    //모든 질문+답변 한꺼번에 DB에 저장하기
-    public List<String> saveAllQAs(User user, String chapterId) {
-        String userId = user.getId();
-        QuestionSessionDto session = sessionStore.get(userId);
+//    //모든 질문+답변 한꺼번에 DB에 저장하기
+//    public List<String> saveAllQAs(User user, String chapterId) {
+//        String userId = user.getId();
+//        QuestionTempCache session = sessionStore.get(userId);
+//
+//        if (session == null || session.getQuestions().isEmpty()) return null;
+//
+//        QueCollection doc = new QueCollection();
+//        doc.setUserId(userId);
+//        doc.setQuestions(session.getQuestions());
+//        doc.setAnswers(session.getAnswers());
+//        doc.setChapterId(chapterId);
+////        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+////        doc.setDate(nowKST);
+//
+//        queCollectionRepository.save(doc);
+//
+//        //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
+//        sessionStore.remove(userId);
+//
+//        List<String> questions = doc.getQuestions();
+//        return questions;
+//    }
 
-        if (session == null || session.getQuestions().isEmpty()) return null;
+    @Transactional
+    public List<String> commitUserSession(String userId,String chapterId) {
+        List<QuestionTempCache.TempQA> allQAs = tempCache.popAll(userId);
+        List<String> questionList=new ArrayList<>();
 
-        QueCollection doc = new QueCollection();
-        doc.setUserId(userId);
-        doc.setQuestions(session.getQuestions());
-        doc.setAnswers(session.getAnswers());
-        doc.setChapterId(chapterId);
-//        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-//        doc.setDate(nowKST);
+        if (allQAs == null || allQAs.isEmpty()) {
+            return Collections.singletonList("저장할 세션이 없습니다.");
+        }
 
-        queCollectionRepository.save(doc);
+        for(QuestionTempCache.TempQA tempQA : allQAs) {
+            //saveQuestionSession이 DB에 append하면서 최신 질문 리스트 반환한다
+            List<String> savedQuestions=saveQuestionSession(
+                    tempQA.getQuestion(),
+                    tempQA.getAnswer(),
+                    userId,
+                    chapterId
+            );
+            questionList.addAll(savedQuestions);
+        }
 
-        //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
-        sessionStore.remove(userId);
-
-        List<String> questions = doc.getQuestions();
-        return questions;
+        return questionList;
     }
+
+    public List<String> saveQuestionSession(String question, String answer, String userId,String chapterId) {
+        // 오늘 날짜 (시간은 버리고 일자 단위로)
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        // ✅ 기존 세션(오늘자)이 존재하면 append, 없으면 새로 생성
+        QueCollection queCollection = queCollectionRepository
+                .findByUserIdAndDate(userId, today)
+                .orElseGet(() -> {
+                    QueCollection newSession = new QueCollection();
+                    newSession.setUserId(userId);
+                    newSession.setDate(today);
+                    newSession.setChapterId(chapterId);
+                    newSession.setQuestions(new ArrayList<>());
+                    newSession.setAnswers(new ArrayList<>());
+                    return newSession;
+                });
+
+        // ✅ 새 질문/답변 추가
+        if (queCollection.getQuestions() == null) {
+            queCollection.setQuestions(new ArrayList<>());
+        }
+        if (queCollection.getAnswers() == null) {
+            queCollection.setAnswers(new ArrayList<>());
+        }
+
+        queCollection.getQuestions().add(question);
+        queCollection.getAnswers().add(answer);
+
+        // ✅ MongoDB에 저장 (insert or update)
+        QueCollection saved=queCollectionRepository.save(queCollection);
+        return new ArrayList<>(saved.getQuestions());
+    }
+
 
     // 참여도(질문 개수)
     public void updateWeeklyQuestionCount(User user) {
