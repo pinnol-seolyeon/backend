@@ -1,26 +1,18 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.study;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.dto.question.*;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.question.QuestionService;
 import jpabasic.pinnolbe.service.question.SseService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/question")

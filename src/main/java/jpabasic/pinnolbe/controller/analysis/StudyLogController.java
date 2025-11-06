@@ -53,8 +53,8 @@ public class StudyLogController {
     @Operation(summary="현재 단원 레벨")
     public ApiResponse<NowStudyingLevelDto> getNowStudyingLevel() {
         User user = userService.getUserInfo();
-        String sessionLogId=user.getStudySessionLogId();
-        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user,sessionLogId);
+
+        NowStudyingLevelDto result=studyLogService.getNowStudyingLevel(user);
         return ApiResponse.success("현재 학습중인 단원과 레벨입니다.",result);
     }
 

@@ -1,15 +1,10 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.study;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
-import jpabasic.pinnolbe.dto.study.ChapterDto;
-import jpabasic.pinnolbe.dto.study.ChaptersDto;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
@@ -24,9 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/study")

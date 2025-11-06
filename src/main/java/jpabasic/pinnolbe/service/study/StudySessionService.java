@@ -12,6 +12,7 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
+import jpabasic.pinnolbe.repository.study.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -38,10 +39,12 @@ public class StudySessionService {
     private final ObjectMapper objectMapper;
     @Autowired
     private StudyLogService studyLogService;
+    @Autowired
+    private BookRepository bookRepository;
 
     /** 학습 시작 시 Redis에 세션 생성 */
     @Transactional
-    public String startLevel(User user, int level, String chapterId) {
+    public String startLevel(User user, int level, String chapterId,String bookId) {
         System.out.println("📘 [startLevel] 호출됨: userId=" + user.getId() + ", level=" + level + ", chapterId=" + chapterId);
 
         String userId = user.getId();
@@ -52,7 +55,8 @@ public class StudySessionService {
         System.out.println("✅ [startLevel] StudySession 객체 생성 완료");
 
         // StudySessionLog 확인 또는 생성
-        String studySessionLogId = findStudySessionLog(userId, chapterId, level);
+        String studySessionLogId = findStudySessionLog(userId, chapterId, bookId, level);
+
         user.setStudySessionLogId(studySessionLogId);
         userRepository.save(user);
         System.out.println("✅ [startLevel] User 문서 업데이트 완료, studySessionLogId=" + studySessionLogId);
@@ -69,14 +73,20 @@ public class StudySessionService {
     }
 
     /** StudySessionLog 찾기/생성 */
-    private String findStudySessionLog(String userId, String chapterId, int level) {
+    private String findStudySessionLog(String userId, String chapterId, String bookId,int level) {
         System.out.println("🔍 [findStudySessionLog] 실행 중...");
-        Optional<StudySessionLog> existingLogOpt = studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId, chapterId, level);
+        Optional<StudySessionLog> existingLogOpt =
+                studySessionLogRepository.findByUserIdAndChapterIdAndLevel(userId, chapterId, level);
+        System.out.println("existingLogOpt="+existingLogOpt.orElse(null));
         if (existingLogOpt.isPresent()) {
             System.out.println("✅ 기존 StudySessionLog 존재, ID=" + existingLogOpt.get().getId());
-            return existingLogOpt.get().getId();
+            StudySessionLog existing=existingLogOpt.get();
+            //기존에 db에 저장되어 있던 StudySessionLog를 ACTIVE 상태로 변환
+            existing.setStatus(Status.ACTIVE);
+            studySessionLogRepository.save(existing);
+            return existing.getId();
         } else {
-            StudySessionLog log = new StudySessionLog(userId, chapterId, level);
+            StudySessionLog log = new StudySessionLog(userId, chapterId, bookId,level);
             String id = studySessionLogRepository.save(log).getId();
             System.out.println("🆕 새로운 StudySessionLog 생성됨, ID=" + id);
             return id;
@@ -97,7 +107,7 @@ public class StudySessionService {
 
         if (session == null) {
             System.out.println("⚠️ Redis 세션이 존재하지 않아 새로 생성함");
-            startLevel(user, summary.getLevel(), summary.getChapterId());
+            startLevel(user, summary.getLevel(), summary.getChapterId(),summary.getBookId());
             throw new CustomException(ErrorCode.SESSION_NOT_FOUND);
         }
 
@@ -138,19 +148,47 @@ public class StudySessionService {
         // COMPLETE
         if (summary.getStatus() == Status.COMPLETED) {
             System.out.println("🏁 [COMPLETE] 감지 - DB 저장 로직 실행");
+            session.setStatus(Status.COMPLETED);
+            //학습한 시간 + 시간대 설정
+            updateTimeZone(session);
+
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
             System.out.println("✔️ dto: "+ dto);
+
+            if(session.getLevel()<=5){
+                //다음 레벨에 대한 StudySessionLog 저장해야
+                StudySessionLog newSession=new StudySessionLog(session.getUserId(), session.getChapterId(), session.getBookId(),session.getLevel()+1);
+                StudySessionLog saved=studySessionLogRepository.save(newSession);
+                user.setStudySessionLogId(saved.getId());
+                userRepository.save(user);
+            }else{
+                //레벨 6일 경우, sessionLog null 처리 후, finishChapter에서 다음 chapter로 넘어가도록 설정
+                user.setStudySessionLogId(null);
+                userRepository.save(user);
+            }
+
             //redis 세션 삭제
             boolean deleted=redisTemplate.delete(key);
-            //user필드 studySessionLogId 삭제
-            user.setStudySessionLogId(null);
-            userRepository.save(user);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
             //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
             WeeklyAnalysis weeklyAnalysis=studyLogService.saveUntilStudyTime(dto);
             String weeklyId= weeklyAnalysis.getId();
             dto.setWeeklyAnalysisId(weeklyId);
+
+            return dto;
+        }
+
+        //EXIT (유저가 학습하기 창에서 나감)
+        if(summary.getStatus()==Status.EXIT){
+            System.out.println("🚫 [EXIT] 유저가 학습하기 창에서 나감 ");
+            session.setStatus(Status.EXIT);
+            StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
+            //redis 삭제
+            boolean deleted=redisTemplate.delete(key);
+            //user 필드에 현재 세션 진도 저장
+            user.setStudySessionLogId(dto.getId());
+            userRepository.save(user);
 
             return dto;
         }
