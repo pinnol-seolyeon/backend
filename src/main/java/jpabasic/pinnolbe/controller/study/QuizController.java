@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.study;
 
 import jpabasic.pinnolbe.domain.study.Quiz;
 import jpabasic.pinnolbe.service.analyze.QuizService;

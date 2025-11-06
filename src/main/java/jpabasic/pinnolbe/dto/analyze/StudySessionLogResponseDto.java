@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.dto.analyze;
 
+import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

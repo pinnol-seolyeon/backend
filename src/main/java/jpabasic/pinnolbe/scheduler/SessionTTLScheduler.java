@@ -31,7 +31,7 @@ public class SessionTTLScheduler {
                 StudySession session = redisTemplate.opsForValue().get(key);
                 if (session == null) continue;
 
-                session.setStatus(Status.EXITED);
+                session.setStatus(Status.EXIT);
                 studySessionService.saveToDatabase(session);
                 redisTemplate.delete(key);
                 log.info("[TTL] TTL 만료 세션 정리: {} (남은 TTL={}초)", key, ttl);

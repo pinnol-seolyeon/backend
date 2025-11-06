@@ -29,10 +29,11 @@ public class StudySessionLog extends BaseEntity {
     private Status status;
 
     public StudySessionLog(
-            String userId,String chapterId,int level
+            String userId,String chapterId,String bookId,int level
     ) {
         this.userId=userId;
         this.chapterId=chapterId;
+        this.bookId=bookId;
         this.level=level;
         this.totalDuration=0;
         this.timeZoneDurations=new HashMap<>();

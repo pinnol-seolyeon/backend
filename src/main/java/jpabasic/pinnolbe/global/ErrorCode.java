@@ -30,6 +30,7 @@ public enum ErrorCode {
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"session-001","기존의 study session 기록이 없어요."),
     STUDY_SESSION_LOG_NOT_FOUND(HttpStatus.NOT_FOUND,"session-002","StudySessionLog 엔티티가 없어요."),
     SESSION_LOG_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"session-003","세션 로그 삭제에 오류가 발생했어요."),
+    STUDY_SESSION_ID_NOT_FOUND(HttpStatus.NOT_FOUND,"session-004","user필드에 저장되어있던 sessionId로 찾아봤지만 해당 세션을 DB에서 찾을 수 없어요."),
 
     //chapter 관련
     CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-001","해당 chapter내용을 찾을 수 없어요."),

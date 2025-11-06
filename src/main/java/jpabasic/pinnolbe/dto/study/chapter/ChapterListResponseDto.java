@@ -21,6 +21,7 @@ public class ChapterListResponseDto {
 
     private String sessionLogId;
     private String currentChapterId;
+    private Integer currentLevel; //이어서 학습할 단계
     private Slice<ChapterResponseDto> chapterList; //chapterId,chapterTitle
 
 

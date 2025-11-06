@@ -360,6 +360,7 @@ public class StudyService {
     public ChapterListResponseDto getChapterList(User user, String bookId,int page){
         String currentChapterId;
         StudySessionLog log;
+        int currentLevel;
 
         //해당 교재의 모든 chapter List
         Slice<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId,page,5);
@@ -369,18 +370,21 @@ public class StudyService {
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
             currentChapterId = "682829708c776a1ffa92fd50"; // 첫 교재,첫 챕터 하드코딩
+            currentLevel = 1;
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
                 log = optLog.get();
                 System.out.println("currentChapterId 가져오기");
                 currentChapterId = log.getChapterId();
+                currentLevel = log.getLevel();
             } else {
                 currentChapterId = "682829708c776a1ffa92fd50"; // fallback
+                currentLevel = 1;
             }
         }
         //dto로 변환
-        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,chapters);
+        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,currentLevel,chapters);
         return result;
     }
 

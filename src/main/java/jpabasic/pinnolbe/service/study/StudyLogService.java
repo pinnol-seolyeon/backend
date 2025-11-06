@@ -1,9 +1,11 @@
 package jpabasic.pinnolbe.service.study;
 
+import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
+import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
@@ -406,27 +408,43 @@ public class StudyLogService {
     }
 
     //현재 학습 중인 단원 + 레벨 제공
-    public NowStudyingLevelDto getNowStudyingLevel(User user,String sessionLogId){
+    public NowStudyingLevelDto getNowStudyingLevel(User user) {
 
-        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
-        StudySessionLog latestLog=list.stream()
-                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND)); //현재 진행 중인 레벨 없음
+        //현재 진행 중인 레벨이 user 필드에 studySessionLogId로 저장되어 있는 경우
+        if (user.getStudySessionLogId() != null) {
+            StudySessionLog log = studySessionLogRepository.findById(user.getStudySessionLogId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_ID_NOT_FOUND));
+            return toDto(log, 0);
+        }
 
-//        String studySessionLogId=user.getStudySessionLogId();
-//        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
+        List<StudySessionLog> list = studySessionLogRepository.findByUserId(user.getId());
+        StudySessionLog latestLog = list.stream()
+                .max(Comparator.comparing(StudySessionLog::getCreatedAt))
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
 
-        String chapterId=latestLog.getChapterId();
-        int level=latestLog.getLevel();
+        return latestLog.getStatus() == Status.COMPLETED
+                ? toDto(latestLog, 1)
+                : toDto(latestLog, 0);
 
-        Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
-        String chapterTitle=chapter.getChapterTitle();
-
-        NowStudyingLevelDto result=new NowStudyingLevelDto(chapterTitle,level);
-        return result;
     }
 
-
+    private NowStudyingLevelDto toDto(StudySessionLog log, int levelOffset) {
+        Chapter chapter=chapterRepository.findById(log.getChapterId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+        ObjectId objectId=new ObjectId(log.getBookId());
+        Book book=bookRepository.findById(objectId)
+                .orElseThrow(()->new IllegalArgumentException("해당 책이 없어요."));
+        String bookTitle=book.getTitle();
+        int bookLevel=book.getBookLevel();
+        int targetLevel=log.getLevel()+levelOffset;
+        return new NowStudyingLevelDto(
+                bookLevel,
+                bookTitle,
+                log.getChapterId(),
+                chapter.getChapterTitle(),
+                targetLevel
+        );
+    }
 
 
 }
