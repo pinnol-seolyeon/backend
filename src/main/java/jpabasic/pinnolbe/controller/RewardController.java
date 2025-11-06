@@ -33,7 +33,7 @@ public class RewardController {
         return user.getReward();
     }
 
-    @PostMapping("/upload-coin")
+    @PostMapping("/upload-point")
     @Operation(summary="얻거나 잃은 코인 내역 저장",
                 description= """
                         - coin=얻거나 잃은 피넛 수
