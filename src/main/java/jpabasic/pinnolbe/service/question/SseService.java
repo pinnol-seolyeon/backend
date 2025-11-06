@@ -102,7 +102,7 @@ public class SseService {
                 .doOnComplete(()->{
                     log.info("FastAPI 스트림 완료 (userId={})", userId);
                     //응답 전체를 session에 저장
-//                    questionService.saveQuestionSession(question,accumulatedAnswer.toString(),userId);
+                    questionService.saveQuestionSession(question,accumulatedAnswer.toString(),userId);
 
                     sseEmitter.complete();
                     sseEmitterMap.remove(userId);

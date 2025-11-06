@@ -56,9 +56,8 @@ public QuestionController(
     public SseEmitter streamChat(
             @RequestParam String question
     ){
-//        User user=userService.getUserInfo();
-//        String userId=user.getId();
-        String userId="테스트";
+        User user=userService.getUserInfo();
+        String userId=user.getId();
         return sseService.askQuestionStream(question,userId);
     }
           
