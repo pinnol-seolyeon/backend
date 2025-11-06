@@ -11,5 +11,5 @@ import java.util.List;
 public class QAs {
 
     private int part;
-    List<QuestionSessionDto> questionSessionDtos;
+    List<QuestionTempCache> questionTempCaches;
 }

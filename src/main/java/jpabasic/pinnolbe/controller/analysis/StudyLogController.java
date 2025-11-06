@@ -102,7 +102,7 @@ public class StudyLogController {
         String userId=user.getId();
 
         return queCollectionRepository.findByUserId(userId).stream()
-                .map(q -> q.getDate().toLocalDate())
+                .map(QueCollection::getDate)
                 .distinct()
                 .collect(Collectors.toList());
     }

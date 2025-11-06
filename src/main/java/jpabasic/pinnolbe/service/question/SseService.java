@@ -2,16 +2,24 @@ package jpabasic.pinnolbe.service.question;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jpabasic.pinnolbe.dto.question.QuestionTempCache;
+import jpabasic.pinnolbe.dto.question.StreamingResultDto;
+import org.springframework.security.core.context.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.yaml.snakeyaml.emitter.Emitter;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -25,11 +33,13 @@ public class SseService {
     private final Map<String, SseEmitter> sseEmitterMap = new ConcurrentHashMap<>();
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final QuestionTempCache tempCache;
 
-    public SseService(WebClient webClient, ObjectMapper objectMapper, QuestionService questionService) {
+    public SseService(WebClient webClient, ObjectMapper objectMapper, QuestionService questionService, QuestionTempCache tempCache) {
         this.webClient = webClient;
         this.objectMapper = objectMapper;
         this.questionService = questionService;
+        this.tempCache = tempCache;
     }
 
     /**
@@ -38,22 +48,28 @@ public class SseService {
      * @param userId
      * @return
      */
-    public SseEmitter askQuestionStream(String question, String userId) {
+    public StreamingResultDto askQuestionStream(String question, String userId) {
         ///SSE sseEmitter 생성 및 등록
         SseEmitter sseEmitter = new SseEmitter(0L); //무제한 타임아웃
         sseEmitterMap.put(userId,sseEmitter);
 
         StringBuilder accumulatedAnswer=new StringBuilder();
+        CompletableFuture<String> resultFuture=new CompletableFuture<>();
+
+//        /// 현재 SecurityContext 보존
+//        SecurityContext context= SecurityContextHolder.getContext();
 
         /// 생명주기 콜백 등록
         sseEmitter.onCompletion(()->sseEmitterMap.remove(userId));
         sseEmitter.onTimeout(()->{
             sseEmitter.complete();
             sseEmitterMap.remove(userId);
+            resultFuture.complete(accumulatedAnswer.toString()); //타임아웃 시점에도 반환
         });
         sseEmitter.onError(ex->{
             sseEmitter.completeWithError(ex);
             sseEmitterMap.remove(userId);
+            resultFuture.completeExceptionally(ex);
         });
 
         /// FastAPI에 스트리밍 요청
@@ -67,6 +83,9 @@ public class SseService {
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve() //HTTP 요청 실행
                 .bodyToFlux(String.class) //FastAPI의 SSE 'data' 부분을 JSON 문자열로 받음
+                /// Reactor 쓰레드에서도 SecurityContext 유지
+//                .publishOn(Schedulers.boundedElastic())
+//                .contextWrite(ctx->ctx.put(SecurityContext.class,context))
                 .doOnNext(json -> { //event 하나가 들어올 때마다 실행
                     try {
                         //JsonNode로 파싱
@@ -93,23 +112,49 @@ public class SseService {
                         log.warn("SSE 전송 중 연결 종료 또는 IO 에러 (userId={}): {}", userId, e.getMessage());
                         sseEmitter.complete();
                         sseEmitterMap.remove(userId);
+                        resultFuture.completeExceptionally(e);
                     }
                 })
                 .doOnError(error -> {
-                    log.error("FastAPI 스트림 오류 (userId={}): {}", userId, error.getMessage());
+                    //token 만료 (401) 감지
+                    if(error instanceof WebClientResponseException wce
+                        && wce.getStatusCode()== HttpStatus.UNAUTHORIZED){
+                        log.warn("토큰 만료 감지 (userId={})",userId);
+                        try{
+                            sseEmitter.send(SseEmitter.event()
+                                    .name("expired")
+                                    .data("access token expired"));
+                        }catch(IOException e){
+                            log.error("만료 이벤트 전송 실패: {}", e.getMessage());
+                        }
+                    }else{
+                        log.error("FastAPI 스트림 오류 (userId={}): {}", userId, error.getMessage());
+                    }
                     sseEmitter.completeWithError(error);
+                    resultFuture.completeExceptionally(error);
+                    sseEmitterMap.remove(userId);
                 })
                 .doOnComplete(()->{
                     log.info("FastAPI 스트림 완료 (userId={})", userId);
-                    //응답 전체를 session에 저장
-                    questionService.saveQuestionSession(question,accumulatedAnswer.toString(),userId);
+                    //응답 전체를 String 형태로 반환
+                    String finalText= accumulatedAnswer.toString();
+                    tempCache.add(userId, question, finalText);
+                    resultFuture.complete(finalText);
 
                     sseEmitter.complete();
                     sseEmitterMap.remove(userId);
                 })
                 .subscribe();
-        return sseEmitter;
+        return new StreamingResultDto(sseEmitter,resultFuture);
 
+    }
+
+    /*
+    실시간 응답 내용을 하나의 result로 반환
+     */
+    public String getResult(String result){
+        StringBuilder accumulatedAnswer=new StringBuilder(result);
+        return accumulatedAnswer.toString();
     }
 
     /*

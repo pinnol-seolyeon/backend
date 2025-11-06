@@ -34,8 +34,8 @@ public class TokenService {
             throw new CustomException(ErrorCode.NO_COOKIE);
         }
 
-        String newAccessToken = jwtUtil.createJwt(username, role, 1 * 60 * 1000L);
-        response.addCookie(createCookie("Authorization", newAccessToken, 5 * 60));
+        String newAccessToken = jwtUtil.createJwt(username, role, 30 * 60 * 1000L); //access token 30분
+        response.addCookie(createCookie("Authorization", newAccessToken, 31 * 60)); //access token 쿠키 31분
         return newAccessToken;
     }
 
