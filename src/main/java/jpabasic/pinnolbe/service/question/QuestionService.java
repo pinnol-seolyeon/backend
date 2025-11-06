@@ -43,23 +43,28 @@ public class QuestionService {
     //질문 내용을 AI 모델에게 전달
     public QuestionResponse askQuestion(String question, User user) {
         String userId = user.getId();
-        QuestionRequest request = new QuestionRequest(user.getId(), question);
+        QuestionRequest request = new QuestionRequest(null,userId, question);
 
         try {
             QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
             String answer = result.getResult();
 
-            //사용자 세션 가져오기
-            QuestionSessionDto session = sessionStore.computeIfAbsent(userId, k -> new QuestionSessionDto());
-            session.add(question, answer);
-            System.out.println("QuestionSession:" + session);
-
+            //세션에 저장
+            saveQuestionSession(question, answer,userId);
             return result;
         } catch (RestClientException e) {
             throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
         }
-
     }
+
+    //질문 내용 session에 저장
+    public void saveQuestionSession(String question,String answer,String userId) {
+        //사용자 세션 가져오기
+        QuestionSessionDto session = sessionStore.computeIfAbsent(userId, k -> new QuestionSessionDto());
+        session.add(question, answer);
+        System.out.println("QuestionSession:" + session);
+    }
+
 
     //질문에 따른 표현력 점수 측정 (3단계 학습 완료 시)
     public double getExpressionScore(List<String> question) {
