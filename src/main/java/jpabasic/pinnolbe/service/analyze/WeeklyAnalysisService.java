@@ -23,6 +23,14 @@ public class WeeklyAnalysisService {
         this.weeklyAnalysisRepository = weeklyAnalysisRepository;
     }
 
+    public WeeklyAnalysis findThisWeekAnalysis(String userId) {
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY);
+
+        return weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, weekStart)
+                .orElseGet(() -> new WeeklyAnalysis(userId, weekStart));
+    }
+
     public void saveCompletedChapters(User user, String chapterId,String weeklyAnalysisId){
         LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
                 .with(DayOfWeek.MONDAY);
