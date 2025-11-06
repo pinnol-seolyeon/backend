@@ -388,7 +388,7 @@ public class StudyService {
         return result;
     }
 
-    private Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
+    public Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
 

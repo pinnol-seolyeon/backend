@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
@@ -11,11 +12,13 @@ import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.study.StudyRepository;
+import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +34,9 @@ public class StudyController {
     private final AmazonS3 amazonS3;
     private final AmazonS3Client amazonS3Client;
     private final StudySessionService studySessionService;
+    private final WeeklyAnalysisService weeklyAnalysisService;
 
-    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, StudySessionService studySessionService) {
+    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, StudySessionService studySessionService, WeeklyAnalysisService weeklyAnalysisService) {
         this.studyRepository = studyRepository;
         this.userRepository = userRepository;
         this.userService = userService;
@@ -40,6 +44,7 @@ public class StudyController {
         this.amazonS3 = amazonS3;
         this.amazonS3Client = amazonS3Client;
         this.studySessionService = studySessionService;
+        this.weeklyAnalysisService = weeklyAnalysisService;
     }
 
     @Value("${cloud.aws.s3.bucket}")
@@ -97,11 +102,21 @@ public class StudyController {
 
 
     @GetMapping("/chapter-select")
-    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 제공")
+    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 및 현재 학습 중인 챕터/레벨 제공")
     public ApiResponse<ChapterListResponseDto> getChapterTitle(
             @RequestParam String bookId,
             @RequestParam(defaultValue="0") int page){
         User user=userService.getUserInfo();
+
+        WeeklyAnalysis analysis=weeklyAnalysisService.findThisWeekAnalysis(user.getId());
+        int size=analysis.getCompletedChapters().size();
+
+        if(size>=2){
+            Slice<ChapterListResponseDto.ChapterResponseDto> chapters = studyService.getChaptersByBook(bookId, page, 5);
+            ChapterListResponseDto dto = new ChapterListResponseDto(chapters);
+            return ApiResponse.success("이미 이번 주 할당량 학습을 모두 완료하였어요.", dto);
+        }
+
         ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
         return ApiResponse.success("챕터 목록 조회 성공",result);
     }

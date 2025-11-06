@@ -24,6 +24,10 @@ public class ChapterListResponseDto {
     private Integer currentLevel; //이어서 학습할 단계
     private Slice<ChapterResponseDto> chapterList; //chapterId,chapterTitle
 
+    public ChapterListResponseDto(Slice<ChapterResponseDto> chapterList) {
+        this.chapterList = chapterList;
+    }
+
 
     @Getter
     @Setter
