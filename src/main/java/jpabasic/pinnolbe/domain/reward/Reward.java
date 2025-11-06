@@ -1,5 +1,6 @@
-package jpabasic.pinnolbe.domain;
+package jpabasic.pinnolbe.domain.reward;
 
+import jpabasic.pinnolbe.domain.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,13 +13,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Setter
 @Getter
-public class Reward {
+public class Reward extends BaseEntity {
 
     @Id
     private String id;
-
     private String userId;
-
-    private Long coin;
+    private Integer coin;
+    private PointCategory category;
+    private String description;
+    private boolean isPositive;
 
 }
