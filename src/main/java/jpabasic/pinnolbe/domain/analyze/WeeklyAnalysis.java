@@ -68,12 +68,16 @@ public class WeeklyAnalysis {
     }
 
     @Getter @Setter
-    @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class UnderstandingData {
-        private int correct=0;
-        private int total=0;
+        private int correct;
+        private int total;
+
+        public UnderstandingData(){
+            this.correct=0;
+            this.total=0;
+        }
     }
 
     @Getter @Setter
