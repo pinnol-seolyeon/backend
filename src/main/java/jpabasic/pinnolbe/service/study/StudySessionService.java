@@ -51,7 +51,7 @@ public class StudySessionService {
         String key = SESSION_PREFIX + userId + ":" + chapterId + ":" + level;
 
         // Redis 세션 객체 생성
-        StudySession studySession = new StudySession(key, userId, chapterId, level);
+        StudySession studySession = new StudySession(key, userId, chapterId, bookId,level);
         System.out.println("✅ [startLevel] StudySession 객체 생성 완료");
 
         // StudySessionLog 확인 또는 생성
