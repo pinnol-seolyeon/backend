@@ -75,23 +75,23 @@ public class StudyLogController {
     }
 
 
-    // 질문 내용 요약
-    @PostMapping("/questions")
-    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
-    public ResponseEntity<?> summaryQuestions(){
-        User user=userService.getUserInfo();
-        String userId=user.getId();
-
-        //오늘 한 질문들
-        List<String> todayQAs=studyLogService.getTodayCollections(userId);
-        if(todayQAs.isEmpty()){
-            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
-        }
-        //질문 요약 api 호출
-        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
-
-        return ResponseEntity.ok(result);
-    }
+//    // 질문 내용 요약
+//    @PostMapping("/questions")
+//    @Operation(summary = "오늘 질문 내용 요약+오늘 질문 개수(수정 전)")
+//    public ResponseEntity<?> summaryQuestions(){
+//        User user=userService.getUserInfo();
+//        String userId=user.getId();
+//
+//        //오늘 한 질문들
+//        List<String> todayQAs=studyLogService.getTodayCollections(userId);
+//        if(todayQAs.isEmpty()){
+//            return ResponseEntity.ok("🥲 아직 오늘 질문한 내용이 없어요");
+//        }
+//        //질문 요약 api 호출
+//        QuestionSummaryDto result=studyLogService.summaryQuestion(todayQAs,user);
+//
+//        return ResponseEntity.ok(result);
+//    }
 
 
 

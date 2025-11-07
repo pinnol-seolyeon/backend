@@ -62,34 +62,34 @@ public class StudyController {
 //        return ResponseEntity.ok(chapter);
 //    }
 
-    @PostMapping("/feedback")
-    @Operation(summary="유저가 대답하면 AI가 피드백/리액션(수정 전)")
-    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequestDto request){
-        System.out.println("🎙선생님의 질문:"+request.getQuestion());
-        System.out.println("🎙사용자 답변:"+request.getUserAnswer());
-        User user=userService.getUserInfo();
-
-//        String reaction="좋은 생각이야~";
+//    @PostMapping("/feedback")
+//    @Operation(summary="유저가 대답하면 AI가 피드백/리액션(수정 전)")
+//    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequestDto request){
+//        System.out.println("🎙선생님의 질문:"+request.getQuestion());
+//        System.out.println("🎙사용자 답변:"+request.getUserAnswer());
+//        User user=userService.getUserInfo();
+//
+//       String reaction="좋은 생각이야~";
 //
 //        Map<String,String> response=new HashMap<>();
 //        response.put("reaction",reaction);
 //        return ResponseEntity.ok(response);
-        QuestionResponse res=studyService.getFeedback(user,request);
-        return ResponseEntity.ok(res);
-    }
+//        QuestionResponse res=studyService.getFeedback(user,request);
+//        return ResponseEntity.ok(res);
+//    }
 
     
-    @PostMapping("/feedback/saveAll")
-    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장(수정 전)")
-    public ResponseEntity<String> saveAllFeedBacks(@RequestParam String chapterId){
-        User user=userService.getUserInfo();
-        try {
-            studyService.saveAllFeedBacks(user, chapterId);
-        }catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-        return ResponseEntity.ok("여태까지의 피드백이 DB에 무사히 저장되었습니다.");
-    }
+//    @PostMapping("/feedback/saveAll")
+//    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장(수정 전)")
+//    public ResponseEntity<String> saveAllFeedBacks(@RequestParam String chapterId){
+//        User user=userService.getUserInfo();
+//        try {
+//            studyService.saveAllFeedBacks(user, chapterId);
+//        }catch(Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//        return ResponseEntity.ok("여태까지의 피드백이 DB에 무사히 저장되었습니다.");
+//    }
 
 
     @GetMapping("/book-select")
