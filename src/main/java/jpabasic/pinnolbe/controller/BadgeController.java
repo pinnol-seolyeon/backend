@@ -6,6 +6,7 @@ import jpabasic.pinnolbe.dto.badge.LadyBugRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.BadgeService;
 import jpabasic.pinnolbe.service.login.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,7 @@ public class BadgeController {
 
     @PostMapping("/catch-ladybug")
     @Operation(summary="스피드 사냥꾼 뱃지 획득",
-            description="무당벌레 모두 2초 이내 클릭 성공 시 호출")
+            description="무당벌레 모두 2초 이내 클릭 성공 시 호출해주시면 됩니다")
     public ApiResponse<Void> getSpeedHunterBadge(
             @RequestBody LadyBugRequestDto request
     ) {
