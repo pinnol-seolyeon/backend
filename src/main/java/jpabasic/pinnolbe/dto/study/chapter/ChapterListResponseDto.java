@@ -19,13 +19,18 @@ import java.util.stream.Collectors;
 @Builder
 public class ChapterListResponseDto {
 
+    private Boolean isAvailable=true;
     private String sessionLogId;
     private String currentChapterId;
     private Integer currentLevel; //이어서 학습할 단계
     private Slice<ChapterResponseDto> chapterList; //chapterId,chapterTitle
 
-    public ChapterListResponseDto(Slice<ChapterResponseDto> chapterList) {
+    public ChapterListResponseDto(String sessionLogId,String currentChapterId,Integer currentLevel,Slice<ChapterResponseDto> chapterList) {
         this.chapterList = chapterList;
+        this.currentChapterId=currentChapterId;
+        this.currentLevel=currentLevel;
+        this.sessionLogId=sessionLogId;
+        this.isAvailable=true;
     }
 
 
