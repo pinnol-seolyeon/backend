@@ -102,7 +102,8 @@ public class StudyController {
 
 
     @GetMapping("/chapter-select")
-    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 및 현재 학습 중인 챕터/레벨 제공")
+    @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 및 현재 학습 중인 챕터/레벨 제공",
+                description = " isAvailable=false는 이번 주 할당량 학습 완료를 뜻한다. ")
     public ApiResponse<ChapterListResponseDto> getChapterTitle(
             @RequestParam String bookId,
             @RequestParam(defaultValue="0") int page){
@@ -110,14 +111,11 @@ public class StudyController {
 
         WeeklyAnalysis analysis=weeklyAnalysisService.findThisWeekAnalysis(user.getId());
         int size=analysis.getCompletedChapters().size();
-
-        if(size>=2){
-            Slice<ChapterListResponseDto.ChapterResponseDto> chapters = studyService.getChaptersByBook(bookId, page, 5);
-            ChapterListResponseDto dto = new ChapterListResponseDto(chapters);
-            return ApiResponse.success("이미 이번 주 할당량 학습을 모두 완료하였어요.", dto);
-        }
-
         ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
+        if(size>=2){
+            result.setIsAvailable(false);
+            return ApiResponse.success("이미 이번 주 할당량 학습을 모두 완료하였어요.", result);
+        }
         return ApiResponse.success("챕터 목록 조회 성공",result);
     }
 
