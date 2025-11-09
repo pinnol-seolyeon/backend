@@ -1,15 +1,13 @@
 package jpabasic.pinnolbe.controller;
 
-import jpabasic.pinnolbe.dto.question.SseSendRequest;
 import jpabasic.pinnolbe.service.question.SseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/SSE")
 @RequiredArgsConstructor
-public class SesController {
+public class SseController {
 
     private final SseService sseService;
 
