@@ -5,6 +5,8 @@ import jpabasic.pinnolbe.domain.badge.BadgeType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class LadyBugRequestDto {
@@ -13,6 +15,6 @@ public class LadyBugRequestDto {
     @Schema(
             description="배지 타입(스피드 사냥꾼, 정교한 사냥꾼 중 선택)",
             allowableValues = {"SPEED_HUNTER","FINE_HUNTER"})
-    private BadgeType badgeType; //스피드 사냥꾼, 정교한 사냥꾼
+    private List<BadgeType> badgeType; //스피드 사냥꾼, 정교한 사냥꾼
 
 }

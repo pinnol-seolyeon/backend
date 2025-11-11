@@ -6,6 +6,11 @@ import jpabasic.pinnolbe.dto.badge.LadyBugRequestDto;
 import jpabasic.pinnolbe.repository.BadgeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
@@ -17,11 +22,17 @@ public class BadgeService {
         this.badgeRepository = badgeRepository;
     }
 
-
-    public void getSpeedHunterBadge(LadyBugRequestDto dto, String userId){
-        String chapterId=dto.getChapterId();
-
-        Badge badge=new Badge(userId,chapterId, BadgeType.SPEED_HUNTER);
-        badgeRepository.save(badge);
+    @Transactional
+    public List<Badge> getHunterBadge(LadyBugRequestDto dto, String userId){
+        // 각 BadgeType별로 Badge 엔티티 생성
+        List<Badge> badges = dto.getBadgeType().stream()
+                .map(type -> Badge.builder()
+                        .chapterId(dto.getChapterId())
+                        .badgeType(type)
+                        .userId(userId)
+                        .build())
+                .toList();
+        badgeRepository.saveAll(badges);
+        return badges;
     }
 }

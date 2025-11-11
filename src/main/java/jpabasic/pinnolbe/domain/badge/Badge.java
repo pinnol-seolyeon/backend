@@ -17,10 +17,4 @@ public class Badge {
     private String userId;
     private BadgeType badgeType;
 
-    public Badge(String userId, String chapterId, BadgeType badgeType) {
-        this.chapterId = chapterId;
-        this.userId = userId;
-        this.badgeType = badgeType;
-
-    }
 }
