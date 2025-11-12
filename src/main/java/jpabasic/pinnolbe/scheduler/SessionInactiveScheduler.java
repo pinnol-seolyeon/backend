@@ -49,7 +49,9 @@ public class SessionInactiveScheduler {
                     log.info("[SessionCleanup] 세션 만료됨: " + key + " (" + minutesInactive + "분 동안 INACTIVE)");
 
                     studySessionService.saveToDatabase(session);
+                    String userId=session.getUserId();
                     redisTemplate.delete(key);
+                    redisTemplate.opsForSet().remove("index:session:study:"+userId,key);
                     log.info("[SCHEDULER] 세션 만료 저장 완료:{}", key);
                 }
             }
