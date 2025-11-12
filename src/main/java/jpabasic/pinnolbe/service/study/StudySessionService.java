@@ -39,8 +39,21 @@ public class StudySessionService {
     private final ObjectMapper objectMapper;
     @Autowired
     private StudyLogService studyLogService;
-    @Autowired
-    private BookRepository bookRepository;
+
+    /// 세션 조회 로직
+    public List<StudySession> getSessionByUser(User user) {
+        String userId = user.getId();
+        String indexKey="index:study:session:"+userId;
+        Set<StudySession> sessionKeys=redisTemplate.opsForSet().members(indexKey);
+        if(sessionKeys==null||sessionKeys.isEmpty()) return List.of();
+
+        List<StudySession> sessions=new ArrayList<>();
+        for(StudySession k:sessionKeys){
+            StudySession session=redisTemplate.opsForValue().get(k);
+            sessions.add(session);
+        }
+        return sessions;
+    }
 
     /** 학습 시작 시 Redis에 세션 생성 */
     @Transactional
@@ -62,7 +75,11 @@ public class StudySessionService {
         System.out.println("✅ [startLevel] User 문서 업데이트 완료, studySessionLogId=" + studySessionLogId);
 
         try {
+            //세션 데이터 저장
             redisTemplate.opsForValue().set(key, studySession, SESSION_TTL, TimeUnit.SECONDS);
+            //인덱스에 세션 키 등록
+            String indexKey="index:study:session:"+userId;
+            redisTemplate.opsForSet().add(indexKey, studySession);
             System.out.println("✅ [startLevel] Redis 세션 저장 성공 key=" + key);
         } catch (DataAccessException e) {
             System.out.println("❌ [startLevel] Redis 저장 실패: " + e.getMessage());
@@ -101,8 +118,8 @@ public class StudySessionService {
     @Transactional
     public StudySessionLogResponseDto sessionUpdate(User user, StudySessionSummaryDto summary) {
         System.out.println("🌀 [sessionUpdate] 호출됨, userId=" + summary.getUserId() + ", status=" + summary.getStatus());
-
-        String key = SESSION_PREFIX + summary.getUserId() + ":" + summary.getChapterId() + ":" + summary.getLevel();
+        int level=summary.getLevel();
+        String key = SESSION_PREFIX + summary.getUserId()+":"+summary.getChapterId()+":"+level;
         StudySession session = getStudySession(key);
 
         if (session == null) {
@@ -169,6 +186,7 @@ public class StudySessionService {
 
             //redis 세션 삭제
             boolean deleted=redisTemplate.delete(key);
+            redisTemplate.opsForSet().remove("index:session:study:"+user.getId(),key);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
             //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
@@ -186,6 +204,7 @@ public class StudySessionService {
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
             //redis 삭제
             boolean deleted=redisTemplate.delete(key);
+            redisTemplate.opsForSet().remove("index:session:study"+user.getId(),key);
             //user 필드에 현재 세션 진도 저장
             user.setStudySessionLogId(dto.getId());
             userRepository.save(user);
@@ -194,6 +213,9 @@ public class StudySessionService {
         }
 
         redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
+        String indexKey="index:session:study:"+user.getId();
+        redisTemplate.opsForSet().add(indexKey,session);
+
         System.out.println("💾 Redis 세션 갱신 완료 key=" + key);
 
         return null;

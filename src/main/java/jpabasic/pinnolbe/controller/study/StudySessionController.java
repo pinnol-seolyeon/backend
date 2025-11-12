@@ -27,6 +27,7 @@ public class StudySessionController {
     @Autowired
     private WeeklyAnalysisService weeklyAnalysisService;
 
+    @GetMapping
 
     @PostMapping("/start-level")
     @Operation(summary="특정 레벨 공부 시작",
