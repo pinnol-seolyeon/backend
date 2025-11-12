@@ -24,7 +24,7 @@ public class BadgeController {
         this.badgeService = badgeService;
     }
 
-    @PostMapping("/get-badge")
+    @PostMapping("/win-badge")
     @Operation(summary="스피드 사냥꾼 뱃지 획득",
             description="""
             무당벌레 모두 2초 이내 클릭 성공 시 SPEED_HUNTER,
@@ -42,6 +42,8 @@ public class BadgeController {
         }
         return ApiResponse.success("배지가 성공적으로 저장되었어요.",badges);
     }
+
+
 
 
 

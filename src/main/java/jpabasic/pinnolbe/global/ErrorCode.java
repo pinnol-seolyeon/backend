@@ -40,7 +40,11 @@ public enum ErrorCode {
     LAST_WEEK_WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-002","지난 주 학습 기록이 없어요."),
 
     //badge 관련
-    BADGE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"badge-001","뱃지 저장에 오류가 발생했어요.");
+    BADGE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"badge-001","뱃지 저장에 오류가 발생했어요."),
+    BADGE_NOT_FOUND(HttpStatus.NOT_FOUND,"badge-002","뱃지를 찾을 수 없어요."),
+
+    //학습 현황 관련
+    CURRENT_SITUATION_NOT_FOUND(HttpStatus.NOT_FOUND,"current-situation-001","학습한 내용이 없어서 학습 현황을 불러올 수 없어요.");
 
 
 
