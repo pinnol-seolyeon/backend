@@ -5,13 +5,8 @@ import jpabasic.pinnolbe.domain.analyze.quiz.QuizRecord;
 import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.analyze.QuizRecordDto;
 import jpabasic.pinnolbe.global.ApiResponse;
-import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.service.BadgeService;
 import jpabasic.pinnolbe.service.analyze.QuizService;
-import jpabasic.pinnolbe.service.analyze.RadarScoreService;
-import jpabasic.pinnolbe.service.login.UserService;
-import jpabasic.pinnolbe.service.study.StudySessionService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

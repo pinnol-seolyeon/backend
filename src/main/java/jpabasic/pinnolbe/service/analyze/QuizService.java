@@ -10,12 +10,12 @@ import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.analyze.QuizRecordDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
-import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
+import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
 import jpabasic.pinnolbe.repository.analyze.quiz.QuizRecordRepository;
 import jpabasic.pinnolbe.repository.study.QuizRepository;
+import jpabasic.pinnolbe.service.facade.SessionFacade;
 import jpabasic.pinnolbe.service.login.UserService;
-import jpabasic.pinnolbe.service.study.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,7 @@ public class QuizService {
     private final UserService userService;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final QuizNotesRepository quizNotesRepository;
-    private final StudySessionService studySessionService;
+    private final SessionFacade sessionFacade;
     private final QuizRecordRepository quizRecordRepository;
 
     public List<Quiz> getQuiz(String chapterId, int limit) {
@@ -106,7 +106,7 @@ public class QuizService {
     public List<QuizRecord> saveWrongQuizes(List<QuizAnalyzeDto> results) {
         User user = userService.getUserInfo();
         //redis session에서 유저 현 진도 불러오기
-        StudySession session=studySessionService.getSessionByUser(user);
+        StudySession session = sessionFacade.getSessionByUser(user);
         //현재 학습 중인 chapterId
         String chapterId=session.getChapterId();
 
