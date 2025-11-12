@@ -12,9 +12,15 @@ import java.util.List;
 @Document(collection="quiz_notes")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class QuizNotes {
     @Id
     private String id;
     private String userId;
     private String chapterId;
+
+    public QuizNotes(String userId, String chapterId) {
+        this.userId = userId;
+        this.chapterId = chapterId;
+    }
 }

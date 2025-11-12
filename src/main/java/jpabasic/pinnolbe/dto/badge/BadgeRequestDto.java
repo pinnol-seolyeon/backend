@@ -9,12 +9,13 @@ import java.util.List;
 
 @Getter
 @Setter
-public class LadyBugRequestDto {
+public class BadgeRequestDto {
 
     private String chapterId;
-    @Schema(
-            description="배지 타입(스피드 사냥꾼, 정교한 사냥꾼 중 선택)",
-            allowableValues = {"SPEED_HUNTER","FINE_HUNTER"})
     private List<BadgeType> badgeType; //스피드 사냥꾼, 정교한 사냥꾼
 
+    public BadgeRequestDto(String chapterId, BadgeType badgeType) {
+        this.chapterId = chapterId;
+        this.badgeType = List.of(badgeType);
+    }
 }

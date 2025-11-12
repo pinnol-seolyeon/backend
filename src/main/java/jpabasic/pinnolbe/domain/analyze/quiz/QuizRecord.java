@@ -20,7 +20,7 @@ public class QuizRecord {
     private String correctAnswer;
     private String userAnswer;
 
-    public QuizRecord(String quizId, String correctAnswer, String userAnswer) {
+    public QuizRecord(String quizNotesId,String quizId,String correctAnswer, String userAnswer) {
         this.quizNotesId = quizNotesId;
         this.quizId = quizId;
         this.correctAnswer = correctAnswer;

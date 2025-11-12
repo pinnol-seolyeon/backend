@@ -40,26 +40,37 @@ public class StudySessionService {
     @Autowired
     private StudyLogService studyLogService;
 
-    /// 세션 조회 로직
-    public List<StudySession> getSessionByUser(User user) {
+    /// 유저의 가장 최신 세션 조회 로직
+    public StudySession getSessionByUser(User user) {
         String userId = user.getId();
+
+        //인덱스 Set에서 모든 세션 키 조회
         String indexKey="index:study:session:"+userId;
         Set<StudySession> sessionKeys=redisTemplate.opsForSet().members(indexKey);
-        if(sessionKeys==null||sessionKeys.isEmpty()) return List.of();
+        if(sessionKeys==null||sessionKeys.isEmpty()) return null;
 
+        //각 세션 키에 해당하는 StudySession 가져오기
         List<StudySession> sessions=new ArrayList<>();
         for(StudySession k:sessionKeys){
             StudySession session=redisTemplate.opsForValue().get(k);
             sessions.add(session);
         }
-        return sessions;
+
+        //start time 기준으로 가장 최근 세션 선택
+        Optional<StudySession> opt= sessions.stream()
+                .filter(s->s.getStartTime()!=null)
+                .max(Comparator.comparing(StudySession::getStartTime));
+
+        StudySession session;
+        if(opt.isPresent()) {
+            session = opt.get();
+        }else{
+            throw new CustomException(ErrorCode.SESSION_NOT_FOUND);
+        }
+
+        return session;
     }
 
-    /// user의 현 redis session 조회
-//    public StudySession getStudySessionByUser(User user){
-//        String userId = user.getId();
-//        String key = SESSION_PREFIX + userId + ":" + chapterId + ":" + level;
-//    }
 
     /** 학습 시작 시 Redis에 세션 생성 */
     @Transactional

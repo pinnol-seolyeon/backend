@@ -44,7 +44,11 @@ public enum ErrorCode {
     BADGE_NOT_FOUND(HttpStatus.NOT_FOUND,"badge-002","뱃지를 찾을 수 없어요."),
 
     //학습 현황 관련
-    CURRENT_SITUATION_NOT_FOUND(HttpStatus.NOT_FOUND,"current-situation-001","학습한 내용이 없어서 학습 현황을 불러올 수 없어요.");
+    CURRENT_SITUATION_NOT_FOUND(HttpStatus.NOT_FOUND,"current-situation-001","학습한 내용이 없어서 학습 현황을 불러올 수 없어요."),
+
+    //quiz 관련
+    QUIZ_NOTES_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-notes-001","해당 유저, 챕터에 대한 quiz notes를 찾을 수 없어요."),
+    QUIZ_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-records-001","quiz record를 찾을 수 없어요.");
 
 
 

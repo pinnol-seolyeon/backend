@@ -3,7 +3,7 @@ package jpabasic.pinnolbe.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.badge.Badge;
-import jpabasic.pinnolbe.dto.badge.LadyBugRequestDto;
+import jpabasic.pinnolbe.dto.badge.BadgeRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -31,12 +31,12 @@ public class BadgeController {
             무당벌레 연속 3마리 클릭 성공 시 FINE_HUNTER
             """)
     public ApiResponse<List<Badge>> getSpeedHunterBadge(
-            @RequestBody LadyBugRequestDto request
+            @RequestBody BadgeRequestDto request
     ) {
         List<Badge> badges;
         User user=userService.getUserInfo();
         try{
-            badges=badgeService.getHunterBadge(request,user.getId());
+            badges=badgeService.getBadge(request,user.getId());
         }catch(Exception e){
             throw new CustomException(ErrorCode.BADGE_SAVE_ERROR);
         }
