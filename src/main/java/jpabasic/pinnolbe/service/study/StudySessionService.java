@@ -42,6 +42,12 @@ public class StudySessionService {
     @Autowired
     private BookRepository bookRepository;
 
+    /// user의 현 redis session 조회
+//    public StudySession getStudySessionByUser(User user){
+//        String userId = user.getId();
+//        String key = SESSION_PREFIX + userId + ":" + chapterId + ":" + level;
+//    }
+
     /** 학습 시작 시 Redis에 세션 생성 */
     @Transactional
     public String startLevel(User user, int level, String chapterId,String bookId) {

@@ -38,8 +38,10 @@ public class QuizAnalyzeController {
         }
         //이번 주 이해도 저장·업데이트
         quizService.upsertUnderstanding(results);
-//        //세션 COMPLETED로 마무리
-//        studySessionService.sessionUpdate()
+        //오답 저장
+        quizService.saveWrongQuizes(results);
+        //퀴즈를 다 맞았을 경우 배지 획득
+
         return ApiResponse.success("✅ 이해도·집중도 주차별 저장(또는 업데이트) 완료",null);
     }
 }

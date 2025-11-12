@@ -2,8 +2,11 @@ package jpabasic.pinnolbe.service.analyze;
 
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
+import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
+import jpabasic.pinnolbe.domain.analyze.quiz.QuizRecord;
 import jpabasic.pinnolbe.domain.study.Quiz;
 import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
+import jpabasic.pinnolbe.repository.analyze.QuizNotesRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.QuizRepository;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -26,6 +29,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final UserService userService;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
+    private final QuizNotesRepository quizNotesRepository;
 
     public List<Quiz> getQuiz(String chapterId, int limit) {
         List<Quiz> all = quizRepository.findByChapterId(chapterId);
@@ -91,5 +95,19 @@ public class QuizService {
 
         // --- 3) upsert (생성 또는 업데이트) ---
         weeklyAnalysisRepository.save(analysis);
+    }
+
+    /// 틀린문제들 DB에 저장
+    public void saveWrongQuizes(List<QuizAnalyzeDto> results) {
+        User user = userService.getUserInfo();
+        user.getStudySessionLogId();
+        QuizNotes quizNotes=new QuizNotes();
+        List<QuizRecord> wrongs=results.stream()
+                .filter(r->!r.getIsCorrect()) //isCorrect==false인 객체만 필터링
+                .map(r->new QuizRecord(r.getQuizId(),r.getUserAnswer(),r.getCorrectAnswer()))
+                .toList();
+
+
+//        quizNotesRepository.save(wrongs);
     }
 }
