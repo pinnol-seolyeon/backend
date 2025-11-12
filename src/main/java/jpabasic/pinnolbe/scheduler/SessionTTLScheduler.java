@@ -33,7 +33,10 @@ public class SessionTTLScheduler {
 
                 session.setStatus(Status.EXIT);
                 studySessionService.saveToDatabase(session);
+
+                String indexKey="index:session:study:"+ session.getUserId();
                 redisTemplate.delete(key);
+                redisTemplate.opsForSet().remove(indexKey,key);
                 log.info("[TTL] TTL 만료 세션 정리: {} (남은 TTL={}초)", key, ttl);
             }
         }
