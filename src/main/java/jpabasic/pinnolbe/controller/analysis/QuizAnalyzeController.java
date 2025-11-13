@@ -37,20 +37,12 @@ public class QuizAnalyzeController {
         //이번 주 이해도 저장·업데이트
         quizService.upsertUnderstanding(results);
         //오답 저장
-        List<QuizRecord> result=quizService.saveWrongQuizes(results);
+        List<QuizRecord> result=quizService.saveQuizes(results);
         //퀴즈를 다 맞았을 경우 배지 획득
         badgeService.getSmartGamerBadge(results);
 
         return ApiResponse.success("이해도 및 집중도 저장 완료, 틀린 문제 기록이 저장되었습니다.",result);
     }
 
-    @GetMapping
-    @Operation(summary="챕터별로 틀린 문제들 조회")
-    public ApiResponse<QuizRecordDto> getResults(
-            @RequestParam String chapterId
-    ){
-        QuizRecordDto result=quizService.getWrongQuizes(chapterId);
-        return ApiResponse.success("해당 챕터의 틀린 문제입니다.",result);
-    }
 }
 

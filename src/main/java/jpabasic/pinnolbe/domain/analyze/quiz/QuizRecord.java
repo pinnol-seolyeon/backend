@@ -17,21 +17,15 @@ public class QuizRecord {
     private String id;
     private String quizNotesId;
     private String quizId;
-    private String correctAnswer;
     private String userAnswer;
+    private Boolean isCorrect;
 
-    public QuizRecord(String quizNotesId,String quizId,String correctAnswer, String userAnswer) {
+    public QuizRecord(String quizNotesId,String quizId, String userAnswer,Boolean isCorrect) {
         this.quizNotesId = quizNotesId;
         this.quizId = quizId;
-        this.correctAnswer = correctAnswer;
         this.userAnswer = userAnswer;
+        this.isCorrect = isCorrect;
     }
 
-    public QuizRecord toEntity(){
-        QuizRecord q = new QuizRecord();
-        q.setQuizId(quizId);
-        q.setCorrectAnswer(correctAnswer);
-        q.setUserAnswer(userAnswer);
-        return q;
-    }
+
 }

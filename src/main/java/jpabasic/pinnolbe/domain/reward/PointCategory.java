@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PointCategory {
 
-    GAME("게임 포인트"),
+    REVIEW("복습 포인트"),
     MISSION("방문 미션"),
     REFUND("계좌 환급"),
     PURCHASE("상품권 구매");
