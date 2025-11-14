@@ -147,7 +147,7 @@ public class QuizService {
                 .map(record->{
                     Quiz quiz=quizMap.get(record.getQuizId());
                     if(quiz==null){
-                        return new QuizRecordDto.EachQuiz("질문 없음","정답 없음",record);
+                        return new QuizRecordDto.EachQuiz(record,"질문 없음","정답 없음");
                     }
                     return new QuizRecordDto.EachQuiz(
                             record,

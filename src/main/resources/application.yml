@@ -8,6 +8,7 @@ spring:
 
 
 
+
 server:
   tomcat:
     keep-alive-timeout: 180s
@@ -38,7 +39,4 @@ myapp:
 jwt:
   secret: ${JWT_SECRET}
 
-webpush:
-  publicKey: BB3mriFrJJS_iTJRFNVKgko-SoinbrJxbZc_OXYmemXr_LwiRFM4BOq-EwIWRESGYraNi2hShvjCLJIhvvOpiE8
-  privateKey: 87xyBtG9SQAZVdpd8vSPPJ6O6QuHtB2WQ-CCUal6Ro0
 

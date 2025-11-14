@@ -19,12 +19,14 @@ public class QuizRecordDto {
     public static class EachQuiz{
         private String question;
         private String correctAnswer;
-        private QuizRecord record;
+        private String userAnswer;
+        private Boolean isCorrect;
 
         public EachQuiz(QuizRecord record,String question,String correctAnswer){
-            this.record = record;
             this.question = question;
             this.correctAnswer = correctAnswer;
+            this.userAnswer = record.getUserAnswer();
+            this.isCorrect = record.getIsCorrect();
         }
 
 

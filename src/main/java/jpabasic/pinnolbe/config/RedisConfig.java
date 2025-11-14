@@ -34,8 +34,7 @@ public class RedisConfig {
     // 1. 기본 연결 설정 (Lettuce)
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        return new LettuceConnectionFactory(config);
+        return new LettuceConnectionFactory(host,port);
     }
 
     // 2. 공통 serializer
@@ -50,6 +49,15 @@ public class RedisConfig {
         return new Jackson2JsonRedisSerializer<>(Object.class);
     }
 
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+        return mapper;
+    }
+
     // 3. RedisTemplate<String, Object> (Hash, ZSET 등 모든 데이터 저장용)
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
@@ -59,24 +67,28 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Key serializer → String
+//        // Key serializer → String
+//        template.setKeySerializer(new StringRedisSerializer());
+//        template.setHashKeySerializer(new StringRedisSerializer());
+//
+//        // Value serializer → JSON
+//        template.setValueSerializer(valueSerializer());
+//        template.setHashValueSerializer(valueSerializer());
+//
+//        template.afterPropertiesSet();
+        //직렬화 설정
+        GenericJackson2JsonRedisSerializer serializer=
+                new GenericJackson2JsonRedisSerializer(objectMapper());
+        //문자열을 redis에 저장할 때 UTF-8 문자열로 직렬화/역직렬화함(원래는 byte로 변환)
         template.setKeySerializer(new StringRedisSerializer());
+        //StudySession을 JSON으로 변환해서 저장, 다시 꺼낼 때 json -> 객체로 복원
+        template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
-
-        // Value serializer → JSON
-        template.setValueSerializer(valueSerializer());
-        template.setHashValueSerializer(valueSerializer());
-
+        template.setHashValueSerializer(serializer);
         template.afterPropertiesSet();
         return template;
     }
 
-    // 4. StringRedisTemplate (순수 String 기반 작업 시)
-    @Bean
-    public StringRedisTemplate stringRedisTemplate(
-            LettuceConnectionFactory connectionFactory
-    ) {
-        return new StringRedisTemplate(connectionFactory);
-    }
+
 }
 

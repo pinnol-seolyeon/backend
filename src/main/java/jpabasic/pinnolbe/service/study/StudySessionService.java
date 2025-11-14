@@ -81,7 +81,7 @@ public class StudySessionService {
             redisTemplate.opsForValue().set(key, studySession, SESSION_TTL, TimeUnit.SECONDS);
 
             //인덱스에 세션 키 등록(ZSET)
-            long score=getVsetScore(studySession.getLastActive());
+            long score=getVsetScore();
             redisTemplate.opsForZSet().add(indexKey, key, score);
             System.out.println("✅ [startLevel] Redis 세션 저장 성공 key=" + key);
         } catch (DataAccessException e) {
@@ -135,7 +135,7 @@ public class StudySessionService {
 
         LocalDateTime lastActive=summary.getLastActive();
 
-        // ACTIVE → INACTIVE //수정 필요
+        // ACTIVE → INACTIVE
         if (session.getStatus() == Status.ACTIVE && summary.getStatus() == Status.INACTIVE) {
             System.out.println("🔻 [ACTIVE → INACTIVE] 전환 감지");
 
@@ -152,18 +152,15 @@ public class StudySessionService {
             //weeklyAnalysis에 업데이트
             studyLogService.focusScoreUpdate(user,newScore);
 
-            //세션 값 자체 저장
+            //세션 자체 저장
             redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
 
-            //세션 index 저장
-            long inactiveSinceMillis=session.getLastActive()
-                    .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            // INACTIVE ZSET등록 (lastActive 기준)
+            long inactiveScore=getInactiveScore(lastActive);
+            redisTemplate.opsForZSet().add(inactiveIndexKey, key, inactiveScore);
 
-            //inactive관리 인덱스 세션에 저장
-            redisTemplate.opsForZSet().add(inactiveIndexKey, key, inactiveSinceMillis);
-
-            //TTL관리 인덱스 zset 세션에 저장
-            redisTemplate.opsForZSet().add(indexKey, key, inactiveSinceMillis);
+            // TTL ZSET도 갱신 (서버 시간)
+            redisTemplate.opsForZSet().add(indexKey, key, getVsetScore());
         }
 
         // INACTIVE → ACTIVE
@@ -175,10 +172,14 @@ public class StudySessionService {
             session.setLastActive(lastActive);
             System.out.println("⏱️ idleDuration 추가: " + minutes + "분");
 
-            //세션 값 자체 저장
+            //세션 자체 저장
             redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
-            //inactive 관리 인덱스 세션 삭제
+
+            // INACTIVE ZSET에서 제거
             redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
+
+            // TTL ZSET score → 서버 시간으로 갱신
+            redisTemplate.opsForZSet().add(indexKey, key, getVsetScore());
         }
 
         // COMPLETE
@@ -205,8 +206,6 @@ public class StudySessionService {
 
             //redis 세션 삭제
             boolean deleted=redisTemplate.delete(key);
-            //세션 인덱스 삭제
-            redisTemplate.opsForZSet().remove(indexKey,key);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
             //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
@@ -214,7 +213,8 @@ public class StudySessionService {
             String weeklyId= weeklyAnalysis.getId();
             dto.setWeeklyAnalysisId(weeklyId);
 
-            // COMPLETED / EXIT일 때도 마찬가지로 inactive 인덱스에서 제거
+            //두 ZSET에서 모두 삭제
+            redisTemplate.opsForZSet().remove(indexKey,key);
             redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
 
             return dto;
@@ -225,22 +225,24 @@ public class StudySessionService {
             System.out.println("🚫 [EXIT] 유저가 학습하기 창에서 나감 ");
             session.setStatus(Status.EXIT);
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
+
             //redis 삭제
             boolean deleted=redisTemplate.delete(key);
-            redisTemplate.opsForSet().remove(indexKey,key);
+
             //user 필드에 현재 세션 진도 저장
             user.setStudySessionLogId(dto.getId());
             userRepository.save(user);
 
-            // COMPLETED / EXIT일 때도 마찬가지로 inactive 인덱스에서 제거
+            //두 ZSET에서 모두 삭제
+            redisTemplate.opsForZSet().remove(indexKey,key);
             redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
 
             return dto;
         }
 
-        //ZSET score(=timestamp) 갱신
-        redisTemplate.opsForZSet().add(indexKey,key,System.currentTimeMillis());
-        redisTemplate.expire(indexKey,SESSION_TTL, TimeUnit.SECONDS); //⭐❓
+//        //ZSET score(=timestamp) 갱신
+//        redisTemplate.opsForZSet().add(indexKey,key,System.currentTimeMillis());
+//        redisTemplate.expire(indexKey,SESSION_TTL, TimeUnit.SECONDS); //⭐❓
 
         System.out.println("💾 Redis 세션 갱신 완료 key=" + key);
 
@@ -337,11 +339,17 @@ public class StudySessionService {
         System.out.println("✅ [mergeTimeZoneDuration] 병합 완료");
     }
 
-    /*lastActive로 VSET score 구하기**/
-    private long getVsetScore(LocalDateTime lastActive){
-        long score=lastActive.atZone(ZoneId.of("Asia/Seoul"))
+    /*TTL VSET - 서버 시간으로 VSET score 구하기**/
+    private long getVsetScore(){
+        return System.currentTimeMillis();
+    }
+
+    /*inactive VSET - lastActive 기반으로 VSET score 구하기**/
+    private long getInactiveScore(LocalDateTime lastActive){
+        return lastActive.atZone(ZoneId.of("Asia/Seoul"))
                 .toInstant()
                 .toEpochMilli();
-        return score;
     }
+
+
 }
