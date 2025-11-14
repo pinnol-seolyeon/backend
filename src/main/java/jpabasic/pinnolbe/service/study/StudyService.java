@@ -16,10 +16,7 @@ import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
-import jpabasic.pinnolbe.repository.study.BookRepository;
-import jpabasic.pinnolbe.repository.study.ChapterRepository;
-import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
+import jpabasic.pinnolbe.repository.study.*;
 import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +53,7 @@ public class StudyService {
   private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
   private final AskQuestionTemplate askQuestionTemplate;
-  private final QuizService quizService;
+  private final QuizRepository quizRepository;
 
   @Autowired
   WebClient webClient;
@@ -106,12 +103,11 @@ public class StudyService {
                 System.out.println("result:"+result);
                 break;
             }
-            case 4:
-                List<Quiz> quiz=quizService.getQuiz(chapterId,5);
-                Map<String,Object> quizes=new HashMap<>();
-                quizes.put("quiz",quiz);
-                System.out.println("result:"+result);
-                return quizes;
+            case 4: {
+                List<Quiz> quiz = quizRepository.findByChapterId(chapterId);
+                Collections.shuffle(quiz);
+                result.put("quiz", quiz.stream().limit(5).toList());
+            }
             case 5:{
                 String summary=chapterDto.getSummary();
                 String summaryImgUrl=chapterDto.getSummaryImgUrl();

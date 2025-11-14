@@ -446,5 +446,8 @@ public class StudyLogService {
         );
     }
 
-
+    public StudySessionLog findStudySessionLog(String sessionId){
+        return studySessionLogRepository.findById(sessionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_ID_NOT_FOUND));
+    }
 }

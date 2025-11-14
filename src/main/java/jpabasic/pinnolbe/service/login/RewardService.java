@@ -17,8 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class RewardService {
 
@@ -49,7 +47,7 @@ public class RewardService {
         //reward repository 업데이트
         Reward r=new Reward();
         r.setCategory(dto.getCategory());
-        if(dto.getCategory()==PointCategory.GAME){
+        if(dto.getCategory()==PointCategory.REVIEW){
             r.setDescription(chapter.getChapterTitle()+"단원 퀴즈게임");
         }
         r.setUserId(user.getId());

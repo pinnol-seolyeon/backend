@@ -8,6 +8,7 @@ spring:
 
 
 
+
 server:
   tomcat:
     keep-alive-timeout: 180s
@@ -37,4 +38,5 @@ myapp:
 
 jwt:
   secret: ${JWT_SECRET}
+
 

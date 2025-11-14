@@ -2,32 +2,51 @@ package jpabasic.pinnolbe.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jpabasic.pinnolbe.domain.redis.StudySession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.TimeZone;
 
 @Configuration
+@EnableRedisRepositories
 public class RedisConfig {
 
-
-    @Value("${spring.data.redis.host}")
+    @Value("${spring.redis.host}")
     private String host;
 
-    @Value("${spring.data.redis.port}")
+    @Value("${spring.redis.port}")
     private int port;
 
+    // 1. 기본 연결 설정 (Lettuce)
     @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
+    public LettuceConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(host,port);
+    }
+
+    // 2. 공통 serializer
+    private RedisSerializer<Object> valueSerializer() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+        return new Jackson2JsonRedisSerializer<>(Object.class);
     }
 
     @Bean
@@ -39,11 +58,24 @@ public class RedisConfig {
         return mapper;
     }
 
+    // 3. RedisTemplate<String, Object> (Hash, ZSET 등 모든 데이터 저장용)
     @Bean
-    public RedisTemplate<String, StudySession> redisTemplate() {
-        RedisTemplate<String,StudySession> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
+    public RedisTemplate<String, Object> redisTemplate(
+            LettuceConnectionFactory connectionFactory
+    ) {
 
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+//        // Key serializer → String
+//        template.setKeySerializer(new StringRedisSerializer());
+//        template.setHashKeySerializer(new StringRedisSerializer());
+//
+//        // Value serializer → JSON
+//        template.setValueSerializer(valueSerializer());
+//        template.setHashValueSerializer(valueSerializer());
+//
+//        template.afterPropertiesSet();
         //직렬화 설정
         GenericJackson2JsonRedisSerializer serializer=
                 new GenericJackson2JsonRedisSerializer(objectMapper());
@@ -56,4 +88,7 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+
 }
+

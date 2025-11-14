@@ -29,30 +29,31 @@ import java.util.concurrent.TimeUnit;
 public class StudySessionService {
 
     @Autowired
-    private final RedisTemplate<String, StudySession> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private static final String SESSION_PREFIX = "study:session:";
+    private static final String INDEX_SESSION_PREFIX = "index:study:session:";
+    private static final String INDEX_INACTIVE_SESSION_PREFIX = "index:study:sessions:inactive";
     private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final StudySessionLogRepository studySessionLogRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-    @Autowired
-    private StudyLogService studyLogService;
+    private final StudyLogService studyLogService;
 
     /// 세션 조회 로직
-    public List<StudySession> getSessionByUser(User user) {
+    public StudySession getSessionByUser(User user) {
         String userId = user.getId();
-        String indexKey="index:study:session:"+userId;
-        Set<StudySession> sessionKeys=redisTemplate.opsForSet().members(indexKey);
-        if(sessionKeys==null||sessionKeys.isEmpty()) return List.of();
+        String indexKey=INDEX_SESSION_PREFIX+userId;
 
-        List<StudySession> sessions=new ArrayList<>();
-        for(StudySession k:sessionKeys){
-            StudySession session=redisTemplate.opsForValue().get(k);
-            sessions.add(session);
-        }
-        return sessions;
+        //최신 1개만 불러오기
+        Set<Object> result=redisTemplate.opsForZSet()
+                .reverseRange(indexKey,0,0);
+
+        if(result==null||result.isEmpty()) return null;
+
+        String sessionKey=(String)result.iterator().next();
+        return getStudySession(sessionKey);
     }
 
     /** 학습 시작 시 Redis에 세션 생성 */
@@ -62,6 +63,7 @@ public class StudySessionService {
 
         String userId = user.getId();
         String key = SESSION_PREFIX + userId + ":" + chapterId + ":" + level;
+        String indexKey=INDEX_SESSION_PREFIX+userId;
 
         // Redis 세션 객체 생성
         StudySession studySession = new StudySession(key, userId, chapterId, bookId,level);
@@ -77,9 +79,10 @@ public class StudySessionService {
         try {
             //세션 데이터 저장
             redisTemplate.opsForValue().set(key, studySession, SESSION_TTL, TimeUnit.SECONDS);
-            //인덱스에 세션 키 등록
-            String indexKey="index:study:session:"+userId;
-            redisTemplate.opsForSet().add(indexKey, studySession);
+
+            //인덱스에 세션 키 등록(ZSET)
+            long score=getVsetScore();
+            redisTemplate.opsForZSet().add(indexKey, key, score);
             System.out.println("✅ [startLevel] Redis 세션 저장 성공 key=" + key);
         } catch (DataAccessException e) {
             System.out.println("❌ [startLevel] Redis 저장 실패: " + e.getMessage());
@@ -119,18 +122,20 @@ public class StudySessionService {
     public StudySessionLogResponseDto sessionUpdate(User user, StudySessionSummaryDto summary) {
         System.out.println("🌀 [sessionUpdate] 호출됨, userId=" + summary.getUserId() + ", status=" + summary.getStatus());
         int level=summary.getLevel();
-        String key = SESSION_PREFIX + summary.getUserId()+":"+summary.getChapterId()+":"+level;
+        String userId=summary.getUserId();
+        String key = SESSION_PREFIX + userId+":"+summary.getChapterId()+":"+level;
+        String indexKey=INDEX_SESSION_PREFIX+userId;
+        String inactiveIndexKey=INDEX_INACTIVE_SESSION_PREFIX;
         StudySession session = getStudySession(key);
 
         if (session == null) {
             System.out.println("⚠️ Redis 세션이 존재하지 않아 새로 생성함");
             startLevel(user, summary.getLevel(), summary.getChapterId(),summary.getBookId());
-            throw new CustomException(ErrorCode.SESSION_NOT_FOUND);
         }
 
         LocalDateTime lastActive=summary.getLastActive();
 
-        // ACTIVE → INACTIVE //수정 필요
+        // ACTIVE → INACTIVE
         if (session.getStatus() == Status.ACTIVE && summary.getStatus() == Status.INACTIVE) {
             System.out.println("🔻 [ACTIVE → INACTIVE] 전환 감지");
 
@@ -147,7 +152,15 @@ public class StudySessionService {
             //weeklyAnalysis에 업데이트
             studyLogService.focusScoreUpdate(user,newScore);
 
-//            saveToDatabase(session);
+            //세션 자체 저장
+            redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
+
+            // INACTIVE ZSET등록 (lastActive 기준)
+            long inactiveScore=getInactiveScore(lastActive);
+            redisTemplate.opsForZSet().add(inactiveIndexKey, key, inactiveScore);
+
+            // TTL ZSET도 갱신 (서버 시간)
+            redisTemplate.opsForZSet().add(indexKey, key, getVsetScore());
         }
 
         // INACTIVE → ACTIVE
@@ -159,7 +172,14 @@ public class StudySessionService {
             session.setLastActive(lastActive);
             System.out.println("⏱️ idleDuration 추가: " + minutes + "분");
 
-//            saveToDatabase(session);
+            //세션 자체 저장
+            redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
+
+            // INACTIVE ZSET에서 제거
+            redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
+
+            // TTL ZSET score → 서버 시간으로 갱신
+            redisTemplate.opsForZSet().add(indexKey, key, getVsetScore());
         }
 
         // COMPLETE
@@ -186,13 +206,16 @@ public class StudySessionService {
 
             //redis 세션 삭제
             boolean deleted=redisTemplate.delete(key);
-            redisTemplate.opsForSet().remove("index:session:study:"+user.getId(),key);
             System.out.println("🧹 Redis 세션 삭제 완료"+deleted);
 
             //레벨 학습완료 후, 해당 레벨 학습 시간 weeklyAnalysis에 저장
             WeeklyAnalysis weeklyAnalysis=studyLogService.saveUntilStudyTime(dto);
             String weeklyId= weeklyAnalysis.getId();
             dto.setWeeklyAnalysisId(weeklyId);
+
+            //두 ZSET에서 모두 삭제
+            redisTemplate.opsForZSet().remove(indexKey,key);
+            redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
 
             return dto;
         }
@@ -202,19 +225,24 @@ public class StudySessionService {
             System.out.println("🚫 [EXIT] 유저가 학습하기 창에서 나감 ");
             session.setStatus(Status.EXIT);
             StudySessionLogResponseDto dto=saveToDatabase(session); //studySessionLog에 저장
+
             //redis 삭제
             boolean deleted=redisTemplate.delete(key);
-            redisTemplate.opsForSet().remove("index:session:study"+user.getId(),key);
+
             //user 필드에 현재 세션 진도 저장
             user.setStudySessionLogId(dto.getId());
             userRepository.save(user);
 
+            //두 ZSET에서 모두 삭제
+            redisTemplate.opsForZSet().remove(indexKey,key);
+            redisTemplate.opsForZSet().remove(inactiveIndexKey,key);
+
             return dto;
         }
 
-        redisTemplate.opsForValue().set(key, session, SESSION_TTL, TimeUnit.SECONDS);
-        String indexKey="index:session:study:"+user.getId();
-        redisTemplate.opsForSet().add(indexKey,session);
+//        //ZSET score(=timestamp) 갱신
+//        redisTemplate.opsForZSet().add(indexKey,key,System.currentTimeMillis());
+//        redisTemplate.expire(indexKey,SESSION_TTL, TimeUnit.SECONDS); //⭐❓
 
         System.out.println("💾 Redis 세션 갱신 완료 key=" + key);
 
@@ -310,4 +338,18 @@ public class StudySessionService {
         existingLog.setTimeZoneDurations(existingDurations);
         System.out.println("✅ [mergeTimeZoneDuration] 병합 완료");
     }
+
+    /*TTL VSET - 서버 시간으로 VSET score 구하기**/
+    private long getVsetScore(){
+        return System.currentTimeMillis();
+    }
+
+    /*inactive VSET - lastActive 기반으로 VSET score 구하기**/
+    private long getInactiveScore(LocalDateTime lastActive){
+        return lastActive.atZone(ZoneId.of("Asia/Seoul"))
+                .toInstant()
+                .toEpochMilli();
+    }
+
+
 }

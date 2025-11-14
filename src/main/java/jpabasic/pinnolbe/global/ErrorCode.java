@@ -37,9 +37,24 @@ public enum ErrorCode {
 
     //weekly-analysis 관련
     WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-001","해당 weekly analysis를 찾을 수 없어요.(새로 생성해야)"),
-    LAST_WEEK_WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-002","지난 주 학습 기록이 없어요.");
+    LAST_WEEK_WEEKLY_ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND,"weekly-analysis-002","지난 주 학습 기록이 없어요."),
 
-    //
+    //badge 관련
+    BADGE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"badge-001","뱃지 저장에 오류가 발생했어요."),
+    BADGE_NOT_FOUND(HttpStatus.NOT_FOUND,"badge-002","뱃지를 찾을 수 없어요."),
+
+    //학습 현황 관련
+    CURRENT_SITUATION_NOT_FOUND(HttpStatus.NOT_FOUND,"current-situation-001","학습한 내용이 없어서 학습 현황을 불러올 수 없어요."),
+
+    //quiz 관련
+    QUIZ_NOTES_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-notes-001","해당 유저, 챕터에 대한 quiz notes를 찾을 수 없어요."),
+    QUIZ_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-records-001","quiz record를 찾을 수 없어요."),
+    QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-001","해당 quiz를 찾을 수 없어요."),
+    QUIZ_NOT_SOLVED_YET(HttpStatus.NOT_FOUND,"quiz-002","아직 해당 단원에 풀이한 퀴즈가 없어요.");
+
+
+
+
 
 
 
