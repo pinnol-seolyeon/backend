@@ -1,9 +1,8 @@
 package jpabasic.pinnolbe.controller.analysis;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.analyze.quiz.QuizRecord;
-import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
-import jpabasic.pinnolbe.dto.analyze.QuizRecordDto;
+import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
+import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.BadgeService;
 import jpabasic.pinnolbe.service.analyze.QuizService;
@@ -29,7 +28,7 @@ public class QuizAnalyzeController {
                 description= """
                         퀴즈 완료 후 호출해주세요
                         """)
-    public ApiResponse<List<QuizRecord>> saveResults(
+    public ApiResponse<List<QuizNotes.QuizRecord>> saveResults(
             @RequestBody List<QuizAnalyzeDto> results) {
         if (results.isEmpty()) {
             return ApiResponse.fail("데이터 없음",400);
@@ -37,7 +36,7 @@ public class QuizAnalyzeController {
         //이번 주 이해도 저장·업데이트
         quizService.upsertUnderstanding(results);
         //오답 저장
-        List<QuizRecord> result=quizService.saveQuizes(results);
+        List<QuizNotes.QuizRecord> result=quizService.saveQuizes(results);
         //퀴즈를 다 맞았을 경우 배지 획득
         badgeService.getSmartGamerBadge(results);
 

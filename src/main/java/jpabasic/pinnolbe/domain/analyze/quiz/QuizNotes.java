@@ -19,8 +19,23 @@ public class QuizNotes {
     private String userId;
     private String chapterId;
 
-    public QuizNotes(String userId, String chapterId) {
+    private List<QuizRecord> records=new ArrayList<>();
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class QuizRecord {
+        private String quizId;
+        private String question;
+        private String userAnswer;
+        private Boolean isCorrect;
+        private String description;
+    }
+
+
+    public QuizNotes(String userId, String chapterId,List<QuizRecord> records) {
         this.userId = userId;
         this.chapterId = chapterId;
+        this.records = records;
     }
 }

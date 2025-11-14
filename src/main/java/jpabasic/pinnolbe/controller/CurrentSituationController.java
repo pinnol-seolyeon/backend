@@ -2,8 +2,9 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.analyze.QuizRecordDto;
+import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
 import jpabasic.pinnolbe.dto.currentSituation.CurrentSituationResDto;
+import jpabasic.pinnolbe.dto.quiz.SolvedQuizResDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.CurrentSituationService;
 import jpabasic.pinnolbe.service.analyze.QuizService;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,10 +39,10 @@ public class CurrentSituationController {
 
     @GetMapping("/quizList")
     @Operation(summary="챕터별로 푼 문제들 조회")
-    public ApiResponse<QuizRecordDto> getResults(
+    public ApiResponse<SolvedQuizResDto> getResults(
             @RequestParam String chapterId
     ){
-        QuizRecordDto result=quizService.getQuizes(chapterId);
+        SolvedQuizResDto result=quizService.getSolvedQuizDetails(chapterId);
         return ApiResponse.success("해당 챕터에서 풀이한 문제들입니다.",result);
     }
 }

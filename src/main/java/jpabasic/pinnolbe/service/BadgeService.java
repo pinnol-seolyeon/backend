@@ -4,7 +4,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.badge.Badge;
 import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.redis.StudySession;
-import jpabasic.pinnolbe.dto.analyze.QuizAnalyzeDto;
+import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.badge.BadgeRequestDto;
 import jpabasic.pinnolbe.repository.BadgeRepository;
 import jpabasic.pinnolbe.service.login.UserService;

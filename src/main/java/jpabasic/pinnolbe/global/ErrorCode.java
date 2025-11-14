@@ -49,7 +49,9 @@ public enum ErrorCode {
     //quiz 관련
     QUIZ_NOTES_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-notes-001","해당 유저, 챕터에 대한 quiz notes를 찾을 수 없어요."),
     QUIZ_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-records-001","quiz record를 찾을 수 없어요."),
-    QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-001","해당 quiz를 찾을 수 없어요.");
+    QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-001","해당 quiz를 찾을 수 없어요."),
+    QUIZ_NOT_SOLVED_YET(HttpStatus.NOT_FOUND,"quiz-002","아직 해당 단원에 풀이한 퀴즈가 없어요.");
+
 
 
 

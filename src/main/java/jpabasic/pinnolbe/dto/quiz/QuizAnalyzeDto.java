@@ -1,4 +1,4 @@
-package jpabasic.pinnolbe.dto.analyze;
+package jpabasic.pinnolbe.dto.quiz;
 
 import lombok.Data;
 import lombok.Getter;
