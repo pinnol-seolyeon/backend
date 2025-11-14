@@ -53,7 +53,7 @@ public class QuizService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         // --- 1) 새 호출에서 계산된 값 ---
-        int newTotal   = results.size();
+        int newTotal = results.size();
         int newCorrect = (int) results.stream()
                 .filter(r -> r.getUserAnswer() != null
                         && r.getUserAnswer().equals(r.getCorrectAnswer()))
@@ -84,14 +84,14 @@ public class QuizService {
             int prevCorrect = Optional.ofNullable(analysis.getUnderstandingData())
                     .map(WeeklyAnalysis.UnderstandingData::getCorrect)
                     .orElse(0);
-            int prevTotal   = Optional.ofNullable(analysis.getUnderstandingData())
+            int prevTotal = Optional.ofNullable(analysis.getUnderstandingData())
                     .map(WeeklyAnalysis.UnderstandingData::getTotal)
                     .orElse(0);
 
             analysis.setUnderstandingData(
                     WeeklyAnalysis.UnderstandingData.builder()
                             .correct(prevCorrect + newCorrect)
-                            .total(prevTotal   + newTotal)
+                            .total(prevTotal + newTotal)
                             .build()
             );
 
@@ -103,51 +103,88 @@ public class QuizService {
     }
 
     /// 틀린문제들 DB에 저장
-    public List<QuizRecord> saveWrongQuizes(List<QuizAnalyzeDto> results) {
+    public List<QuizRecord> saveQuizes(List<QuizAnalyzeDto> results) {
         User user = userService.getUserInfo();
         //redis session에서 유저 현 진도 불러오기
         StudySession session = sessionFacade.getSessionByUser(user);
         //현재 학습 중인 chapterId
-        String chapterId=session.getChapterId();
+        String chapterId = session.getChapterId();
 
         //quizNote 객체 생성 후 저장
-        QuizNotes quizNotes=new QuizNotes(user.getId(),chapterId);
-        QuizNotes saved=quizNotesRepository.save(quizNotes);
-        String quizNotesId=saved.getId();
+        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId);
+        QuizNotes saved = quizNotesRepository.save(quizNotes);
+        String quizNotesId = saved.getId();
 
-        //틀린 문제 각각 저장
-        List<QuizRecord> wrongs=results.stream()
-                .filter(r->!r.getIsCorrect()) //isCorrect==false인 객체만 필터링
-                .map(r->new QuizRecord(quizNotesId,r.getQuizId(),r.getUserAnswer(),r.getCorrectAnswer()))
+        //모든 문제 각각 저장
+        List<QuizRecord> quizes = results.stream()
+                .map(r -> new QuizRecord(quizNotesId, r.getQuizId(), r.getUserAnswer(), r.getIsCorrect()))
                 .toList();
-        quizRecordRepository.saveAll(wrongs);
+        quizRecordRepository.saveAll(quizes);
 
-        return wrongs;
+        return quizes;
     }
 
     /// 틀린 문제들 조회
-    public QuizRecordDto getWrongQuizes(String chapterId){
+    public QuizRecordDto getQuizes(String chapterId) {
         User user = userService.getUserInfo();
-        QuizNotes notes=quizNotesRepository.findByUserIdAndChapterId(user.getId(),chapterId)
-                .orElseThrow(()->new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
-        String quizNotesId=notes.getId();
+        QuizNotes notes = quizNotesRepository.findByUserIdAndChapterId(user.getId(), chapterId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
+        String quizNotesId = notes.getId();
 
-        List<QuizRecord> records=quizRecordRepository.findAllByQuizNotesId(quizNotesId);
+        List<QuizRecord> records = quizRecordRepository.findAllByQuizNotesId(quizNotesId);
 
-        List<String> quizIds=records.stream()
+        //quizId 목록 추출
+        List<String> quizIds = records.stream()
                 .map(QuizRecord::getQuizId)
                 .toList();
-        //quizId -> question 매핑
-        Map<String,String> quizMap=quizRepository.findAllById(quizIds).stream()
-                .collect(Collectors.toMap(Quiz::getId,Quiz::getQuiz));
-        List<QuizRecordDto.EachQuiz> eachQuizes=records.stream()
-                .map(record->new QuizRecordDto.EachQuiz(
-                        quizMap.getOrDefault(record.getQuizId(),"질문 없음"),
-                        record
-                ))
-                .toList();
 
-        return new QuizRecordDto(chapterId,eachQuizes);
+        //quizId -> quiz 객체 매핑 (문제+정답)
+        Map<String, Quiz> quizMap = quizRepository.findAllById(quizIds).stream()
+                .collect(Collectors.toMap(Quiz::getId,quiz->quiz));
+
+        //QuizRecord+Quiz 매칭 -> Dto로 변환
+        List<QuizRecordDto.EachQuiz> eachQuizes = records.stream()
+                .map(record->{
+                    Quiz quiz=quizMap.get(record.getQuizId());
+                    if(quiz==null){
+                        return new QuizRecordDto.EachQuiz("질문 없음","정답 없음",record);
+                    }
+                    return new QuizRecordDto.EachQuiz(
+                            record,
+                            quiz.getQuiz(),
+                            quiz.getAnswer()
+                    );
+                })
+                .toList();
+        return new QuizRecordDto(chapterId, eachQuizes);
 
     }
+
+
+//    /// 틀린 문제들 조회
+//    public QuizRecordDto getSolvedQuizes(String chapterId){
+//        User user = userService.getUserInfo();
+//        QuizNotes notes=quizNotesRepository.findByUserIdAndChapterId(user.getId(),chapterId)
+//                .orElseThrow(()->new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
+//        String quizNotesId=notes.getId();
+//
+//        List<QuizRecord> records=quizRecordRepository.findAllByQuizNotesId(quizNotesId);
+//
+//        List<String> quizIds=records.stream()
+//                .map(QuizRecord::getQuizId)
+//                .toList();
+//        //quizId -> question 매핑
+//        Map<String,String> quizMap=quizRepository.findAllById(quizIds).stream()
+//                .collect(Collectors.toMap(Quiz::getId,Quiz::getQuiz));
+//        List<QuizRecordDto.EachQuiz> eachQuizes=records.stream()
+//                .map(record->new QuizRecordDto.EachQuiz(
+//                        quizMap.getOrDefault(record.getQuizId(),"질문 없음"),
+//                        record,
+//                        record.
+//                ))
+//                .toList();
+//
+//        return new QuizRecordDto(chapterId,eachQuizes);
+//
+//    }
 }

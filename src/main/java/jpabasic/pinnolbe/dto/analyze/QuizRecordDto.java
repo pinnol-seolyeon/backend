@@ -18,12 +18,16 @@ public class QuizRecordDto {
     @NoArgsConstructor
     public static class EachQuiz{
         private String question;
+        private String correctAnswer;
         private QuizRecord record;
 
-        public EachQuiz(QuizRecord record,String question){
+        public EachQuiz(QuizRecord record,String question,String correctAnswer){
             this.record = record;
             this.question = question;
+            this.correctAnswer = correctAnswer;
         }
+
+
     }
 
 }
