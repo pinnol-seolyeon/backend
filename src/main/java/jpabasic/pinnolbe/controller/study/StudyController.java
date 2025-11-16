@@ -8,6 +8,7 @@ import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
@@ -51,47 +52,6 @@ public class StudyController {
     private String bucket;
 
 
-//    @GetMapping("/start")
-//    @Operation(summary="해당 단원 학습하기(AI 연동 전)") //문장 단위로 끊어서 보여주기..
-//    public ResponseEntity<ChapterDto> getChapterContents(@RequestParam String chapterId){
-//        User user=userService.getUserInfo();
-//        String studyId=user.getStudyId();
-//        System.out.println("🐛🐛"+studyId);
-//
-//        ChapterDto chapter=studyService.getChapterContents(user,chapterId);
-//        return ResponseEntity.ok(chapter);
-//    }
-
-//    @PostMapping("/feedback")
-//    @Operation(summary="유저가 대답하면 AI가 피드백/리액션(수정 전)")
-//    public ResponseEntity<QuestionResponse> handleFeedback(@RequestBody FeedBackRequestDto request){
-//        System.out.println("🎙선생님의 질문:"+request.getQuestion());
-//        System.out.println("🎙사용자 답변:"+request.getUserAnswer());
-//        User user=userService.getUserInfo();
-//
-//       String reaction="좋은 생각이야~";
-//
-//        Map<String,String> response=new HashMap<>();
-//        response.put("reaction",reaction);
-//        return ResponseEntity.ok(response);
-//        QuestionResponse res=studyService.getFeedback(user,request);
-//        return ResponseEntity.ok(res);
-//    }
-
-    
-//    @PostMapping("/feedback/saveAll")
-//    @Operation(summary="여태까지의 피드백 한꺼번에 DB에 저장(수정 전)")
-//    public ResponseEntity<String> saveAllFeedBacks(@RequestParam String chapterId){
-//        User user=userService.getUserInfo();
-//        try {
-//            studyService.saveAllFeedBacks(user, chapterId);
-//        }catch(Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-//        }
-//        return ResponseEntity.ok("여태까지의 피드백이 DB에 무사히 저장되었습니다.");
-//    }
-
-
     @GetMapping("/book-select")
     @Operation(summary="교재 리스트 제공")
     public ApiResponse<BookListResponseDto> getBookList(){
@@ -119,22 +79,15 @@ public class StudyController {
         return ApiResponse.success("챕터 목록 조회 성공",result);
     }
 
+    @PostMapping("/ai-feedback")
+    @Operation(summary="학습하기 3단계 중 질문이 있는 경우 ai가 유저의 답변에 대한 반응/리액션")
+    public ApiResponse<AiFeedBackResponseDto> handleFeedback(@RequestBody FeedBackRequestDto request){
+        User user=userService.getUserInfo();
+        AiFeedBackResponseDto res=studyService.getFeedback(user,request);
+        return ApiResponse.success("학습하기에 대한 반응입니다.",res);
+    }
 
 
-//    @PostMapping("/finish")
-//    @Operation(summary="학습완료(수정 전)")
-//    public ResponseEntity<String> finishChapter(@RequestParam String chapterId){
-//        User user=userService.getUserInfo();
-//        String studyId=user.getStudyId();
-//        String chapterTitle=studyService.getChapterTitle(chapterId);
-//
-//        try {
-//            studyService.finishChapter(chapterId, studyId);
-//        }catch(Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-//        }
-//        return ResponseEntity.ok(chapterTitle+"학습이 완료되었습니다!");
-//    }
 
 
 
