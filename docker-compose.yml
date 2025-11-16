@@ -13,8 +13,8 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=local
-      - SPRING_DATA_REDIS_HOST=redis #Redis 컨테이너 이름을 호스트로 지정
-      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_REDIS_HOST=redis #Redis 컨테이너 이름을 호스트로 지정
+      - SPRING_REDIS_PORT=6379
     depends_on:
       - redis #Redis가 먼저 올라오도록 설정
 

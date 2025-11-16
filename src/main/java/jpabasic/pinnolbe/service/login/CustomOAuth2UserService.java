@@ -1,13 +1,10 @@
 package jpabasic.pinnolbe.service.login;
 
-import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
 import jpabasic.pinnolbe.dto.login.oauth2.KakaoResponse;
 import jpabasic.pinnolbe.dto.login.oauth2.OAuth2Response;
 import jpabasic.pinnolbe.dto.login.oauth2.UserDto;
-import jpabasic.pinnolbe.dto.reward.RewardDto;
-import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

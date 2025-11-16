@@ -16,10 +16,7 @@ import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
-import jpabasic.pinnolbe.repository.study.BookRepository;
-import jpabasic.pinnolbe.repository.study.ChapterRepository;
-import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
+import jpabasic.pinnolbe.repository.study.*;
 import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +53,7 @@ public class StudyService {
   private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
   private final AskQuestionTemplate askQuestionTemplate;
-  private final QuizService quizService;
+  private final QuizRepository quizRepository;
 
   @Autowired
   WebClient webClient;
@@ -106,12 +103,11 @@ public class StudyService {
                 System.out.println("result:"+result);
                 break;
             }
-            case 4:
-                List<Quiz> quiz=quizService.getQuiz(chapterId,5);
-                Map<String,Object> quizes=new HashMap<>();
-                quizes.put("quiz",quiz);
-                System.out.println("result:"+result);
-                return quizes;
+            case 4: {
+                List<Quiz> quiz = quizRepository.findByChapterId(chapterId);
+                Collections.shuffle(quiz);
+                result.put("quiz", quiz.stream().limit(5).toList());
+            }
             case 5:{
                 String summary=chapterDto.getSummary();
                 String summaryImgUrl=chapterDto.getSummaryImgUrl();
@@ -360,6 +356,7 @@ public class StudyService {
     public ChapterListResponseDto getChapterList(User user, String bookId,int page){
         String currentChapterId;
         StudySessionLog log;
+        int currentLevel;
 
         //해당 교재의 모든 chapter List
         Slice<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId,page,5);
@@ -369,22 +366,25 @@ public class StudyService {
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
             currentChapterId = "682829708c776a1ffa92fd50"; // 첫 교재,첫 챕터 하드코딩
+            currentLevel = 1;
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
                 log = optLog.get();
                 System.out.println("currentChapterId 가져오기");
                 currentChapterId = log.getChapterId();
+                currentLevel = log.getLevel();
             } else {
                 currentChapterId = "682829708c776a1ffa92fd50"; // fallback
+                currentLevel = 1;
             }
         }
         //dto로 변환
-        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,chapters);
+        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,currentLevel,chapters);
         return result;
     }
 
-    private Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
+    public Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
 

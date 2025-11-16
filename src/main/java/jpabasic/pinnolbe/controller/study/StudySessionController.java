@@ -1,10 +1,9 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.study;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
-import jpabasic.pinnolbe.dto.study.ChapterDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
@@ -28,6 +27,7 @@ public class StudySessionController {
     @Autowired
     private WeeklyAnalysisService weeklyAnalysisService;
 
+    @GetMapping
 
     @PostMapping("/start-level")
     @Operation(summary="특정 레벨 공부 시작",
@@ -37,11 +37,12 @@ public class StudySessionController {
                         """)
     public ApiResponse<Map<String,Object>> startLevel(
             @RequestParam int level,
+            @RequestParam String bookId,
             @RequestParam String chapterId){
 
         User user=userService.getUserInfo();
         //학습 상태 저장할 Redis(세부 학습내용), studysessionLog(현 학습 상황) 생성 및 확인
-        String studySessionLogId=studySessionService.startLevel(user,level,chapterId);
+        String studySessionLogId=studySessionService.startLevel(user,level,chapterId,bookId);
         //학습할 내용 가져오기
         Map<String,Object> levelContents=studyService.getChapterContents(chapterId,level);
         levelContents.put("studySessionLogId",studySessionLogId);
@@ -58,6 +59,7 @@ public class StudySessionController {
     ✅ 상태별 전송 규칙:
     - **ACTIVE ↔ INACTIVE** 전환 시 → `startTime`은 무시하고 `lastActive`만 전송
     - **COMPLETED** (학습 완료 시) → `startTime` / `lastActive` 모두 무시 가능
+    - **EXIT** : 학습 중간에 창을 아예 나갔을 때
     
     ✅ 6단계까지 해당 chapter 학습 완료 시:
     - isCompleted=true
@@ -93,10 +95,5 @@ public class StudySessionController {
         }
 
     }
-
-
-
-
-
 
 }

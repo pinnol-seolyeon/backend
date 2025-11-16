@@ -1,16 +1,16 @@
 package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jpabasic.pinnolbe.domain.Reward;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.reward.RewardDto;
+import jpabasic.pinnolbe.domain.reward.Reward;
+import jpabasic.pinnolbe.dto.reward.RewardRequestDto;
+import jpabasic.pinnolbe.dto.reward.RewardResponseDto;
+import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.login.RewardService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -33,11 +33,32 @@ public class RewardController {
         return user.getReward();
     }
 
-    @PostMapping("/upload-coin")
-    @Operation(summary="퀴즈에서 얻은 코인 저장")
-    public ResponseEntity<Map<String,Integer>> uploadCoin(@RequestBody RewardDto dto) {
+    @PostMapping("/upload-point")
+    @Operation(summary="얻거나 잃은 코인 내역 저장",
+                description= """
+                        - coin=얻거나 잃은 피넛 수
+                        - category
+                            GAME("게임 포인트"),
+                            MISSION("방문 미션"),
+                            REFUND("계좌 환급"),
+                            PURCHASE("상품권 구매")
+                        - description : 상세 설명
+                        - isPositive: coin 획득 시 true, coin 잃었을 시 false
+                        """)
+    public ApiResponse<Reward> uploadCoin(@RequestBody RewardRequestDto dto) {
         User user=userService.getUserInfo();
-        Map<String,Integer> result=rewardService.uploadCoin(dto,user);
-        return ResponseEntity.ok(result);
+        Reward result=rewardService.updateUserReward(dto,user);
+        return ApiResponse.success("퀴즈에서 얻은 코인 저장을 완료했습니다.",result);
+    }
+
+    @GetMapping("/point-history")
+    @Operation(summary="여태까지의 코인 내역 조회")
+    public ApiResponse<Page<RewardResponseDto>> getRewardList(
+            @RequestParam(defaultValue="0") int page
+
+    ){
+        User user=userService.getUserInfo();
+        Page<RewardResponseDto> result=rewardService.getUserRewardList(user.getId(),page,7);
+        return ApiResponse.success("지금까지의 코인 내역입니다.",result);
     }
 }

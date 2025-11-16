@@ -13,8 +13,8 @@ import java.util.List;
 public class Book {
 
     @Id
-    private ObjectId id;
-//    private int bookId;
+    private String id;
+    private int bookLevel;
     private String title;
 //    private Long chapter_id;
 
