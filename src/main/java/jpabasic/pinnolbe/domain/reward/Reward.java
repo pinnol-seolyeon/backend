@@ -6,9 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="reward")
+@CompoundIndex(name="idx_userId_createdAt",def="{'userId':1,'createdAt':-1}")
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter

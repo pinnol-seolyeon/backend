@@ -54,11 +54,11 @@ public class RewardController {
     @GetMapping("/point-history")
     @Operation(summary="여태까지의 코인 내역 조회")
     public ApiResponse<Page<RewardResponseDto>> getRewardList(
-            @RequestParam(defaultValue="0") int page,
-            @RequestParam(defaultValue="7") int size
+            @RequestParam(defaultValue="0") int page
+
     ){
         User user=userService.getUserInfo();
-        Page<RewardResponseDto> result=rewardService.getUserRewardList(user.getId(),page,size);
+        Page<RewardResponseDto> result=rewardService.getUserRewardList(user.getId(),page,7);
         return ApiResponse.success("지금까지의 코인 내역입니다.",result);
     }
 }
