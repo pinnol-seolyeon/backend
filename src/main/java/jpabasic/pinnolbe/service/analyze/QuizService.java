@@ -124,6 +124,7 @@ public class QuizService {
     /// 내가 푼 문제 상세 페이지 조회
     public SolvedQuizResDto getSolvedQuizDetails(String chapterId) {
         List<QuizNotes.QuizRecord> quizRecords = getQuizList(chapterId);
+
         double correctRate = getQuizCorrectRate(quizRecords);
         return new SolvedQuizResDto(quizRecords, correctRate);
     }
@@ -135,6 +136,7 @@ public class QuizService {
                 .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
 
         List<QuizNotes.QuizRecord> result=notes.getRecords();
+        System.out.println("⭐ quizResult:"+result.stream().toList());
         if (result.isEmpty()) {
             return null;
         }
