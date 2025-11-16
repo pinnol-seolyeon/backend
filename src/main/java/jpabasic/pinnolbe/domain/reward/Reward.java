@@ -10,7 +10,10 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="reward")
-@CompoundIndex(name="idx_userId_createdAt",def="{'userId':1,'createdAt':-1}")
+@CompoundIndex(
+        name="idx_userId_createdAt",
+        def="{'userId':1,'createdAt':-1}"
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -19,6 +22,7 @@ public class Reward extends BaseEntity {
 
     @Id
     private String id;
+    //유저 기준으로 조회가 매우 많이 일어나므로 인덱스 필수
     private String userId;
     private Integer coin;
     private PointCategory category;
