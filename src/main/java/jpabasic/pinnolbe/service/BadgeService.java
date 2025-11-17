@@ -33,13 +33,20 @@ public class BadgeService {
     public List<Badge> getBadge(BadgeRequestDto dto, String userId) {
         // 각 BadgeType별로 Badge 엔티티 생성
         List<Badge> badges = dto.getBadgeType().stream()
+                //이미 존재하는 BadgeType은 제외
+                .filter(type->!badgeRepository
+                        .existsByUserIdAndChapteridAndBadgeType(userId,dto.getChapterId(),type))
+                //남은 타입만 저장 객체 생성
                 .map(type -> Badge.builder()
                         .chapterId(dto.getChapterId())
                         .badgeType(type)
                         .userId(userId)
                         .build())
                 .toList();
-        badgeRepository.saveAll(badges);
+        //저장할 게 있을 때만 saveAll
+        if(!badges.isEmpty()) {
+            badgeRepository.saveAll(badges);
+        }
         return badges;
     }
 
@@ -53,9 +60,11 @@ public class BadgeService {
 
     @Transactional
     public void getSmartGamerBadge(List<QuizAnalyzeDto> request) {
+        //스트림의 모든 요소에 대해 getIsCorrect()가 true를 반환해야
         boolean hasAllCorrect=request.stream().allMatch(QuizAnalyzeDto::getIsCorrect);
         if(!hasAllCorrect) return;
 
+        //현재 진도 파악
         User user = userService.getUserInfo();
         StudySession session = studySessionService.getSessionByUser(user);
         String chapterId = session.getChapterId();
