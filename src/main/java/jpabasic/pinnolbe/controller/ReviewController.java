@@ -24,7 +24,7 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    @GetMapping("/quiz-review")
+    @GetMapping("/ai/quiz-review")
     @Operation(summary="[AI] 오답노트 기반 맞춤 퀴즈 생성")
     public ApiResponse<ReviewQuizResDto> newQuiz(
             @RequestParam String chapterId
@@ -35,7 +35,7 @@ public class ReviewController {
         return ApiResponse.success("새로 생성된 퀴즈입니다.",result);
     }
 
-    @GetMapping("/text-review")
+    @GetMapping("/ai/text-review")
     @Operation(summary="[AI] 쌍둥이 문제 + 대화기록으로 1000자 정도의 교과서 제작")
     public ApiResponse<TextReviewResDto> newTextReview(
             @RequestParam String chapterId
