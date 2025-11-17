@@ -36,16 +36,6 @@ public class QuestionController {
     }
 
 
-//    @PostMapping("")
-//    @Operation(summary="질문하기")
-//    public ApiResponse<QuestionResponse> askQuestion(@RequestBody Map<String,String> q) {
-//        User user=userService.getUserInfo();
-//        String question=q.get("question");
-//        //AI로부터 응답받기
-//        QuestionResponse response=questionService.askQuestion(question,user);
-//        return ApiResponse.success("질문 저장 완료",response);
-//    }
-
     @GetMapping(value="/stream",produces= MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="질문하기 실시간 응답")
     public SseEmitter streamChat(
@@ -58,14 +48,6 @@ public class QuestionController {
         return result.getEmitter();
     }
 
-//    @PostMapping("/session/commit")
-//    public ResponseEntity<String> commitSession() {
-//        User user = userService.getUserInfo();
-//        String userId = user.getId();
-//
-//        String resultMessage = questionService.saveAllCaches(userId);
-//        return ResponseEntity.ok(resultMessage);
-//    }
           
     @PostMapping("/save-all")
     @Operation(summary="여태까지 진행한 질문+답변 DB에 저장 및 표현력&참여도 측정",

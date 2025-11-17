@@ -247,8 +247,8 @@ public class StudyService {
             AiFeedBackResponseDto answer = askQuestionTemplate.feedbackQuestionToAI(request,userId);
 
             //사용자 세션 가져오기
-            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());
-            session.add(request.getQuiz(),request.getUserAnswer(),answer.getResult());
+//            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());
+//            session.add(request.getQuiz(),request.getUserAnswer(),answer.getResult());
 
             // AI의 답변 내용을 반환
             return answer;
