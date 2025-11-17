@@ -1,14 +1,23 @@
 package jpabasic.pinnolbe.service.question;
 
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
+import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.question.QuestionTempCache;
+import jpabasic.pinnolbe.domain.redis.StudySession;
+import jpabasic.pinnolbe.domain.study.Book;
+import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
-import jpabasic.pinnolbe.dto.question.QuestionResponse;
+import jpabasic.pinnolbe.dto.question.QuestionTempCache;
+import jpabasic.pinnolbe.dto.review.ReviewReqDto;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
+import jpabasic.pinnolbe.service.BookService;
+import jpabasic.pinnolbe.service.ChapterService;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
+import jpabasic.pinnolbe.service.study.StudySessionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,43 +41,24 @@ public class QuestionService {
 
     //사용자별 세션 저장소 //메모리에 저장된 질문 세션 관리 -> 일시적으로 관리
     private final Map<String, QuestionTempCache> sessionStore = new ConcurrentHashMap<>();
+    private final StudySessionService studySessionService;
+    private final BookService bookService;
+    private final ChapterService chapterService;
 
 
     public QuestionService(QueCollectionRepository queCollectionRepository, AskQuestionTemplate askQuestionTemplate,
                            WeeklyAnalysisRepository weeklyAnalysisRepository, QuestionAnalyzer questionAnalyzer,
-                           QuestionTempCache tempCache) {
+                           QuestionTempCache tempCache, StudySessionService studySessionService, BookService bookService, ChapterService chapterService) {
         this.queCollectionRepository = queCollectionRepository;
         this.askQuestionTemplate = askQuestionTemplate;
         this.weeklyAnalysisRepository = weeklyAnalysisRepository;
         this.questionAnalyzer = questionAnalyzer;
         this.tempCache = tempCache;
+        this.studySessionService = studySessionService;
+        this.bookService = bookService;
+        this.chapterService = chapterService;
     }
 
-
-//    //질문 내용을 AI 모델에게 전달
-//    public QuestionResponse askQuestion(String question, User user) {
-//        String userId = user.getId();
-//        QuestionRequest request = new QuestionRequest(null,userId, question);
-//
-//        try {
-//            QuestionResponse result = askQuestionTemplate.askQuestionToAI(request);
-//            String answer = result.getResult();
-//
-//            //세션에 저장
-//            saveQuestionSession(question, answer,userId);
-//            return result;
-//        } catch (RestClientException e) {
-//            throw new RuntimeException("AI 서버 호출 중 오류 발생", e);
-//        }
-//    }
-
-//    //질문 내용 session에 저장
-//    public void saveQuestionSession(String question,String answer,String userId) {
-//        //사용자 세션 가져오기
-//        QuestionTempCache session = sessionStore.computeIfAbsent(userId, k -> new QuestionTempCache());
-//        session.add(question, answer);
-//        System.out.println("QuestionSession:" + session);
-//    }
 
 
     //질문에 따른 표현력 점수 측정 (3단계 학습 완료 시)
@@ -80,29 +70,17 @@ public class QuestionService {
     }
 
 
-//    //모든 질문+답변 한꺼번에 DB에 저장하기
-//    public List<String> saveAllQAs(User user, String chapterId) {
-//        String userId = user.getId();
-//        QuestionTempCache session = sessionStore.get(userId);
-//
-//        if (session == null || session.getQuestions().isEmpty()) return null;
-//
-//        QueCollection doc = new QueCollection();
-//        doc.setUserId(userId);
-//        doc.setQuestions(session.getQuestions());
-//        doc.setAnswers(session.getAnswers());
-//        doc.setChapterId(chapterId);
-////        LocalDateTime nowKST=LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-////        doc.setDate(nowKST);
-//
-//        queCollectionRepository.save(doc);
-//
-//        //저장 후 세션 초기화  //sessionStore에서 key가 userId인 entry하나만 삭제
-//        sessionStore.remove(userId);
-//
-//        List<String> questions = doc.getQuestions();
-//        return questions;
-//    }
+    public QuestionRequest askQuestion(String question,User user){
+        StudySession session=studySessionService.getSessionByUser(user);
+
+        String chapterId=session.getChapterId();
+        String bookId=session.getBookId();
+
+        int level=bookService.getBooklevel(bookId); //책
+        int order=chapterService.findChapter(chapterId).getOrder(); //단원(chapter)
+
+        return new QuestionRequest(user.getId(),question,level,order);
+    }
 
     @Transactional
     public List<String> commitUserSession(String userId,String chapterId) {
@@ -257,16 +235,4 @@ public class QuestionService {
         System.out.println("✅ [" + userId + "] 이번주 표현력 점수 업데이트 완료: " + updatedScore);
     }
 
-
-
-//    //단원별로 질문 모아두는 레포 생성
-//    public QueCollection makeQueCollectionRepo(int part, User user){
-//
-//        QueCollection queCollection=new QueCollection(part,user);
-//        queCollection.setDate(new Date());
-//
-//        queCollectionRepository.save(queCollection);
-//        return queCollection;
-//
-//    }
 }

@@ -10,10 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeedBackRequestDto {
-//    private String chapterId;
-//    private int sentenceIndex;
-    private String question;
+    private String chapterId;
+    private String quiz; //교재에서 ai 선생님이 묻는 질문
     private String userAnswer;
-    private String nextContext;
-    private String chapter; //해당 단원 내용 전체
 }

@@ -3,6 +3,8 @@ package jpabasic.pinnolbe.service.model;
 import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackRequestDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,45 +20,26 @@ import java.util.Map;
 public class AskQuestionTemplate {
 
     @Value("${myapp.fastApi.endpoint}")
-    private String fastApiEndpoint; ///http://127.0.0.1:8000/api/rag/chat
-
-    public QuestionResponse askQuestionToAI(QuestionRequest questionRequest) {
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<QuestionRequest> request = new HttpEntity<>(questionRequest, headers);
-
-        ResponseEntity<QuestionResponse> response = restTemplate.exchange(
-                fastApiEndpoint+"/chat", HttpMethod.POST, request, QuestionResponse.class
-        );
-//        System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
-
-        QuestionResponse body=response.getBody();
-//        System.out.println("🧪 응답 객체 = " + body);
-//        System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
-        return body;
-    }
-
+    private String fastApiEndpoint; ///http://127.0.0.1:8000/api/rag
 
 
     //피드백을 위한 챗봇
-    public QuestionResponse feedbackQuestionToAI(FeedBackRequestDto questionRequest) {
+    public AiFeedBackResponseDto feedbackQuestionToAI(FeedBackRequestDto questionRequest,String userId) {
+        AiFeedBackRequestDto requestDto=new AiFeedBackRequestDto(
+                questionRequest.getChapterId(), questionRequest.getQuiz(), questionRequest.getUserAnswer(), userId);
 
         RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<FeedBackRequestDto> request = new HttpEntity<>(questionRequest, headers);
+        HttpEntity<AiFeedBackRequestDto> request = new HttpEntity<>(requestDto, headers);
 
-        ResponseEntity<QuestionResponse> response = restTemplate.exchange(
-                fastApiEndpoint+"/feedback", HttpMethod.POST, request, QuestionResponse.class
+        ResponseEntity<AiFeedBackResponseDto> response = restTemplate.exchange(
+                fastApiEndpoint+"/content-chat", HttpMethod.POST, request, AiFeedBackResponseDto.class
         );
         System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
 
-        QuestionResponse body=response.getBody();
+        AiFeedBackResponseDto body=response.getBody();
         System.out.println("🧪 응답 객체 = " + body);
         System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
         return body;

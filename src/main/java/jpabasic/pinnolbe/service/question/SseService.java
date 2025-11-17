@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service.question;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jpabasic.pinnolbe.dto.question.QuestionRequest;
 import jpabasic.pinnolbe.dto.question.QuestionTempCache;
 import jpabasic.pinnolbe.dto.question.StreamingResultDto;
 import org.springframework.security.core.context.SecurityContext;
@@ -26,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class SseService {
 
-    private final QuestionService questionService;
     @Value("${myapp.fastApi.endpoint}")
     private String fastApiEndpoint;
 
@@ -35,23 +35,23 @@ public class SseService {
     private final ObjectMapper objectMapper;
     private final QuestionTempCache tempCache;
 
-    public SseService(WebClient webClient, ObjectMapper objectMapper, QuestionService questionService, QuestionTempCache tempCache) {
+    public SseService(WebClient webClient, ObjectMapper objectMapper,QuestionTempCache tempCache) {
         this.webClient = webClient;
         this.objectMapper = objectMapper;
-        this.questionService = questionService;
         this.tempCache = tempCache;
     }
 
     /**
      * 질문 stream 방식으로
-     * @param question
-     * @param userId
      * @return
      */
-    public StreamingResultDto askQuestionStream(String question, String userId) {
+    public StreamingResultDto askQuestionStream(QuestionRequest request) {
+        String userId=request.getUser_id();
+        String question=request.getQuestion();
+
         ///SSE sseEmitter 생성 및 등록
         SseEmitter sseEmitter = new SseEmitter(0L); //무제한 타임아웃
-        sseEmitterMap.put(userId,sseEmitter);
+        sseEmitterMap.put(request.getUser_id(),sseEmitter);
 
         StringBuilder accumulatedAnswer=new StringBuilder();
         CompletableFuture<String> resultFuture=new CompletableFuture<>();
@@ -76,10 +76,7 @@ public class SseService {
         webClient.post()
                 .uri(fastApiEndpoint+"/chat") //api
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of(
-                        "question", question,
-                        "user_id", userId
-                ))
+                .bodyValue(request)
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve() //HTTP 요청 실행
                 .bodyToFlux(String.class) //FastAPI의 SSE 'data' 부분을 JSON 문자열로 받음

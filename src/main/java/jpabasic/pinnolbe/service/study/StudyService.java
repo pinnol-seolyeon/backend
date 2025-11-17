@@ -9,15 +9,15 @@ import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponse;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.*;
-import jpabasic.pinnolbe.service.analyze.QuizService;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
@@ -38,7 +38,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static jpabasic.pinnolbe.dto.study.ChapterDto.convertDto;
 
@@ -50,7 +49,7 @@ public class StudyService {
   private final ChapterRepository chapterRepository;
   private final StudyRepository studyRepository;
   private final UserRepository userRepository;
-  private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
+  private final Map<String, FeedBackResponseDto> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
   private final AskQuestionTemplate askQuestionTemplate;
   private final QuizRepository quizRepository;
@@ -240,19 +239,16 @@ public class StudyService {
 
 
     //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
-    public QuestionResponse getFeedback(User user, FeedBackRequestDto request){
+    public AiFeedBackResponseDto getFeedback(User user, FeedBackRequestDto request){
         String userId= user.getId();
-        String question=request.getQuestion();
 
         // AI에 유저의 질문 전달
         try {
-            /// AI 수정 필요
-            QuestionResponse answer = askQuestionTemplate.feedbackQuestionToAI(request);
-
+            AiFeedBackResponseDto answer = askQuestionTemplate.feedbackQuestionToAI(request,userId);
 
             //사용자 세션 가져오기
-            FeedBackResponse session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponse());
-            session.add(request.getQuestion(),request.getUserAnswer(),answer.getResult());
+//            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());
+//            session.add(request.getQuiz(),request.getUserAnswer(),answer.getResult());
 
             // AI의 답변 내용을 반환
             return answer;
@@ -267,7 +263,7 @@ public class StudyService {
     //모든 피드백 저장
     public void saveAllFeedBacks(User user,String chapterId){
         String userId=user.getId();
-        FeedBackResponse session=sessionStore.get(userId);
+        FeedBackResponseDto session=sessionStore.get(userId);
 
         if(session==null||session.getQuestions().isEmpty()) return;
 

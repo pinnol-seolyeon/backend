@@ -11,7 +11,7 @@ import java.util.List;
 public interface BadgeRepository extends MongoRepository<Badge, String> {
 
     List<Badge> findByUserIdAndChapterId(String userId, String chapterId);
-    boolean existsByUserIdAndChapteridAndBadgeType(
+    boolean existsByUserIdAndChapterIdAndBadgeType(
             String userId,
             String chapterId,
             BadgeType badgeType
