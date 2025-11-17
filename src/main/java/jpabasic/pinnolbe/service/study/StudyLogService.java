@@ -12,7 +12,7 @@ import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
+import jpabasic.pinnolbe.dto.study.CompletedChapterDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
@@ -199,7 +199,7 @@ public class StudyLogService {
         Study study = studyRepository.findById(new ObjectId(studyId))
                 .orElseThrow(() -> new IllegalArgumentException("해당 study를 찾을 수 없습니다"));
 
-        Set<CompletedChapter> chapters = study.getCompleteChapter();
+        Set<CompletedChapterDto> chapters = study.getCompleteChapter();
 
         assert chapters != null;
         if (chapters.isEmpty()) {
@@ -237,7 +237,7 @@ public class StudyLogService {
 
         Map<String, Integer> timeTypeCount = new HashMap<>();
 
-        for (CompletedChapter cc : chapters) {
+        for (CompletedChapterDto cc : chapters) {
             //test
 
             LocalDateTime completed = cc.getCompletedAt();
@@ -298,9 +298,9 @@ public class StudyLogService {
     /// 이번 주 학습완료한 단원 개수 ///이번주 = (월요일 00:00~일요일 23:59)
     public FinishChaptersDto getCompletedWeek(String studyId){
         Study study=studyService.getStudyByString(studyId);
-        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
+        Set<CompletedChapterDto> completedChapterDtos =study.getCompleteChapter();
         
-        if(completedChapters==null){
+        if(completedChapterDtos ==null){
             return new FinishChaptersDto(0,0); //완료 단원이 아예 없을 경우
         }
 
@@ -313,14 +313,14 @@ public class StudyLogService {
 
 
         //이번 주에 완료된 단원만 필터링
-        long weekCount=completedChapters.stream()
+        long weekCount= completedChapterDtos.stream()
                 .filter(ch->{
                     LocalDateTime completed=ch.getCompletedAt();
                     return completed!=null && !completed.isBefore(start)&&completed.isBefore(end);
                 })
                 .count();
 
-        long totalCount= completedChapters.size();
+        long totalCount= completedChapterDtos.size();
         return new FinishChaptersDto((int) weekCount,(int) totalCount);
     }
 

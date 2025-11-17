@@ -202,7 +202,7 @@ public class StudyService {
                 weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
                         .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
 
-        List<String> completed=weeklyAnalysis.getCompletedChapters();
+        List<WeeklyAnalysis.CompletedChapter> completed=weeklyAnalysis.getCompletedChapters();
         if (completed == null) return new StudyStatsDto(0);
 
         int total = completed.size();

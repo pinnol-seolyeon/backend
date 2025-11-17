@@ -216,7 +216,7 @@ public class QuestionService {
         double prevScore=expr.getExpressionScore();
 
         //completedChapters가 null일 경우 대비
-        List<String> completed = analysis.getCompletedChapters();
+        List<WeeklyAnalysis.CompletedChapter> completed = analysis.getCompletedChapters();
         int completedSize = (completed != null) ? completed.size() : 0;
 
         //평균 계산 : (이전 평균*완료 단원 수+새 점수)/(완료 단원 수 +1)

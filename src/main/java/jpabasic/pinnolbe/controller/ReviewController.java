@@ -45,4 +45,13 @@ public class ReviewController {
         TextReviewResDto result=reviewService.createTextReview(userId,chapterId);
         return ApiResponse.success("새로운 복습 자료가 준비되었어요.",result);
     }
+
+//    @GetMapping("")
+//    @Operation(summary="복습해야할 단원들에 대한 리스트 제공")
+//    public ApiResponse<ReviewQuizResDto> getReviewList(){
+//        User user=userService.getUserInfo();
+//        reviewService.getReviewList(user);
+//    }
+
+
 }
