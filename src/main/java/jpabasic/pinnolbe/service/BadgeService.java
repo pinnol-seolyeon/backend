@@ -35,7 +35,7 @@ public class BadgeService {
         List<Badge> badges = dto.getBadgeType().stream()
                 //이미 존재하는 BadgeType은 제외
                 .filter(type->!badgeRepository
-                        .existsByUserIdAndChapteridAndBadgeType(userId,dto.getChapterId(),type))
+                        .existsByUserIdAndChapterIdAndBadgeType(userId,dto.getChapterId(),type))
                 //남은 타입만 저장 객체 생성
                 .map(type -> Badge.builder()
                         .chapterId(dto.getChapterId())

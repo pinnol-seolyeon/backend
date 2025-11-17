@@ -42,9 +42,12 @@ public class QuestionController {
             @RequestParam String question
     ){
         User user=userService.getUserInfo();
-        String userId=user.getId();
+
+        //request body 생성
+        QuestionRequest request=questionService.askQuestion(question,user);
+
         //실시간 SSE 즉시 반환
-        StreamingResultDto result=sseService.askQuestionStream(question,userId);
+        StreamingResultDto result=sseService.askQuestionStream(request);
         return result.getEmitter();
     }
 

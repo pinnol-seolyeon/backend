@@ -22,12 +22,14 @@ public class ReviewService {
     private final BookRepository bookRepository;
     private final QuizNotesRepository quizNotesRepository;
     private final ReviewAITemplate reviewAITemplate;
+    private final BookService bookService;
 
-    public ReviewService(ChapterService chapterService, BookRepository bookRepository, QuizNotesRepository quizNotesRepository, ReviewAITemplate reviewAITemplate) {
+    public ReviewService(ChapterService chapterService, BookRepository bookRepository, QuizNotesRepository quizNotesRepository, ReviewAITemplate reviewAITemplate, BookService bookService) {
         this.chapterService = chapterService;
         this.bookRepository = bookRepository;
         this.quizNotesRepository = quizNotesRepository;
         this.reviewAITemplate = reviewAITemplate;
+        this.bookService = bookService;
     }
 
     /**
@@ -52,14 +54,16 @@ public class ReviewService {
 
     private ReviewReqDto buildRequestDto(String userId, String chapterId){
         Chapter chapter = chapterService.findChapter(chapterId);
-        Book book = bookRepository.findByChapterId(chapterId);
+        String bookId=chapter.getBookId();
+
+        int bookLevel=bookService.getBooklevel(bookId);
 
         QuizNotes notes = quizNotesRepository.findByUserIdAndChapterId(userId, chapterId)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
 
         return new ReviewReqDto(
                 userId,
-                book.getBookLevel(),
+                bookLevel,
                 chapter.getOrder(),
                 notes.getRecords()
         );
