@@ -20,27 +20,7 @@ import java.util.Map;
 public class AskQuestionTemplate {
 
     @Value("${myapp.fastApi.endpoint}")
-    private String fastApiEndpoint; ///http://127.0.0.1:8000/api/rag/chat
-
-    public QuestionResponse askQuestionToAI(QuestionRequest questionRequest) {
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<QuestionRequest> request = new HttpEntity<>(questionRequest, headers);
-
-        ResponseEntity<QuestionResponse> response = restTemplate.exchange(
-                fastApiEndpoint+"/chat", HttpMethod.POST, request, QuestionResponse.class
-        );
-//        System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
-
-        QuestionResponse body=response.getBody();
-//        System.out.println("🧪 응답 객체 = " + body);
-//        System.out.println("✅ result 값 = " + (body != null ? body.getResult() : "null"));
-        return body;
-    }
-
+    private String fastApiEndpoint; ///http://127.0.0.1:8000/api/rag
 
 
     //피드백을 위한 챗봇
