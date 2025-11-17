@@ -79,8 +79,8 @@ public class StudyController {
         return ApiResponse.success("챕터 목록 조회 성공",result);
     }
 
-    @PostMapping("/ai/feedback")
-    @Operation(summary="[AI] 학습하기 3단계 중 질문이 있는 경우 ai가 유저의 답변에 대한 반응/리액션")
+    @PostMapping("/ai/content-chat")
+    @Operation(summary="[AI] 학습하기 3단계 - 반응: 호핀이 질문에 대한 사용자 답변에 AI 반응 생성")
     public ApiResponse<AiFeedBackResponseDto> handleFeedback(@RequestBody FeedBackRequestDto request){
         User user=userService.getUserInfo();
         AiFeedBackResponseDto res=studyService.getFeedback(user,request);
