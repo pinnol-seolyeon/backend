@@ -4,7 +4,9 @@ import jpabasic.pinnolbe.domain.ChapterProgress;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
+import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.study.Chapter;
+import jpabasic.pinnolbe.dto.badge.BadgeRequestDto;
 import jpabasic.pinnolbe.dto.review.*;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -34,18 +37,16 @@ public class ReviewService {
     private final QuizNotesRepository quizNotesRepository;
     private final ReviewAITemplate reviewAITemplate;
     private final BookService bookService;
-    private final WeeklyAnalysisService weeklyAnalysisService;
-    private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final ChapterProgressRepository chapterProgressRepository;
+    private final BadgeService badgeService;
 
-    public ReviewService(ChapterService chapterService, QuizNotesRepository quizNotesRepository, ReviewAITemplate reviewAITemplate, BookService bookService, WeeklyAnalysisService weeklyAnalysisService, WeeklyAnalysisRepository weeklyAnalysisRepository, ChapterProgressRepository chapterProgressRepository) {
+    public ReviewService(ChapterService chapterService, QuizNotesRepository quizNotesRepository, ReviewAITemplate reviewAITemplate, BookService bookService, ChapterProgressRepository chapterProgressRepository, BadgeService badgeService) {
         this.chapterService = chapterService;
         this.quizNotesRepository = quizNotesRepository;
         this.reviewAITemplate = reviewAITemplate;
         this.bookService = bookService;
-        this.weeklyAnalysisService = weeklyAnalysisService;
-        this.weeklyAnalysisRepository = weeklyAnalysisRepository;
         this.chapterProgressRepository = chapterProgressRepository;
+        this.badgeService = badgeService;
     }
 
     /**
@@ -169,6 +170,44 @@ public class ReviewService {
                 chapter.getOrder(),
                 notes.getRecords()
         );
+    }
+
+    /**
+     * 1/2차 복습 완료 로직
+     */
+    @Transactional
+    public void completeReview(String userId,int reviewCount,String chapterId){
+        LocalDate today=LocalDate.now(ZoneId.of("Asia/Seoul"));
+        ChapterProgress progress=chapterProgressRepository
+                .findByUserIdAndChapterId(userId, chapterId)
+                .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_PROGRESS_NOT_FOUND));
+
+        // 1차 완료 중복 체크
+        if (reviewCount == 1 && progress.getFirstReviewCompletedAt() != null) {
+            throw new CustomException(ErrorCode.REVIEW_ALREADY_COMPLETED);
+        }
+
+        // 2차는 1차 완료 여부 체크
+        if (reviewCount == 2) {
+            if (progress.getFirstReviewCompletedAt() == null) {
+                throw new CustomException(ErrorCode.FIRST_REVIEW_NOT_COMPLETED);
+            }
+            if (progress.getSecondReviewCompletedAt() != null) {
+                throw new CustomException(ErrorCode.REVIEW_ALREADY_COMPLETED);
+            }
+        }
+
+        //복습 회차 별 로직 설계
+        if(reviewCount==1){
+            progress.setFirstReviewCompletedAt(today);
+            chapterProgressRepository.save(progress);
+        }else{
+            //모든 복습 완료 시 chapterProgress(복습 진도 저장 도메인) 삭제
+            chapterProgressRepository.delete(progress);
+            //Badge 획득
+            badgeService.getBadge(new BadgeRequestDto(chapterId,BadgeType.MODEL_STUDENT),userId);
+        }
+
     }
 
 
