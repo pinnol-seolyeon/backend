@@ -14,11 +14,17 @@ import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
 import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.model.ReviewAITemplate;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
@@ -100,7 +106,6 @@ public class ReviewService {
 
         //2차 복습 잠금 해제 조건 : 1차 복습 + 4일
         ReviewStatus secondStatus;
-
         // 2-1) 이미 완료한 경우
         if (progress.getSecondReviewCompletedAt() != null) {
             secondStatus = ReviewStatus.COMPLETED;
@@ -124,15 +129,28 @@ public class ReviewService {
     }
 
     //복습하기 페이지 화면에 반환할 내용들
-    public List<ReviewListResDto> getReviewList(User user){
-        List<ChapterProgress> chapterProgress=chapterProgressRepository
-                .findByUserId(user.getId());
-        if(chapterProgress.isEmpty()){
-            return null;
-        }
+    public Page<ReviewListResDto> getReviewList(User user,int page) {
+        String userId = user.getId();
+        Pageable pageable = PageRequest.of(page, 5);
 
-        chapterProgress.stream()
-                .map(p->getReviewStatus(user,p.getChapterId()));
+        //DB에서 chapterProgress 같은 단위로 가져옴
+        Page<ChapterProgress> progressPage =
+                chapterProgressRepository.findByUserId(userId, pageable);
+        //조회된 chapterId 목록
+        List<String> chapterIds = progressPage.getContent().stream()
+                .map(ChapterProgress::getChapterId)
+                .toList();
+        //titleMap으로 한 번에 가져오기 (N+1 방지)
+        Map<String, String> titles = chapterService.findChapterTitle(chapterIds);
+        ;
+        //Page.map() 이용 -> paging 정보를 유지한 상태로 dto 변환
+        return progressPage.map(p ->
+                new ReviewListResDto(
+                        p.getChapterId(),
+                        titles.get(p.getChapterId()),
+                        getReviewStatus(user, p.getChapterId())
+                ));
+
     }
 
 

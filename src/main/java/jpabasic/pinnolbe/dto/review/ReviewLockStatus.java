@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ReviewLockStatus {
-    private ReviewStatus firstReviewUnlocked;
-    private ReviewStatus secondReviewUnlocked;
+    private ReviewStatus firstReview;
+    private ReviewStatus secondReview;
 
 }

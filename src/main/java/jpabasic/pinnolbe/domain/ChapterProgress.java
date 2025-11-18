@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 )
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class ChapterProgress {
     @Id
     private String id;
