@@ -117,6 +117,7 @@ public class WeeklyAnalysis {
     @AllArgsConstructor
     public static class CompletedChapter{
         private String chapterId;
+        //학습하기 완료 날짜
         private LocalDate completedAt;
     }
 
