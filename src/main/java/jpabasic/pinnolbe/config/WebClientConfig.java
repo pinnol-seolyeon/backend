@@ -4,6 +4,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.apache.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -34,4 +35,22 @@ public class WebClientConfig {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
                 .build();
     }
+
+    @Bean
+    @Qualifier("sseWebClient") //같은 타입(WebClient)의 Bean 여러 개 존재 -> 어떤 Bean을 사용할지 정확하게 지정
+    public WebClient sseWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .keepAlive(true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000) //연결 시도 30초까지
+                .responseTimeout(Duration.ofSeconds(600)) //응답 대기 10분
+                .doOnConnected(conn->
+                        conn.addHandlerLast(new ReadTimeoutHandler(600))
+                                .addHandlerLast(new WriteTimeoutHandler(600))
+                );
+
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+    }
+
 }

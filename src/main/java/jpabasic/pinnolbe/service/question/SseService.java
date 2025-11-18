@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -31,12 +32,12 @@ public class SseService {
     private String fastApiEndpoint;
 
     private final Map<String, SseEmitter> sseEmitterMap = new ConcurrentHashMap<>();
-    private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final QuestionTempCache tempCache;
+    private final WebClient sseWebClient;
 
-    public SseService(WebClient webClient, ObjectMapper objectMapper,QuestionTempCache tempCache) {
-        this.webClient = webClient;
+    public SseService( WebClient sseWebClient, ObjectMapper objectMapper,QuestionTempCache tempCache) {
+        this.sseWebClient = sseWebClient;
         this.objectMapper = objectMapper;
         this.tempCache = tempCache;
     }
@@ -73,7 +74,7 @@ public class SseService {
         });
 
         /// FastAPI에 스트리밍 요청
-        webClient.post()
+        sseWebClient.post()
                 .uri(fastApiEndpoint+"/chat") //api
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
