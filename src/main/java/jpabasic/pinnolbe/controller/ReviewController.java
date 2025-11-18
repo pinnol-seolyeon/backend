@@ -2,11 +2,13 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.review.ReviewListResDto;
 import jpabasic.pinnolbe.dto.review.ReviewQuizResDto;
 import jpabasic.pinnolbe.dto.review.TextReviewResDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.ReviewService;
 import jpabasic.pinnolbe.service.login.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,4 +47,17 @@ public class ReviewController {
         TextReviewResDto result=reviewService.createTextReview(userId,chapterId);
         return ApiResponse.success("새로운 복습 자료가 준비되었어요.",result);
     }
+
+    @GetMapping("")
+    @Operation(summary="복습해야할 단원들에 대한 리스트 제공")
+    public ApiResponse<Page<ReviewListResDto>> getReviewList(
+            @RequestParam int page
+    ){
+        User user=userService.getUserInfo();
+        Page<ReviewListResDto> result=reviewService.getReviewList(user,page);
+        return ApiResponse.success("복습해야할 단원들입니다.",result);
+
+    }
+
+
 }

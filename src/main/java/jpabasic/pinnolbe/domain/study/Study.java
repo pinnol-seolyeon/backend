@@ -1,8 +1,7 @@
 package jpabasic.pinnolbe.domain.study;
 
 import com.mongodb.lang.Nullable;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
-import jpabasic.pinnolbe.repository.study.BookRepository;
+import jpabasic.pinnolbe.dto.study.CompletedChapterDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,9 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -35,7 +32,7 @@ public class Study {
     private String chapterId;
 
     @Nullable
-    private Set<CompletedChapter> completeChapter=new HashSet<>(); //해당 교재에서 학습 완료된 단원id 리스트
+    private Set<CompletedChapterDto> completeChapter=new HashSet<>(); //해당 교재에서 학습 완료된 단원id 리스트
 
     private Chapter chapter;
 

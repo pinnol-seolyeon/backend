@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CompletedChapter {
+public class CompletedChapterDto {
 
     private String chapterId;
     private LocalDateTime completedAt;
