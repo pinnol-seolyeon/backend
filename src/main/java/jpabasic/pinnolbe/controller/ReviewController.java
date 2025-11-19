@@ -9,10 +9,7 @@ import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.ReviewService;
 import jpabasic.pinnolbe.service.login.UserService;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/review")
@@ -57,6 +54,17 @@ public class ReviewController {
         Page<ReviewListResDto> result=reviewService.getReviewList(user,page);
         return ApiResponse.success("복습해야할 단원들입니다.",result);
 
+    }
+
+    @PostMapping("/review-completed")
+    @Operation(summary="1차/2차 복습 완료 시 호출",description = "reviewCount=1차 학습 완료 시 -> 1, 2차 학습 완료 시 -> 2")
+    public ApiResponse<Void> completeReview(
+            @RequestParam int reviewCount,
+            @RequestParam String chapterId
+    ){
+        User user=userService.getUserInfo();
+        reviewService.completeReview(user.getId(),reviewCount,chapterId);
+        return ApiResponse.success(reviewCount+"차 복습을 완료했어요.",null);
     }
 
 

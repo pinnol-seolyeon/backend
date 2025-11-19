@@ -50,7 +50,14 @@ public enum ErrorCode {
     QUIZ_NOTES_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-notes-001","해당 유저, 챕터에 대한 quiz notes를 찾을 수 없어요."),
     QUIZ_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-records-001","quiz record를 찾을 수 없어요."),
     QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND,"quiz-001","해당 quiz를 찾을 수 없어요."),
-    QUIZ_NOT_SOLVED_YET(HttpStatus.NOT_FOUND,"quiz-002","아직 해당 단원에 풀이한 퀴즈가 없어요.");
+    QUIZ_NOT_SOLVED_YET(HttpStatus.NOT_FOUND,"quiz-002","아직 해당 단원에 풀이한 퀴즈가 없어요."),
+
+    //ChapterProgress 관련
+    CHAPTER_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND,"chapter-progress-001","해당 chapter progress를 찾을 수 없어요."),
+
+    //Review 관련
+    REVIEW_ALREADY_COMPLETED(HttpStatus.CONFLICT,"review-001","이미 복습된 복습이에요"),
+    FIRST_REVIEW_NOT_COMPLETED(HttpStatus.BAD_REQUEST,"review-002","1차 복습이 완료되지 않아 2차 복습을 할 수 없어요.");
 
 
 

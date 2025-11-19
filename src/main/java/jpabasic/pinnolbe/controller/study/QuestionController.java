@@ -37,7 +37,7 @@ public class QuestionController {
 
 
     @GetMapping(value="/stream",produces= MediaType.TEXT_EVENT_STREAM_VALUE)
-    @Operation(summary="질문하기 실시간 응답")
+    @Operation(summary="[AI] 질문하기 실시간 응답")
     public SseEmitter streamChat(
             @RequestParam String question
     ){
