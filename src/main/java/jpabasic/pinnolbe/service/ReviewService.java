@@ -123,7 +123,7 @@ public class ReviewService {
         //1차 복습 : 이미 완료한 경우
        if(progress.getFirstReviewCompletedAt()!=null){
            firstStatus=ReviewStatus.COMPLETED;
-       } else if (!today.isBefore((progress.getCompletedAt().plusDays(3)))) {
+       } else if (!today.isBefore((progress.getCompletedAt().plusDays(1)))) { //✔️출시: plusDays(3)으로
            firstStatus=ReviewStatus.UNLOCKED;
        }else{
            firstStatus=ReviewStatus.LOCKED;
@@ -141,7 +141,7 @@ public class ReviewService {
 
         } else {
             // 2-3) 날짜 조건: 1차 복습 완료 + 4일
-            LocalDate secondUnlockDate = progress.getFirstReviewCompletedAt().plusDays(4);
+            LocalDate secondUnlockDate = progress.getFirstReviewCompletedAt().plusDays(1);//✔️출시: plusDays(1)으로
 
             if (!today.isBefore(secondUnlockDate)) {
                 secondStatus = ReviewStatus.UNLOCKED;
