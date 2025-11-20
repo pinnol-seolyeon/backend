@@ -15,7 +15,5 @@ public class QuizAnalyzeDto {
     private String correctAnswer;
     private String userAnswer;
     private Boolean isCorrect;
-    private long responseTime; // 단위: ms
-    private String userId;      // 유저 ID도 받아야 저장 가능
     private LocalDate quizDate;
 }

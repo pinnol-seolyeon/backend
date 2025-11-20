@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ReviewReqDto {
-    private String userId;
+    private String user_id;
     private int level; //책
     private int order; //단원
     private List<QuizNotes.QuizRecord> quizRecords=new ArrayList<>();

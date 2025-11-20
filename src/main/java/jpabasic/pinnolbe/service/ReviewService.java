@@ -2,18 +2,16 @@ package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.ChapterProgress;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
 import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.dto.badge.BadgeRequestDto;
+import jpabasic.pinnolbe.dto.quiz.QuizType;
 import jpabasic.pinnolbe.dto.review.*;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.ChapterProgressRepository;
-import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
-import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.model.ReviewAITemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,8 +24,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
@@ -55,11 +51,37 @@ public class ReviewService {
      * @param chapterId
      * @return
      */
-    public ReviewQuizResDto restructureContent(String userId, String chapterId){
-        ReviewReqDto request=buildRequestDto(userId, chapterId);
+    public List<QuizReviewResponse> createQuizReview(int reviewCount, String userId, String chapterId){
+        QuizNotes notes=findQuizNotes(chapterId,reviewCount,userId);
+        List<QuizNotes.QuizRecord> records=notes.getRecords();
+        ReviewReqDto request=buildRequestDto(userId, chapterId,records);
         //AI를 통한 리뷰 퀴즈 생성
-        ReviewQuizResDto result=reviewAITemplate.makeReviewQuizByAI(request);
+        ReviewQuizResDto response=reviewAITemplate.makeReviewQuizByAI(request);
+        List<QuizReviewResponse> result =
+                response.getQuizTwins().stream()
+                        .map(q -> new QuizReviewResponse(
+                                q.getSourceQuizId(),
+                                q.getTwinQuestion(),
+//                                q.getCorrectAnswer(),
+                                q.getExplanation()
+                        ))
+                        .toList();
         return result;
+    }
+
+    /**
+     * 퀴즈 내역 찾기
+     */
+    private QuizNotes findQuizNotes(String chapterId,int reviewCount,String userId) {
+        QuizNotes notes;
+        if(reviewCount==1){
+            notes = quizNotesRepository.findByUserIdAndChapterIdAndQuizType(userId, chapterId, QuizType.MAIN_STUDY)
+                    .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
+        }else{
+            notes = quizNotesRepository.findByUserIdAndChapterIdAndQuizType(userId, chapterId, QuizType.FIRST_REVIEW)
+                    .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
+        }
+        return notes;
     }
 
     /**
@@ -68,8 +90,10 @@ public class ReviewService {
      * @param chapterId
      * @return
      */
-    public TextReviewResDto createTextReview(String userId, String chapterId){
-        ReviewReqDto request=buildRequestDto(userId, chapterId);
+    public TextReviewResDto createTextReview(int reviewCount,String userId, String chapterId){
+        QuizNotes notes=findQuizNotes(chapterId,reviewCount,userId);
+        List<QuizNotes.QuizRecord> records=notes.getRecords();
+        ReviewReqDto request=buildRequestDto(userId, chapterId,records);
         //AI를 통한 텍스트 리뷰 생성
         TextReviewResDto result=reviewAITemplate.makeTextReviewByAI(request);
         return result;
@@ -155,20 +179,16 @@ public class ReviewService {
     }
 
 
-    private ReviewReqDto buildRequestDto(String userId, String chapterId){
+    private ReviewReqDto buildRequestDto(String userId, String chapterId,List<QuizNotes.QuizRecord> records){
         Chapter chapter = chapterService.findChapter(chapterId);
         String bookId=chapter.getBookId();
 
         int bookLevel=bookService.getBooklevel(bookId);
-
-        QuizNotes notes = quizNotesRepository.findByUserIdAndChapterId(userId, chapterId)
-                .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
-
         return new ReviewReqDto(
                 userId,
                 bookLevel,
                 chapter.getOrder(),
-                notes.getRecords()
+                records
         );
     }
 

@@ -3,9 +3,11 @@ package jpabasic.pinnolbe.service.analyze;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
+import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.redis.StudySession;
 import jpabasic.pinnolbe.domain.study.Quiz;
 import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
+import jpabasic.pinnolbe.dto.quiz.QuizType;
 import jpabasic.pinnolbe.dto.quiz.SolvedQuizResDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -101,7 +103,7 @@ public class QuizService {
     }
 
     /// 틀린문제들 DB에 저장
-    public List<QuizNotes.QuizRecord> saveQuizes(List<QuizAnalyzeDto> results) {
+    public List<QuizNotes.QuizRecord> saveQuizes(List<QuizAnalyzeDto> results, QuizType quizType) {
         User user = userService.getUserInfo();
         //redis session에서 유저 현 진도 불러오기
         StudySession session = sessionFacade.getSessionByUser(user);
@@ -115,11 +117,30 @@ public class QuizService {
                 .toList();
 
         //quizNote 객체 생성 후 저장
-        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId, quizes);
+        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId, quizes,quizType);
         quizNotesRepository.save(quizNotes);
 
         return quizes;
     }
+
+
+    /// 복습하기 틀린문제들 DB에 저장
+    public List<QuizNotes.QuizRecord> saveReviewQuizes(List<QuizAnalyzeDto> results,String chapterId, QuizType quizType) {
+        User user = userService.getUserInfo();
+
+        //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
+        //⭐ description 추가해야
+        List<QuizNotes.QuizRecord> quizes = results.stream()
+                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getIsCorrect(), null))
+                .toList();
+
+        //quizNote 객체 생성 후 저장
+        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId, quizes,quizType);
+        quizNotesRepository.save(quizNotes);
+
+        return quizes;
+    }
+
 
     /// 내가 푼 문제 상세 페이지 조회
     public SolvedQuizResDto getSolvedQuizDetails(String chapterId) {
@@ -132,7 +153,7 @@ public class QuizService {
     /// 풀이한 문제들 조회
     private List<QuizNotes.QuizRecord> getQuizList(String chapterId) {
         User user = userService.getUserInfo();
-        QuizNotes notes = quizNotesRepository.findByUserIdAndChapterId(user.getId(), chapterId)
+        QuizNotes notes = quizNotesRepository.findByUserIdAndChapterIdAndQuizType(user.getId(), chapterId,QuizType.MAIN_STUDY)
                 .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
 
         List<QuizNotes.QuizRecord> result=notes.getRecords();
