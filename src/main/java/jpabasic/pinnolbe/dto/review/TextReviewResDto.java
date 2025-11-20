@@ -6,6 +6,7 @@ import lombok.Getter;
 
 @Data
 @Builder
+@Getter
 public class TextReviewResDto {
 
     private String userId;
