@@ -51,12 +51,21 @@ public class ReviewService {
      * @param chapterId
      * @return
      */
-    public ReviewQuizResDto createQuizReview(int reviewCount, String userId, String chapterId){
+    public List<QuizReviewResponse> createQuizReview(int reviewCount, String userId, String chapterId){
         QuizNotes notes=findQuizNotes(chapterId,reviewCount,userId);
         List<QuizNotes.QuizRecord> records=notes.getRecords();
         ReviewReqDto request=buildRequestDto(userId, chapterId,records);
         //AI를 통한 리뷰 퀴즈 생성
-        ReviewQuizResDto result=reviewAITemplate.makeReviewQuizByAI(request);
+        ReviewQuizResDto response=reviewAITemplate.makeReviewQuizByAI(request);
+        List<QuizReviewResponse> result =
+                response.getQuizTwins().stream()
+                        .map(q -> new QuizReviewResponse(
+                                q.getSourceQuizId(),
+                                q.getTwinQuestion(),
+//                                q.getCorrectAnswer(),
+                                q.getExplanation()
+                        ))
+                        .toList();
         return result;
     }
 

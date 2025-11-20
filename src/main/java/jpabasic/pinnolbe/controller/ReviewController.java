@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.quiz.QuizType;
-import jpabasic.pinnolbe.dto.review.ReviewListResDto;
-import jpabasic.pinnolbe.dto.review.ReviewQuizResDto;
-import jpabasic.pinnolbe.dto.review.TextReviewResDto;
-import jpabasic.pinnolbe.dto.review.TextReviewResponse;
+import jpabasic.pinnolbe.dto.review.*;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.BadgeService;
 import jpabasic.pinnolbe.service.ReviewService;
@@ -39,13 +36,13 @@ public class ReviewController {
     @GetMapping("/ai/quiz-review")
     @Operation(summary="[AI] 복습하기 - 퀴즈풀기",
         description = "오답노트 기반 맞춤 퀴즈 생성")
-    public ApiResponse<ReviewQuizResDto> newQuiz(
+    public ApiResponse<List<QuizReviewResponse>> newQuiz(
             @RequestParam int reviewCount,
             @RequestParam String chapterId
     ) {
         User user=userService.getUserInfo();
         String userId=user.getId();
-        ReviewQuizResDto result=reviewService.createQuizReview(reviewCount,userId,chapterId);
+        List<QuizReviewResponse> result=reviewService.createQuizReview(reviewCount,userId,chapterId);
         return ApiResponse.success("새로 생성된 퀴즈입니다.",result);
     }
 
