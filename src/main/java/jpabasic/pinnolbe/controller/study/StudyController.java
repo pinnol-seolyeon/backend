@@ -72,7 +72,7 @@ public class StudyController {
         WeeklyAnalysis analysis=weeklyAnalysisService.findThisWeekAnalysis(user.getId());
         int size=analysis.getCompletedChapters().size();
         ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
-        if(size>=2){
+        if(size>=5){ //✔️출시: (size>=2)으로
             result.setIsAvailable(false);
             return ApiResponse.success("이미 이번 주 할당량 학습을 모두 완료하였어요.", result);
         }
