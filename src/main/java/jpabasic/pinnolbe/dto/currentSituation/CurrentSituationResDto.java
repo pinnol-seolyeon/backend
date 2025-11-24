@@ -26,24 +26,9 @@ public class CurrentSituationResDto {
         private Double progress; //학습 진행률
         private int order; //chapter 순서
 
-        public CurrentChapterRes(String chapterId, String chapterTitle,int order,List<BadgeType> badgeType) {
-            super(chapterId, chapterTitle);
-            this.order = order;
-            this.badgeType = badgeType;
-        }
-
         public CurrentChapterRes(Chapter chapter) {
             super(chapter.getId().toString(),chapter.getChapterTitle());
             this.order=chapter.getOrder();
-        }
-
-        public static CurrentChapterRes fromEntity(Chapter chapter,int order,List<BadgeType> badgeType) {
-            return new CurrentChapterRes(
-                    chapter.getId().toString(),
-                    chapter.getChapterTitle(),
-                    order,
-                    badgeType
-            );
         }
 
         public static CurrentChapterRes toDto(Chapter chapter) {

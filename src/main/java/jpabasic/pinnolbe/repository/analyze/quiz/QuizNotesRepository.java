@@ -8,6 +8,5 @@ import java.util.Optional;
 
 public interface QuizNotesRepository extends MongoRepository<QuizNotes, String> {
 
-    Optional<QuizNotes> findByUserIdAndChapterId(String userId, String chapterId);
     Optional<QuizNotes> findByUserIdAndChapterIdAndQuizType(String userId, String chapterId, QuizType quizType);
 }

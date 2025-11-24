@@ -179,31 +179,4 @@ public class QuizService {
         return ((double) wrongNumbers / total) * 100.0;
     }
 
-
-//    /// 틀린 문제들 조회
-//    public QuizRecordDto getSolvedQuizes(String chapterId){
-//        User user = userService.getUserInfo();
-//        QuizNotes notes=quizNotesRepository.findByUserIdAndChapterId(user.getId(),chapterId)
-//                .orElseThrow(()->new CustomException(ErrorCode.QUIZ_NOTES_NOT_FOUND));
-//        String quizNotesId=notes.getId();
-//
-//        List<QuizRecord> records=quizRecordRepository.findAllByQuizNotesId(quizNotesId);
-//
-//        List<String> quizIds=records.stream()
-//                .map(QuizRecord::getQuizId)
-//                .toList();
-//        //quizId -> question 매핑
-//        Map<String,String> quizMap=quizRepository.findAllById(quizIds).stream()
-//                .collect(Collectors.toMap(Quiz::getId,Quiz::getQuiz));
-//        List<QuizRecordDto.EachQuiz> eachQuizes=records.stream()
-//                .map(record->new QuizRecordDto.EachQuiz(
-//                        quizMap.getOrDefault(record.getQuizId(),"질문 없음"),
-//                        record,
-//                        record.
-//                ))
-//                .toList();
-//
-//        return new QuizRecordDto(chapterId,eachQuizes);
-//
-//    }
 }

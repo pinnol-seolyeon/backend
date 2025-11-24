@@ -67,15 +67,6 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-//        // Key serializer → String
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setHashKeySerializer(new StringRedisSerializer());
-//
-//        // Value serializer → JSON
-//        template.setValueSerializer(valueSerializer());
-//        template.setHashValueSerializer(valueSerializer());
-//
-//        template.afterPropertiesSet();
         //직렬화 설정
         GenericJackson2JsonRedisSerializer serializer=
                 new GenericJackson2JsonRedisSerializer(objectMapper());

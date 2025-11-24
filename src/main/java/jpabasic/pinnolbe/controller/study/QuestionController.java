@@ -8,6 +8,7 @@ import jpabasic.pinnolbe.service.question.QuestionService;
 import jpabasic.pinnolbe.service.question.SseService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,24 +17,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/question")
+@RequiredArgsConstructor
 public class QuestionController {
 
     private final QuestionService questionService;
     private final UserService userService;
     private final StudyLogService studyLogService;
     private final SseService sseService;
-    private final QuestionTempCache tempCache;
-
-    public QuestionController(
-        QuestionService questionService, UserService userService,
-        StudyLogService studyLogService,SseService sseService,
-        QuestionTempCache tempCache) {
-        this.questionService = questionService;
-        this.userService = userService;
-        this.studyLogService = studyLogService;
-        this.sseService = sseService;
-        this.tempCache = tempCache;
-    }
 
 
     @GetMapping(value="/stream",produces= MediaType.TEXT_EVENT_STREAM_VALUE)
