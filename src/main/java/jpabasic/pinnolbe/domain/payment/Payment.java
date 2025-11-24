@@ -1,11 +1,14 @@
 package jpabasic.pinnolbe.domain.payment;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jpabasic.pinnolbe.domain.BaseEntity;
 import jpabasic.pinnolbe.dto.payment.PayType;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 @Document(collection="payment")
 @Schema(description="결제 정보 엔티티")
@@ -14,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Payment{
+public class Payment extends BaseEntity {
     @Id
     private String id;
     private PayType payType;
@@ -29,7 +32,7 @@ public class Payment{
 
     private String payFailReason;
 
-    private String createDate;
+//    private String createDate;
 
     public PaymentResponseDto toDto(String paySuccessYn){
         return PaymentResponseDto.builder()
@@ -39,7 +42,7 @@ public class Payment{
                 .orderName(orderName)
                 .customerEmail(customerEmail)
                 .customerName(customerName)
-                .createDate(createDate)
+                .createDate(LocalDateTime.now().toString())
                 .paySuccessYn(paySuccessYn)
                 .build();
     }

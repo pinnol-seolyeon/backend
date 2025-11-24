@@ -34,7 +34,7 @@ public class PaymentController {
             @Parameter(description = "에러 코드",required = true) @RequestParam(name="code") String errorCode,
             @Parameter(description = "에러 메시지",required = true) @RequestParam(name="message") String errorMsg,
             @Parameter(description = "우리측 주문 고유 번호",required = true) @RequestParam(name="orderId") String orderId
-            
+
     ){
         PaymentFailResDto result=tossPaymentService.requestFail(errorCode,errorMsg,orderId);
         return ApiResponse.success("결제 승인 완료",result);
@@ -43,9 +43,14 @@ public class PaymentController {
     @GetMapping("/success")
     @Operation(summary="결제 성공 리다이렉트",description="결제 성공 시 paymentKey 등 반환")
     public ApiResponse<PaymentResponseDto> successPayment(
-            PaymentResponseDto request
-            )
-            tossPaymentService.successPayment(request)
+            @Parameter(description="서비스에서 정한 주문 고유번호",required=true) @RequestParam(name="orderId") String orderId,
+            @Parameter(description="토스페이먼츠에서 정한 결제 구분용 키 ",required=true) @RequestParam(name="paymentKey") String paymentKey,
+            @Parameter(description="개수",required=true) @RequestParam(name="amount") int amount
+            ){
+        return ApiResponse.success("결제 승인 완료",null);
+    }
+//            tossPaymentService.successPayment(request)
+
 
 
 

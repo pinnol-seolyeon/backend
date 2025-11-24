@@ -6,6 +6,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.redis.core.index.Indexed;
+import jakarta.persistence.MappedSuperclass;
+
 
 import java.time.LocalDateTime;
 
@@ -16,7 +18,7 @@ public abstract class BaseEntity {
     @CreatedDate
     @Field("createdAt")
     @Indexed
-    private LocalDateTime createdAt;
+    public LocalDateTime createdAt;
 
     @LastModifiedDate
     @Field("updatedAt")

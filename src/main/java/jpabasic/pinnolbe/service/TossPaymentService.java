@@ -1,7 +1,6 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.payment.Payment;
-import jpabasic.pinnolbe.dto.payment.PaymentCancelDto;
 import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
@@ -11,19 +10,10 @@ import jpabasic.pinnolbe.repository.payment.PaymentRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -35,14 +25,14 @@ public class TossPaymentService {
     @Value("${payments.toss.secret-key}")
     private String testSecretApiKey;
 
-    @Value("${payments.toss.success_url}")
+    @Value("${payments.toss.success-url}")
     private String successCallBackUrl;
 
-    @Value("${payments.toss.fail_url}")
+    @Value("${payments.toss.fail-url}")
     private String failCallBackUrl;
 
-    @Value("${payments.toss.cancel_url}")
-    private String tossOriginalUrl;
+//    @Value("${payments.toss.cancel_url}")
+//    private String tossOriginalUrl;
 
 
     /*
@@ -93,16 +83,21 @@ public class TossPaymentService {
                     .ifPresentOrElse(
                             M->M.addPayment(payment)
                             ,()->{
-                                throw new CustomException(ErrorCode.USER_NOT_FOUND);
+                                throw new CustomException(ErrorCode.PAYMENT_USER_EMAIL_NOT_FOUND);
                             }
                     );
             paymentRes =payment.toDto("Y");
+
+            System.out.println("successCallBackUrl = " + successCallBackUrl);
+            System.out.println("failCallBackUrl = " + failCallBackUrl);
+
             paymentRes.setSuccessUrl(successCallBackUrl);
             paymentRes.setFailUrl(failCallBackUrl);
 
             paymentRepository.save(payment);
             return paymentRes;
         }catch(Exception e){
+            e.printStackTrace();
             throw new CustomException(ErrorCode.DB_ERROR_SAVE);
         }
     }
@@ -110,45 +105,45 @@ public class TossPaymentService {
     /**
      * 결제 취소 요청
      */
-    @Transactional
-    public boolean requestPaymentCancel(String paymentKey,String cancelReason){
-        RestTemplate template=new RestTemplate();
-        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
-
-        HttpHeaders headers=new HttpHeaders();
-        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
-        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        JSONObject param=new JSONObject();
-        param.put("cancelReason",cancelReason);
-
-        PaymentCancelDto paymentCancelDto;
-        try{
-            paymentCancelDto=template.postForObject(
-                    uri,
-                    new HttpEntity<>(param,headers),
-                    PaymentCancelDto.class
-            );
-        }catch(Exception e){
-            throw new CustomException(ErrorCode.PAYMENT_CANCEL_ERROR);
-        }
-
-        if(paymentCancelDto==null) return false;
-
-        Long cancelAmount=paymentCancelDto.getCancels()[0].getCancelAmount();
-        try{
-            paymentRepository
-                    .findByPaymentKey(paymentKey)
-                    .filter(P->P.getAmount().equals(cancelAmount))
-                    .orElseThrow(()->new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NOTFOUND))
-                    .getCustomer()
-                    .addCancelPayment(paymentCancelDto.toCancelPayment());
-            return true;
-        }catch(Exception e){
-            throw new CustomException(ErrorCode.DB_ERROR_SAVE);
-        }
-
-    }
+//    @Transactional
+//    public boolean requestPaymentCancel(String paymentKey,String cancelReason){
+//        RestTemplate template=new RestTemplate();
+//        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
+//
+//        HttpHeaders headers=new HttpHeaders();
+//        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
+//        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+//
+//        JSONObject param=new JSONObject();
+//        param.put("cancelReason",cancelReason);
+//
+//        PaymentCancelDto paymentCancelDto;
+//        try{
+//            paymentCancelDto=template.postForObject(
+//                    uri,
+//                    new HttpEntity<>(param,headers),
+//                    PaymentCancelDto.class
+//            );
+//        }catch(Exception e){
+//            throw new CustomException(ErrorCode.PAYMENT_CANCEL_ERROR);
+//        }
+//
+//        if(paymentCancelDto==null) return false;
+//
+//        Long cancelAmount=paymentCancelDto.getCancels()[0].getCancelAmount();
+//        try{
+//            paymentRepository
+//                    .findByPaymentKey(paymentKey)
+//                    .filter(P->P.getAmount().equals(cancelAmount))
+//                    .orElseThrow(()->new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NOTFOUND))
+//                    .getCustomer()
+//                    .addCancelPayment(paymentCancelDto.toCancelPayment());
+//            return true;
+//        }catch(Exception e){
+//            throw new CustomException(ErrorCode.DB_ERROR_SAVE);
+//        }
+//
+//    }
 }

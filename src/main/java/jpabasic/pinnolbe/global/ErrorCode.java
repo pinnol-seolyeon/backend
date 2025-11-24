@@ -68,6 +68,7 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"payment-005","해당 결제 정보가 없습니다."),
     PAYMENT_CANCEL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"payment-006", "결제 취소 중 오류가 발생했어요."),
     PAYMENT_ERROR_ORDER_NOTFOUND(HttpStatus.NOT_FOUND,"payment-007", "해당 주문을 찾을 수가 없어요."),
+    PAYMENT_USER_EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"payment-008", "결제에 사용할 유저 이메일을 찾을 수 없어요."),
 
     //DB관련
     DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요.");

@@ -32,7 +32,6 @@ public class PaymentRequestDto {
                 .customerEmail(customerEmail)
                 .customerName(customerName)
                 .paySuccessYn("Y")
-                .createDate(LocalDate.now().toString())
                 .build();
     }
 }
