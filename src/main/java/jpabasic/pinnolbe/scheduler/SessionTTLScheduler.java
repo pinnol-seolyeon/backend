@@ -17,24 +17,55 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class SessionTTLScheduler {
 
-    private final RedisTemplate<String, StudySession> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final StudySessionService studySessionService;
+    private static final long SESSION_TTL = 60 * 60; // 1시간 TTL
+    private static final long SAVE_MARGIN=60; //1분 
 
+    long now=System.currentTimeMillis();
+    long expiredCutoff=now-SESSION_TTL*1000;
+    long expireSoonCutoff=now-(SESSION_TTL*1000)+(SAVE_MARGIN*1000); //TTL 1분 남은 세션들 찾기 위한 cutoff
+
+    /// 이미 TTL로 삭제된 dead-key 정리
     @Scheduled(fixedDelay = 60 * 1000) // 1분마다
-    private void flushExpiringSessions() {
-        Set<String> keys = redisTemplate.keys("study:session:*");
-        if (keys == null || keys.isEmpty()) return;
+    private void flushExpiredSessions() {
+        //오래된 세션만 가져오기
+        Set<Object> expired=redisTemplate.opsForZSet()
+                .rangeByScore("index:study:sessions",0,expiredCutoff);
 
-        for (String key : keys) {
-            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
-            if (ttl != null && ttl <= 60) {
-                StudySession session = redisTemplate.opsForValue().get(key);
-                if (session == null) continue;
+        for(Object k:expired){
+            String sessionKey=(String) k;
 
-                session.setStatus(Status.EXITED);
+            //Value는 이미 TTL로 사라졌을 확률이 높음
+            StudySession session= (StudySession) redisTemplate.opsForValue().get(sessionKey);
+
+            //Session==null -> TTL 삭제된 dead key
+            //session!=null -> 의도치 않은 지연 -> DB저장
+            if(session!=null){
+                session.setStatus(Status.EXIT);
                 studySessionService.saveToDatabase(session);
-                redisTemplate.delete(key);
-                log.info("[TTL] TTL 만료 세션 정리: {} (남은 TTL={}초)", key, ttl);
+                redisTemplate.delete(sessionKey);
+            }
+
+            //인덱스 제거
+            redisTemplate.opsForZSet().remove("index:study:sessions",sessionKey);
+        }
+
+    }
+
+    /// TTL 직전이어서 DB에 저장해야 하는 세션들
+    @Scheduled(fixedDelay = 60 * 1000) // 1분마다
+    private void flushSoonExpiringSessions() {
+        Set<Object> expiringSoon=redisTemplate.opsForZSet()
+                .rangeByScore("index:study:sessions",0,expireSoonCutoff);
+        for(Object k:expiringSoon){
+            String sessionKey=(String) k;
+            StudySession session= (StudySession) redisTemplate.opsForValue().get(sessionKey);
+            if(session!=null){
+                session.setStatus(Status.EXIT);
+                studySessionService.saveToDatabase(session);
+                redisTemplate.delete(sessionKey);
+                redisTemplate.opsForZSet().remove("index:study:sessions",sessionKey);
             }
         }
     }

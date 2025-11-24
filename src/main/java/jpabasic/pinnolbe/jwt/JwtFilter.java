@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -30,11 +31,19 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final TokenService tokenService;
 
+    private static final List<String> EXCLUDE_URLS = List.of(
+            "/", "/loginForm", "/api/oauth", "/swagger-ui", "/health-check",
+            "/v3/api-docs", "/swagger-resources", "/api/SSE","/api/question"
+    );
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String requestUri = request.getRequestURI();
+        String path=request.getRequestURI();
+//
+//        String requestUri = request.getRequestURI();
 //        String accessToken = null;
 //        String refreshToken = null;
 

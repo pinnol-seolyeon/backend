@@ -23,6 +23,8 @@ public interface QueCollectionRepository extends MongoRepository<QueCollection, 
             LocalDateTime end
     );
 
+    Optional<QueCollection> findByUserIdAndDate(String userId, LocalDate start);
+
 
 
 }

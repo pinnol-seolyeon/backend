@@ -1,23 +1,18 @@
-package jpabasic.pinnolbe.controller;
+package jpabasic.pinnolbe.controller.study;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.domain.question.QueCollection;
-import jpabasic.pinnolbe.dto.question.QuestionRequest;
-import jpabasic.pinnolbe.dto.question.QuestionResponse;
-import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
+import jpabasic.pinnolbe.dto.question.*;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.question.QuestionService;
+import jpabasic.pinnolbe.service.question.SseService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
 import jpabasic.pinnolbe.service.login.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/question")
@@ -26,22 +21,34 @@ public class QuestionController {
     private final QuestionService questionService;
     private final UserService userService;
     private final StudyLogService studyLogService;
+    private final SseService sseService;
+    private final QuestionTempCache tempCache;
 
-public QuestionController(QuestionService questionService, UserService userService, StudyLogService studyLogService) {
+    public QuestionController(
+        QuestionService questionService, UserService userService,
+        StudyLogService studyLogService,SseService sseService,
+        QuestionTempCache tempCache) {
         this.questionService = questionService;
         this.userService = userService;
         this.studyLogService = studyLogService;
+        this.sseService = sseService;
+        this.tempCache = tempCache;
     }
 
 
-    @PostMapping("")
-    @Operation(summary="질문하기")
-    public ApiResponse<QuestionResponse> askQuestion(@RequestBody Map<String,String> q) {
+    @GetMapping(value="/stream",produces= MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary="[AI] 질문하기 실시간 응답")
+    public SseEmitter streamChat(
+            @RequestParam String question
+    ){
         User user=userService.getUserInfo();
-        String question=q.get("question");
-        //AI로부터 응답받기
-        QuestionResponse response=questionService.askQuestion(question,user);
-        return ApiResponse.success("질문 저장 완료",response);
+
+        //request body 생성
+        QuestionRequest request=questionService.askQuestion(question,user);
+
+        //실시간 SSE 즉시 반환
+        StreamingResultDto result=sseService.askQuestionStream(request);
+        return result.getEmitter();
     }
 
           
@@ -54,7 +61,7 @@ public QuestionController(QuestionService questionService, UserService userServi
         User user=userService.getUserInfo();
         try {
             //질문한 내용들 DB에 저장
-            List<String> questions=questionService.saveAllQAs(user, chapterId);
+            List<String> questions=questionService.commitUserSession(user.getId(), chapterId);
             System.out.println("✔️ 질문한 내용들 DB에 저장 완료");
             //weeklyAnalysis에 질문개수 업데이트 (참여도)
             questionService.updateWeeklyQuestionCount(user);

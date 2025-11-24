@@ -9,18 +9,15 @@ import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponse;
+import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
-import jpabasic.pinnolbe.repository.study.BookRepository;
-import jpabasic.pinnolbe.repository.study.ChapterRepository;
-import jpabasic.pinnolbe.repository.study.StudyRepository;
-import jpabasic.pinnolbe.repository.study.UserFeedbackRepository;
-import jpabasic.pinnolbe.service.analyze.QuizService;
+import jpabasic.pinnolbe.repository.study.*;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
@@ -41,7 +38,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static jpabasic.pinnolbe.dto.study.ChapterDto.convertDto;
 
@@ -53,10 +49,10 @@ public class StudyService {
   private final ChapterRepository chapterRepository;
   private final StudyRepository studyRepository;
   private final UserRepository userRepository;
-  private final Map<String,FeedBackResponse> sessionStore=new ConcurrentHashMap<>();
+  private final Map<String, FeedBackResponseDto> sessionStore=new ConcurrentHashMap<>();
   private final UserFeedbackRepository userFeedbackRepository;
   private final AskQuestionTemplate askQuestionTemplate;
-  private final QuizService quizService;
+  private final QuizRepository quizRepository;
 
   @Autowired
   WebClient webClient;
@@ -106,12 +102,11 @@ public class StudyService {
                 System.out.println("result:"+result);
                 break;
             }
-            case 4:
-                List<Quiz> quiz=quizService.getQuiz(chapterId,5);
-                Map<String,Object> quizes=new HashMap<>();
-                quizes.put("quiz",quiz);
-                System.out.println("result:"+result);
-                return quizes;
+            case 4: {
+                List<Quiz> quiz = quizRepository.findByChapterId(chapterId);
+                Collections.shuffle(quiz);
+                result.put("quiz", quiz.stream().limit(5).toList());
+            }
             case 5:{
                 String summary=chapterDto.getSummary();
                 String summaryImgUrl=chapterDto.getSummaryImgUrl();
@@ -207,7 +202,7 @@ public class StudyService {
                 weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
                         .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
 
-        List<String> completed=weeklyAnalysis.getCompletedChapters();
+        List<WeeklyAnalysis.CompletedChapter> completed=weeklyAnalysis.getCompletedChapters();
         if (completed == null) return new StudyStatsDto(0);
 
         int total = completed.size();
@@ -244,19 +239,16 @@ public class StudyService {
 
 
     //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
-    public QuestionResponse getFeedback(User user, FeedBackRequestDto request){
+    public AiFeedBackResponseDto getFeedback(User user, FeedBackRequestDto request){
         String userId= user.getId();
-        String question=request.getQuestion();
 
         // AI에 유저의 질문 전달
         try {
-            /// AI 수정 필요
-            QuestionResponse answer = askQuestionTemplate.feedbackQuestionToAI(request);
-
+            AiFeedBackResponseDto answer = askQuestionTemplate.feedbackQuestionToAI(request,userId);
 
             //사용자 세션 가져오기
-            FeedBackResponse session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponse());
-            session.add(request.getQuestion(),request.getUserAnswer(),answer.getResult());
+//            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());
+//            session.add(request.getQuiz(),request.getUserAnswer(),answer.getResult());
 
             // AI의 답변 내용을 반환
             return answer;
@@ -271,7 +263,7 @@ public class StudyService {
     //모든 피드백 저장
     public void saveAllFeedBacks(User user,String chapterId){
         String userId=user.getId();
-        FeedBackResponse session=sessionStore.get(userId);
+        FeedBackResponseDto session=sessionStore.get(userId);
 
         if(session==null||session.getQuestions().isEmpty()) return;
 
@@ -360,6 +352,7 @@ public class StudyService {
     public ChapterListResponseDto getChapterList(User user, String bookId,int page){
         String currentChapterId;
         StudySessionLog log;
+        int currentLevel;
 
         //해당 교재의 모든 chapter List
         Slice<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId,page,5);
@@ -369,22 +362,25 @@ public class StudyService {
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
             currentChapterId = "682829708c776a1ffa92fd50"; // 첫 교재,첫 챕터 하드코딩
+            currentLevel = 1;
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
                 log = optLog.get();
                 System.out.println("currentChapterId 가져오기");
                 currentChapterId = log.getChapterId();
+                currentLevel = log.getLevel();
             } else {
                 currentChapterId = "682829708c776a1ffa92fd50"; // fallback
+                currentLevel = 1;
             }
         }
         //dto로 변환
-        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,chapters);
+        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,currentLevel,chapters);
         return result;
     }
 
-    private Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
+    public Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
 

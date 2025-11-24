@@ -1,16 +1,18 @@
 package jpabasic.pinnolbe.service.study;
 
+import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
+import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.domain.study.Study;
 import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
 import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapter;
+import jpabasic.pinnolbe.dto.study.CompletedChapterDto;
 import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
 import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
@@ -197,7 +199,7 @@ public class StudyLogService {
         Study study = studyRepository.findById(new ObjectId(studyId))
                 .orElseThrow(() -> new IllegalArgumentException("해당 study를 찾을 수 없습니다"));
 
-        Set<CompletedChapter> chapters = study.getCompleteChapter();
+        Set<CompletedChapterDto> chapters = study.getCompleteChapter();
 
         assert chapters != null;
         if (chapters.isEmpty()) {
@@ -235,7 +237,7 @@ public class StudyLogService {
 
         Map<String, Integer> timeTypeCount = new HashMap<>();
 
-        for (CompletedChapter cc : chapters) {
+        for (CompletedChapterDto cc : chapters) {
             //test
 
             LocalDateTime completed = cc.getCompletedAt();
@@ -296,9 +298,9 @@ public class StudyLogService {
     /// 이번 주 학습완료한 단원 개수 ///이번주 = (월요일 00:00~일요일 23:59)
     public FinishChaptersDto getCompletedWeek(String studyId){
         Study study=studyService.getStudyByString(studyId);
-        Set<CompletedChapter> completedChapters=study.getCompleteChapter();
+        Set<CompletedChapterDto> completedChapterDtos =study.getCompleteChapter();
         
-        if(completedChapters==null){
+        if(completedChapterDtos ==null){
             return new FinishChaptersDto(0,0); //완료 단원이 아예 없을 경우
         }
 
@@ -311,14 +313,14 @@ public class StudyLogService {
 
 
         //이번 주에 완료된 단원만 필터링
-        long weekCount=completedChapters.stream()
+        long weekCount= completedChapterDtos.stream()
                 .filter(ch->{
                     LocalDateTime completed=ch.getCompletedAt();
                     return completed!=null && !completed.isBefore(start)&&completed.isBefore(end);
                 })
                 .count();
 
-        long totalCount= completedChapters.size();
+        long totalCount= completedChapterDtos.size();
         return new FinishChaptersDto((int) weekCount,(int) totalCount);
     }
 
@@ -406,27 +408,46 @@ public class StudyLogService {
     }
 
     //현재 학습 중인 단원 + 레벨 제공
-    public NowStudyingLevelDto getNowStudyingLevel(User user,String sessionLogId){
+    public NowStudyingLevelDto getNowStudyingLevel(User user) {
 
-        List<StudySessionLog> list=studySessionLogRepository.findByUserId(sessionLogId);
-        StudySessionLog latestLog=list.stream()
-                .max(Comparator.comparing(StudySessionLog::getCreatedAt))//createdAt 기준으로 가장 최신
-                .orElseThrow(()->new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND)); //현재 진행 중인 레벨 없음
+        //현재 진행 중인 레벨이 user 필드에 studySessionLogId로 저장되어 있는 경우
+        if (user.getStudySessionLogId() != null) {
+            StudySessionLog log = studySessionLogRepository.findById(user.getStudySessionLogId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_ID_NOT_FOUND));
+            return toDto(log, 0);
+        }
 
-//        String studySessionLogId=user.getStudySessionLogId();
-//        StudySessionLog latestLog=studySessionLogRepository.findById(studySessionLogId).orElse(null);
+        List<StudySessionLog> list = studySessionLogRepository.findByUserId(user.getId());
+        StudySessionLog latestLog = list.stream()
+                .max(Comparator.comparing(StudySessionLog::getCreatedAt))
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_LOG_NOT_FOUND));
 
-        String chapterId=latestLog.getChapterId();
-        int level=latestLog.getLevel();
+        return latestLog.getStatus() == Status.COMPLETED
+                ? toDto(latestLog, 1)
+                : toDto(latestLog, 0);
 
-        Chapter chapter=chapterRepository.findById(chapterId).orElse(null);
-        String chapterTitle=chapter.getChapterTitle();
-
-        NowStudyingLevelDto result=new NowStudyingLevelDto(chapterTitle,level);
-        return result;
     }
 
+    private NowStudyingLevelDto toDto(StudySessionLog log, int levelOffset) {
+        Chapter chapter=chapterRepository.findById(log.getChapterId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+        ObjectId objectId=new ObjectId(log.getBookId());
+        Book book=bookRepository.findById(objectId)
+                .orElseThrow(()->new IllegalArgumentException("해당 책이 없어요."));
+        String bookTitle=book.getTitle();
+        int bookLevel=book.getBookLevel();
+        int targetLevel=log.getLevel()+levelOffset;
+        return new NowStudyingLevelDto(
+                bookLevel,
+                bookTitle,
+                log.getChapterId(),
+                chapter.getChapterTitle(),
+                targetLevel
+        );
+    }
 
-
-
+    public StudySessionLog findStudySessionLog(String sessionId){
+        return studySessionLogRepository.findById(sessionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDY_SESSION_ID_NOT_FOUND));
+    }
 }

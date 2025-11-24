@@ -9,7 +9,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NowStudyingLevelDto {
 
+    private int bookLevel;
+    private String bookTitle;
+    private String chapterId;
     private String chapterTitle;
     private int currentLevel;
+
 
 }

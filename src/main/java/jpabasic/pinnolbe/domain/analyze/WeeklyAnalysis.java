@@ -37,7 +37,7 @@ public class WeeklyAnalysis {
     private ExpressionData expressionData;//표현력
     private WeeklyTimeZone weeklyTimeZone;//주간 학습 시간대+학습 시간(추가된 내용)
 
-    private List<String> completedChapters=new ArrayList<>(); //학습완료한 chapter들
+    private List<CompletedChapter> completedChapters=new ArrayList<>(); //학습완료한 chapter들
 
     private LocalDateTime analyzedAt;
 
@@ -68,12 +68,16 @@ public class WeeklyAnalysis {
     }
 
     @Getter @Setter
-    @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class UnderstandingData {
-        private int correct=0;
-        private int total=0;
+        private int correct;
+        private int total;
+
+        public UnderstandingData(){
+            this.correct=0;
+            this.total=0;
+        }
     }
 
     @Getter @Setter
@@ -107,8 +111,14 @@ public class WeeklyAnalysis {
         }
     }
 
-    public WeeklyAnalysis(String userId){
-        this.userId = userId;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CompletedChapter{
+        private String chapterId;
+        //학습하기 완료 날짜
+        private LocalDate completedAt;
     }
 
     public WeeklyAnalysis(String userId,LocalDate weekStartDate){

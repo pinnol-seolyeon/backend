@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class StudySessionSummaryDto {
 
     private String userId;
+    private String bookId;
     private String chapterId;
     @Schema(description = "현재 학습 하고 있는 level")
     private int level;
