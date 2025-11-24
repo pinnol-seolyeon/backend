@@ -31,21 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final TokenService tokenService;
 
-    private static final List<String> EXCLUDE_URLS = List.of(
-            "/", "/loginForm", "/api/oauth", "/swagger-ui", "/health-check",
-            "/v3/api-docs", "/swagger-resources", "/api/SSE","/api/question"
-    );
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String requestUri = request.getRequestURI();
-        String path=request.getRequestURI();
-//
-//        String requestUri = request.getRequestURI();
-//        String accessToken = null;
-//        String refreshToken = null;
 
 
         //Swagger,API Docs 요청은 필터에서 그냥 통과
@@ -122,25 +111,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         response.addCookie(expiredAuth);
         response.addCookie(expiredRefresh);
-    }
-
-
-
-
-    public void validateTokens(String accessToken, String refreshToken) {
-
-        if (accessToken == null && refreshToken == null) {
-            throw new CustomException(ErrorCode.NO_COOKIE);
-        }
-
-        if (accessToken == null) {
-            throw new CustomException(ErrorCode.REISSUE_TOKEN);
-        }
-
-        if (jwtUtil.isExpired(accessToken)){
-            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
-        }
-
     }
 
 

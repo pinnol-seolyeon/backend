@@ -76,26 +76,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             userService.saveNewRefreshToken(username,refreshToken);
         }
 
-//        if (token.isPresent()) {
-//            String existingToken = token.get().getToken();
-//            System.out.println("🖥️ existingToken: " + existingToken);
-//
-//            if (!jwtUtil.isExpired(existingToken)) { //만료 X
-//                // jwtUtil.isExpired=true인 경우 실행됨
-//                refreshToken = existingToken;
-//                userService.saveExistingRefreshToken(username, refreshToken);
-//            }else { //만료 O
-//                    //  만료 → 새로 발급
-//                    userService.deleteExpiredRefreshToken(token.get());
-//                    refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
-//                    userService.saveNewRefreshToken(username, refreshToken);
-//                }
-//        }else{ //refreshToken이 null 인 경우
-//            refreshToken = jwtUtil.createJwt(username, role, 14 * 24 * 60 * 60 * 1000L);
-//            userService.saveNewRefreshToken(username, refreshToken);
-//        }
-
-
 
         //토큰은 쿠키 방식으로 프론트 측에 전달 -> 리다이렉트
         //access Token

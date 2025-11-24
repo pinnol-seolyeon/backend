@@ -9,11 +9,6 @@ import java.util.Optional;
 
 public interface StudySessionLogRepository extends MongoRepository<StudySessionLog, String> {
     Optional<StudySessionLog> findByUserIdAndChapterIdAndLevel(String userId,String chapterId, int level);
-    List<StudySessionLog> findByUserIdAndCreatedAtBetween(
-            String userId,
-            LocalDateTime startOfDay,
-            LocalDateTime endOfDay
-    );
 
     List<StudySessionLog> findByUserId(String userId);
 

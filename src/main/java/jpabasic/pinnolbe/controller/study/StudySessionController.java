@@ -9,6 +9,7 @@ import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,16 +17,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/session")
+@RequiredArgsConstructor
 public class StudySessionController {
 
-    @Autowired
-    private StudySessionService studySessionService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private StudyService studyService;
-    @Autowired
-    private WeeklyAnalysisService weeklyAnalysisService;
+    private final StudySessionService studySessionService;
+    private final UserService userService;
+    private final StudyService studyService;
+    private final WeeklyAnalysisService weeklyAnalysisService;
 
     @GetMapping
 
