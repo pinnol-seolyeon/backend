@@ -7,21 +7,18 @@ import jpabasic.pinnolbe.dto.quiz.QuizType;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.BadgeService;
 import jpabasic.pinnolbe.service.analyze.QuizService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/quiz-result")
 public class QuizAnalyzeController {
 
     private final QuizService quizService;
     private final BadgeService badgeService;
-
-    public QuizAnalyzeController(QuizService quizService, BadgeService badgeService) {
-        this.quizService = quizService;
-        this.badgeService=badgeService;
-    }
 
     // 이해도
     @PostMapping("")

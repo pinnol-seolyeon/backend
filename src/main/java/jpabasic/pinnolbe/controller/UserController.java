@@ -19,16 +19,10 @@ import java.util.Map;
 @Slf4j
 public class UserController {
 
-    private final UserRepository userRepository;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
 
-    public UserController(UserRepository userRepository,
-                          UserService userService,
-                          JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
     }
 
     @PatchMapping("/parents/phone-number")

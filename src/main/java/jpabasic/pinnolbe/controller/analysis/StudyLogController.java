@@ -38,7 +38,6 @@ public class StudyLogController {
     private final UserService userService;
     private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
-    private final QuestionService questionService;
     private final RadarScoreService radarScoreService;
 
     @GetMapping("/this-week/chapters")

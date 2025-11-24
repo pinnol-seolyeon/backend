@@ -22,7 +22,6 @@ public interface ChapterRepository extends MongoRepository<Chapter, ObjectId> {
     Optional<Chapter> findById(String id);
 
     Optional<Chapter> findByBookIdAndOrder(String bookId, int order);
-    // order 필드가 특정 값보다 작은 Chapter 전부 조회
-    Slice<Chapter> findByBookIdAndOrderLessThan(String bookId,int order,Pageable pageable);
+
 
 }

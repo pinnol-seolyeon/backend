@@ -5,52 +5,33 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
-import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.repository.UserRepository;
-import jpabasic.pinnolbe.repository.study.StudyRepository;
 import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
 import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Slice;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/study")
 @Slf4j
+@RequiredArgsConstructor
 public class StudyController {
-    private final StudyRepository studyRepository;
-    private final UserRepository userRepository;
+
     private final UserService userService;
     private final StudyService studyService;
-    private final AmazonS3 amazonS3;
-    private final AmazonS3Client amazonS3Client;
-    private final StudySessionService studySessionService;
     private final WeeklyAnalysisService weeklyAnalysisService;
-
-    public StudyController(StudyRepository studyRepository, UserRepository userRepository, UserService userService, StudyService studyService, AmazonS3 amazonS3, AmazonS3Client amazonS3Client, StudySessionService studySessionService, WeeklyAnalysisService weeklyAnalysisService) {
-        this.studyRepository = studyRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.studyService = studyService;
-        this.amazonS3 = amazonS3;
-        this.amazonS3Client = amazonS3Client;
-        this.studySessionService = studySessionService;
-        this.weeklyAnalysisService = weeklyAnalysisService;
-    }
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
-
 
     @GetMapping("/book-select")
     @Operation(summary="교재 리스트 제공")

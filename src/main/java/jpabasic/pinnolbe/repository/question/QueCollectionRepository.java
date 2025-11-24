@@ -14,9 +14,6 @@ import java.util.Optional;
 public interface QueCollectionRepository extends MongoRepository<QueCollection, String> {
         List<QueCollection> findByUserId(String userId);
 
-    List<QueCollection> findByUserIdAndDateBetween(String userId, LocalDateTime start, LocalDateTime end);
-
-
     List<QueCollection> findAllByUserIdAndCreatedAtBetween(
             String userId,
             LocalDateTime start,
