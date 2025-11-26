@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentRequestDto {
-    @Schema(description="지불방법", example="CARD",allowableValues = {"CARD"})
+    @Schema(description="지불방법", example="CARD",allowableValues = {"CARD","EASY_PAY"})
     private PayType payType;
     @Schema(description="지불금액")
     private Long amount;

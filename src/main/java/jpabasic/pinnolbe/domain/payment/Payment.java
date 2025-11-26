@@ -31,8 +31,7 @@ public class Payment extends BaseEntity {
     private String customerName;
 
     private String payFailReason;
-
-//    private String createDate;
+    private String paymentKey;
 
     public PaymentResponseDto toDto(String paySuccessYn){
         return PaymentResponseDto.builder()

@@ -87,7 +87,9 @@ public class SecurityConfig {
 
                                 // --- 👇 SSE 및 비동기 처리용 API ---
                                 "/api/question/stream",
-                                "/api/session/commit"
+                                "/api/session/commit",
+                                "/api/payment/**",
+                                "/payment/**"
                         ).permitAll()
 
                         // --- 👇 그 외는 인증 필요 ---

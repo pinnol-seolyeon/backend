@@ -3,6 +3,7 @@ package jpabasic.pinnolbe.service;
 import jpabasic.pinnolbe.domain.payment.Payment;
 import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
+import jpabasic.pinnolbe.dto.payment.PaymentResHandleCardDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -10,9 +11,21 @@ import jpabasic.pinnolbe.repository.payment.PaymentRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collections;
 
 
 @Service
@@ -31,8 +44,8 @@ public class TossPaymentService {
     @Value("${payments.toss.fail-url}")
     private String failCallBackUrl;
 
-//    @Value("${payments.toss.cancel_url}")
-//    private String tossOriginalUrl;
+    @Value("${payments.toss.original-url}")
+    private String tossOriginalUrl;
 
 
     /*
@@ -64,17 +77,17 @@ public class TossPaymentService {
         String customerEmail=paymentRequestDto.getCustomerEmail();
         String orderName=paymentRequestDto.getOrderName();
 
-        if(amount==null||amount!=3000){
-            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PRICE);
-        }
-
-        if(!payType.equals("CARD") && !payType.equals("카드")){
-            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PAY_TYPE);
-        }
-
-        if(!orderName.equals("MONTH") && !orderName.equals("YEAR")){
-            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NAME);
-        }
+//        if(amount==null||amount!=50000){
+//            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PRICE);
+//        }
+//
+//        if(!payType.equals("CARD") && !payType.equals("카드")){
+//            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_PAY_TYPE);
+//        }
+//
+//        if(!orderName.equals("MONTH") && !orderName.equals("YEAR")){
+//            throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NAME);
+//        }
 
         PaymentResponseDto paymentRes;
         try{
@@ -102,48 +115,51 @@ public class TossPaymentService {
         }
     }
 
-    /**
-     * 결제 취소 요청
+    /*
+     * 결제 성공
      */
-//    @Transactional
-//    public boolean requestPaymentCancel(String paymentKey,String cancelReason){
-//        RestTemplate template=new RestTemplate();
-//        URI uri=URI.create(tossOriginalUrl+paymentKey+"/cancel");
-//
-//        HttpHeaders headers=new HttpHeaders();
-//        byte[] secretKeyByte=(testSecretApiKey+":").getBytes(StandardCharsets.UTF_8);
-//        headers.setBasicAuth(new String(Base64.getEncoder().encode(secretKeyByte)));
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-//
-//        JSONObject param=new JSONObject();
-//        param.put("cancelReason",cancelReason);
-//
-//        PaymentCancelDto paymentCancelDto;
-//        try{
-//            paymentCancelDto=template.postForObject(
-//                    uri,
-//                    new HttpEntity<>(param,headers),
-//                    PaymentCancelDto.class
-//            );
-//        }catch(Exception e){
-//            throw new CustomException(ErrorCode.PAYMENT_CANCEL_ERROR);
-//        }
-//
-//        if(paymentCancelDto==null) return false;
-//
-//        Long cancelAmount=paymentCancelDto.getCancels()[0].getCancelAmount();
-//        try{
-//            paymentRepository
-//                    .findByPaymentKey(paymentKey)
-//                    .filter(P->P.getAmount().equals(cancelAmount))
-//                    .orElseThrow(()->new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_NOTFOUND))
-//                    .getCustomer()
-//                    .addCancelPayment(paymentCancelDto.toCancelPayment());
-//            return true;
-//        }catch(Exception e){
-//            throw new CustomException(ErrorCode.DB_ERROR_SAVE);
-//        }
-//
-//    }
+    @Transactional
+    public void verifyRequest(String paymentKey,String orderId,Long amount){
+            paymentRepository.findByOrderId(orderId)
+                    .ifPresentOrElse(
+                            P->{
+                                //가격 비교
+                                if(P.getAmount().equals(amount)){
+                                    P.setPaymentKey(paymentKey);
+                                }else{
+                                    throw new CustomException(ErrorCode.PAYMENT_ERROR_ORDER_AMOUNT);
+                                }
+                            },()->{
+                                throw new CustomException(ErrorCode.PAYMENT_ERROR);
+                            }
+                    );
+    }
+
+    /*
+     * 최종 결제 승인 요청
+     */
+    @Transactional
+    public PaymentResHandleCardDto requestFinalPayment(String paymentKey,String orderId,Long amount){
+        RestTemplate rest=new RestTemplate();
+        HttpHeaders headers=new HttpHeaders();
+        testSecretApiKey=testSecretApiKey+":";
+        String encodedAuth=new String(Base64.getEncoder().encode(testSecretApiKey.getBytes(StandardCharsets.UTF_8)));
+
+        headers.setBasicAuth(encodedAuth);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        JSONObject param=new JSONObject();
+        param.put("orderId",orderId);
+        param.put("amount",amount+"");
+
+        ResponseEntity<PaymentResHandleCardDto> response=rest.postForEntity(
+                tossOriginalUrl+paymentKey,
+                new HttpEntity<>(param, headers),
+                PaymentResHandleCardDto.class
+        );
+
+        return response.getBody();
+    }
+
 }

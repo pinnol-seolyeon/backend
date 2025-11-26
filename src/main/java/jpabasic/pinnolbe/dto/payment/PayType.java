@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PayType {
-    CARD("카드");
+    CARD("카드"),
+    EASY_PAY("토스 간편 결제");
 
     private final String name;
 

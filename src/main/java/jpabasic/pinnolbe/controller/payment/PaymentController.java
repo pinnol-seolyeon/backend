@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
+import jpabasic.pinnolbe.dto.payment.PaymentResHandleCardDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.TossPaymentService;
@@ -37,19 +38,22 @@ public class PaymentController {
 
     ){
         PaymentFailResDto result=tossPaymentService.requestFail(errorCode,errorMsg,orderId);
-        return ApiResponse.success("결제 승인 완료",result);
+        return ApiResponse.success("결제 실패",result);
     }
 
     @GetMapping("/success")
-    @Operation(summary="결제 성공 리다이렉트",description="결제 성공 시 paymentKey 등 반환")
-    public ApiResponse<PaymentResponseDto> successPayment(
-            @Parameter(description="서비스에서 정한 주문 고유번호",required=true) @RequestParam(name="orderId") String orderId,
+    @Operation(summary="결제 성공 리다이렉트",description="결제 성공 시 최종 결제 승인 요청을 보냄")
+    public ApiResponse<PaymentResHandleCardDto> successPayment(
+            @Parameter(description="우리가 정한 주문 고유번호",required=true) @RequestParam(name="orderId") String orderId,
             @Parameter(description="토스페이먼츠에서 정한 결제 구분용 키 ",required=true) @RequestParam(name="paymentKey") String paymentKey,
-            @Parameter(description="개수",required=true) @RequestParam(name="amount") int amount
+            @Parameter(description="실제 결제 금액",required=true) @RequestParam(name="amount") Long amount
             ){
-        return ApiResponse.success("결제 승인 완료",null);
+
+        tossPaymentService.verifyRequest(paymentKey,orderId,amount);
+        PaymentResHandleCardDto result=tossPaymentService.requestFinalPayment(paymentKey,orderId,amount);
+        return ApiResponse.success("결제 성공",result);
     }
-//            tossPaymentService.successPayment(request)
+
 
 
 
