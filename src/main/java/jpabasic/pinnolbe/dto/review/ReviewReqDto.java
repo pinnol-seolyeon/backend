@@ -13,5 +13,5 @@ public class ReviewReqDto {
     private String user_id;
     private int level; //책
     private int order; //단원
-    private List<QuizNotes.QuizRecord> quizRecords=new ArrayList<>();
+    private List<QuizRecordForAI> quizRecords=new ArrayList<>();
 }

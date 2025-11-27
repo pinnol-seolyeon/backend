@@ -184,11 +184,20 @@ public class ReviewService {
         String bookId=chapter.getBookId();
 
         int bookLevel=bookService.getBooklevel(bookId);
+        List<QuizRecordForAI> aiRecords = records.stream()
+            .map(r -> new QuizRecordForAI(
+                r.getQuestion(),
+                r.getUserAnswer(),
+                r.getIsCorrect(),
+                r.getDescription()
+            ))
+            .toList();
+
         return new ReviewReqDto(
                 userId,
                 bookLevel,
                 chapter.getOrder(),
-                records
+                aiRecords
         );
     }
 

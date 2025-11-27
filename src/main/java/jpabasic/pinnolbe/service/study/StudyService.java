@@ -8,8 +8,8 @@ import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiResponseResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.ReactionRequestDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
@@ -20,7 +20,6 @@ import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -180,12 +179,12 @@ public class StudyService {
 
 
     //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
-    public AiFeedBackResponseDto getFeedback(User user, FeedBackRequestDto request) {
+    public AiResponseResponseDto getReaction(User user, ReactionRequestDto request) {
         String userId = user.getId();
 
         // AI에 유저의 질문 전달
         try {
-            AiFeedBackResponseDto answer = askQuestionTemplate.feedbackQuestionToAI(request, userId);
+            AiResponseResponseDto answer = askQuestionTemplate.reactionByAI(request, userId);
 
             //사용자 세션 가져오기
 //            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());

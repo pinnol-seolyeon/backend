@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedBackRequestDto {
+public class ReactionRequestDto {
     private String chapterId;
     private String quiz; //교재에서 ai 선생님이 묻는 질문
     private String userAnswer;
