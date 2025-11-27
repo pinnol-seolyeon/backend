@@ -29,7 +29,7 @@ public class QuizNotes {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class QuizRecord {
-        private String quizId;
+        private Long quizId;
         private String question;
         private String userAnswer;
         private Boolean isCorrect;

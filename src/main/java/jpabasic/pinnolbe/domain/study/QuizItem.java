@@ -13,9 +13,9 @@ import java.util.List;
 @Builder
 public class QuizItem {
     @Id
-    private String quizId;
+    private Long quizId;
     private String quiz;            // 문제
     private List<String> options;   // ["O", "X"]
     private String answer;          // "O"
-    private String question;
+    private String description;
 }

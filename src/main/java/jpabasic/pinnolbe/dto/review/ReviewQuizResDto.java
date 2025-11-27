@@ -16,7 +16,7 @@ public class ReviewQuizResDto {
 
     @Data
     public static class QuizTwinDto {
-        private String sourceQuizId;
+        private Long sourceQuizId;
         private String originalQuestion;
         private String userAnswer;
         private String twinQuestion;

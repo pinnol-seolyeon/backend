@@ -10,12 +10,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class QuizReviewResponse {
-    private String sourceQuizId;
+    private Long sourceQuizId;
     private String twinQuestion;
     private String correctAnswer;
     private String explanation;
 
-    public QuizReviewResponse(String sourceQuizId, String twinQuestion, String explanation) {
+    public QuizReviewResponse(Long sourceQuizId, String twinQuestion, String explanation) {
         this.sourceQuizId = sourceQuizId;
         this.twinQuestion = twinQuestion;
         this.explanation = explanation;

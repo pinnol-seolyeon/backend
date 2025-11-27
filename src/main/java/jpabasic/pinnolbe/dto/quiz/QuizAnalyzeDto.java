@@ -9,11 +9,12 @@ import java.util.List;
 @Data
 @Getter
 public class QuizAnalyzeDto {
-    private String quizId;
-    private String question;
+    private Long quizId;
+    private String quiz;
     private List<String> options;
     private String correctAnswer;
     private String userAnswer;
     private Boolean isCorrect;
     private LocalDate quizDate;
+    private String description;
 }
