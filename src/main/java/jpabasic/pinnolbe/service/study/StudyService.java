@@ -265,7 +265,7 @@ public class StudyService {
         String sessionLogId=user.getStudySessionLogId();
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
-            currentChapterId = "682829708c776a1ffa92fd50"; // 첫 교재,첫 챕터 하드코딩
+            currentChapterId = "6921983aeafe5ab256a0843a"; // 첫 교재,첫 챕터 하드코딩
             currentLevel = 1;
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
@@ -275,7 +275,7 @@ public class StudyService {
                 currentChapterId = log.getChapterId();
                 currentLevel = log.getLevel();
             } else {
-                currentChapterId = "682829708c776a1ffa92fd50"; // fallback
+                currentChapterId = "6921983aeafe5ab256a0843a"; // fallback
                 currentLevel = 1;
             }
         }
