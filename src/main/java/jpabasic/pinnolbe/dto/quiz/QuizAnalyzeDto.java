@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public class QuizAnalyzeDto {
     private Long quizId;
-    private String quiz;
+    private String question;
     private List<String> options;
     private String correctAnswer;
     private String userAnswer;

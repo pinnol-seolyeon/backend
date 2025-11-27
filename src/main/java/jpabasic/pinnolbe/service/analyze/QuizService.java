@@ -99,7 +99,7 @@ public class QuizService {
 
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
         List<QuizNotes.QuizRecord> quizzes = results.stream()
-                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuiz(), r.getUserAnswer(), r.getIsCorrect(), r.getDescription()))
+                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getIsCorrect(), r.getDescription()))
                 .toList();
 
         //quizNote 객체 생성 후 저장
@@ -116,7 +116,7 @@ public class QuizService {
 
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
         List<QuizNotes.QuizRecord> quizes = results.stream()
-                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuiz(), r.getUserAnswer(), r.getIsCorrect(), null))
+                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getIsCorrect(), null))
                 .toList();
 
         //quizNote 객체 생성 후 저장
