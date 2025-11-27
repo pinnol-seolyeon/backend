@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class QuizItem {
-    @Id
     private Long quizId;
     private String quiz;            // 문제
     private List<String> options;   // ["O", "X"]
