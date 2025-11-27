@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.study.Chapter;
+import jpabasic.pinnolbe.domain.study.QuizItem;
 import jpabasic.pinnolbe.dto.currentSituation.CurrentSituationResDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
@@ -9,16 +10,25 @@ import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +68,54 @@ public class ChapterService {
         Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
 
         return slice.map(CurrentSituationResDto.CurrentChapterRes::toDto);
+    }
+
+    public void saveQuizFromExcel(String chapterId, MultipartFile file){
+        List<QuizItem> quizList=parseExcel(file);
+
+        Chapter chapter=chapterRepository.findById(chapterId)
+            .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+
+        chapter.setQuizzes(quizList);
+        chapterRepository.save(chapter);
+    }
+
+    private List<QuizItem> parseExcel(MultipartFile file) {
+
+        List<QuizItem> quizzes = new ArrayList<>();
+
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) { // 1행은 header라 skip
+                Row row = sheet.getRow(i);
+
+                String quiz = getValue(row.getCell(0));
+                String option1 = getValue(row.getCell(1));
+                String option2 = getValue(row.getCell(2));
+                String option3 = getValue(row.getCell(3));
+                String option4 = getValue(row.getCell(4));
+                String answer = getValue(row.getCell(5));
+
+                quizzes.add(
+                    QuizItem.builder()
+                        .id(UUID.randomUUID().toString())
+                        .quiz(quiz)
+                        .options(List.of(option1, option2, option3, option4))
+                        .answer(answer)
+                        .build()
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("엑셀 파싱 오류", e);
+        }
+
+        return quizzes;
+    }
+
+    private String getValue(Cell cell) {
+        if (cell == null) return "";
+        return cell.toString().trim();
     }
 
 }

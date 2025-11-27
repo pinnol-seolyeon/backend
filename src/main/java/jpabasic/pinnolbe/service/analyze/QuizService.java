@@ -3,9 +3,7 @@ package jpabasic.pinnolbe.service.analyze;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
-import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.redis.StudySession;
-import jpabasic.pinnolbe.domain.study.Quiz;
 import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.quiz.QuizType;
 import jpabasic.pinnolbe.dto.quiz.SolvedQuizResDto;
@@ -13,7 +11,6 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
-import jpabasic.pinnolbe.repository.study.QuizRepository;
 import jpabasic.pinnolbe.service.facade.SessionFacade;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,20 +26,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class QuizService {
-    private final QuizRepository quizRepository;
     private final UserService userService;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final QuizNotesRepository quizNotesRepository;
     private final SessionFacade sessionFacade;
 
-
-    public List<Quiz> getQuiz(String chapterId, int limit) {
-        List<Quiz> all = quizRepository.findByChapterId(chapterId);
-        System.out.println("✅ 찾은 퀴즈 개수: " + (all == null ? "null" : all.size()));
-        if (all == null) return new ArrayList<>();
-        Collections.shuffle(all);
-        return all.stream().limit(limit).collect(Collectors.toList());
-    }
 
     public void upsertUnderstanding(List<QuizAnalyzeDto> results) {
         User user = userService.getUserInfo();

@@ -5,13 +5,11 @@ import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.study.*;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
-import jpabasic.pinnolbe.dto.question.QuestionResponse;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
 import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
@@ -20,7 +18,7 @@ import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.*;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.HttpHeaders;
+
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -29,15 +27,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static jpabasic.pinnolbe.dto.study.ChapterDto.convertDto;
 
@@ -49,13 +43,8 @@ public class StudyService {
   private final ChapterRepository chapterRepository;
   private final UserRepository userRepository;
   private final AskQuestionTemplate askQuestionTemplate;
-  private final QuizRepository quizRepository;
-
-    @Autowired
-    private StudySessionLogRepository studySessionLogRepository;
-    @Autowired
-    private WeeklyAnalysisRepository weeklyAnalysisRepository;
-
+  private final StudySessionLogRepository studySessionLogRepository;
+  private final WeeklyAnalysisRepository weeklyAnalysisRepository;
 
 
     //학습하고 싶은 단원 선택
@@ -98,9 +87,9 @@ public class StudyService {
                 break;
             }
             case 4: {
-                List<Quiz> quiz = quizRepository.findByChapterId(chapterId);
-                Collections.shuffle(quiz);
-                result.put("quiz", quiz.stream().limit(5).toList());
+                List<QuizItem> quizItems = chapterDto.getQuizItems();
+                Collections.shuffle(quizItems);
+                result.put("quiz", quizItems.stream().limit(5).toList());
             }
             case 5:{
                 String summary=chapterDto.getSummary();
