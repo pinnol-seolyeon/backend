@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class QuizItem {
     @Id
-    private String id;
+    private String quizId;
     private String quiz;            // 문제
     private List<String> options;   // ["O", "X"]
     private String answer;          // "O"
