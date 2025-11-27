@@ -1,8 +1,6 @@
 package jpabasic.pinnolbe.domain.study;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
@@ -13,7 +11,7 @@ import java.util.List;
 @Builder
 public class QuizItem {
     private Long quizId;
-    private String quiz;            // 문제
+    private String question;            // 문제
     private List<String> options;   // ["O", "X"]
     private String answer;          // "O"
     private String description;
