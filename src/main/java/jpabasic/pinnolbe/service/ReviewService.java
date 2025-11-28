@@ -63,6 +63,7 @@ public class ReviewService {
         List<QuizReviewResponse> result =
                 response.getQuizTwins().stream()
                         .map(q -> new QuizReviewResponse(
+                            q.getSourceQuizId(), //string
                             q.getFormat(),
                             q.getTwinQuestion(),
                             q.getTwinCorrectAnswer(),
