@@ -1,21 +1,14 @@
 package jpabasic.pinnolbe.service.study;
 
 import jpabasic.pinnolbe.domain.Status;
-import jpabasic.pinnolbe.domain.analyze.StudyLog;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.question.QueCollection;
 import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
-import jpabasic.pinnolbe.domain.study.Study;
-import jpabasic.pinnolbe.dto.analyze.AttendanceDto;
 import jpabasic.pinnolbe.dto.analyze.StudySessionLogResponseDto;
 import jpabasic.pinnolbe.dto.analyze.StudyTimeDetailDto;
-import jpabasic.pinnolbe.dto.question.QuestionSummaryDto;
-import jpabasic.pinnolbe.dto.study.CompletedChapterDto;
-import jpabasic.pinnolbe.dto.study.FinishChaptersDto;
 import jpabasic.pinnolbe.dto.study.StudyStatsDto;
-import jpabasic.pinnolbe.dto.study.StudyTimeStatsDto;
 import jpabasic.pinnolbe.dto.study.feedback.NowStudyingLevelDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
@@ -24,27 +17,22 @@ import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.question.QueCollectionRepository;
 import jpabasic.pinnolbe.repository.study.BookRepository;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
-import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import jpabasic.pinnolbe.domain.User;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClientException;
 import org.springframework.data.mongodb.core.query.Query;
 
 
 import java.time.*;
-import java.time.format.TextStyle;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StudyLogService {
 
-    private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final ChapterRepository chapterRepository;
     private final MongoTemplate mongoTemplate;
@@ -231,13 +219,35 @@ public class StudyLogService {
         int count=(int)mongoTemplate.count(new Query(), Chapter.class);
 
         //내가 학습 완료한 단원 개수
-        StudyStatsDto dto=studyService.getStudyStats(user.getId());
+        StudyStatsDto dto=getStudyStats(user.getId());
         int completedChapters=dto.getTotalCompleted();
 
         //진행률 계산
         double progress=((double)completedChapters/count)*100;
         progress=Math.round(progress*10)/10.0;
         return progress;
+    }
+
+    // 학습 참여도 (이번주 학습 완료 단원 수) 가져오기
+    public StudyStatsDto getStudyStats(String userId) {
+        //이번주 weeklyAnalysis 엔티티 가져오기
+        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+            .with(DayOfWeek.MONDAY);
+
+        WeeklyAnalysis weeklyAnalysis =
+            weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
+                .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
+
+        List<WeeklyAnalysis.CompletedChapter> completed=weeklyAnalysis.getCompletedChapters();
+        if (completed == null) return new StudyStatsDto(0);
+
+        int total = completed.size();
+
+        //        int weekly = (int) completed.stream()
+        //                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
+        //                .count();
+
+        return new StudyStatsDto(total);
     }
 
     //현재 학습 중인 단원 + 레벨 제공

@@ -55,16 +55,18 @@ public class ReviewService {
         QuizNotes notes=findQuizNotes(chapterId,reviewCount,userId);
         List<QuizNotes.QuizRecord> records=notes.getRecords();
         ReviewReqDto request=buildRequestDto(userId, chapterId,records);
+
+        System.out.println("✔️quiz-review-request:"+request);
+
         //AI를 통한 리뷰 퀴즈 생성
         ReviewQuizResDto response=reviewAITemplate.makeReviewQuizByAI(request);
         List<QuizReviewResponse> result =
                 response.getQuizTwins().stream()
                         .map(q -> new QuizReviewResponse(
-                                q.getSourceQuizId(),
-                                q.getTwinQuestion(),
-//                                q.getCorrectAnswer(),
-                                q.getExplanation()
-                        ))
+                            q.getFormat(),
+                            q.getTwinQuestion(),
+                            q.getTwinCorrectAnswer(),
+                            q.getExplanation()))
                         .toList();
         return result;
     }
@@ -186,10 +188,13 @@ public class ReviewService {
         int bookLevel=bookService.getBooklevel(bookId);
         List<QuizRecordForAI> aiRecords = records.stream()
             .map(r -> new QuizRecordForAI(
+                r.getQuizId(),
                 r.getQuestion(),
                 r.getUserAnswer(),
                 r.getIsCorrect(),
-                r.getDescription()
+                r.getCorrectAnswer(),
+                r.getDescription(),
+                r.getOptions()
             ))
             .toList();
 

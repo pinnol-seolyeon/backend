@@ -34,8 +34,11 @@ public class QuizNotes {
         private Long quizId;
         private String question;
         private String userAnswer;
+        private String correctAnswer;
         private Boolean isCorrect;
         private String description;
+        private List<String> options;
+
     }
 
 

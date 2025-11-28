@@ -22,9 +22,9 @@ public class AskQuestionTemplate {
 
 
     //피드백을 위한 챗봇
-    public AiResponseResponseDto reactionByAI(ReactionRequestDto questionRequest,String userId) {
+    public AiResponseResponseDto reactionByAI(String chapterId,ReactionRequestDto questionRequest,String userId) {
         AiReactionRequestDto requestDto=new AiReactionRequestDto(
-                questionRequest.getChapterId(), questionRequest.getQuiz(), questionRequest.getUserAnswer(), userId);
+                chapterId, questionRequest.getQuiz(), questionRequest.getUserAnswer(), userId);
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
