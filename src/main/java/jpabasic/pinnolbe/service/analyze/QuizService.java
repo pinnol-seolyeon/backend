@@ -161,7 +161,7 @@ public class QuizService {
                 .filter(q -> !q.getIsCorrect())
                 .count();
         int total = quizRecords.size();
-        return ((double) wrongNumbers / total) * 100.0;
+        return 100.0-(((double) wrongNumbers / total) * 100.0);
     }
 
 }

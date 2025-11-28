@@ -16,7 +16,7 @@ public class ReviewQuizResDto {
 
     @Data
     public static class QuizTwinDto {
-        // private String sourceQuizId;
+        private String sourceQuizId;
         // private String originalQuestion;
         // private String correctAnswer;
         // private String userAnswer; //기존 answer user
