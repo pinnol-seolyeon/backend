@@ -13,5 +13,4 @@ public class TextReviewResDto {
     private int level;
     private int order;
     private String textbook;
-    private int learningHistoryCount;
 }
