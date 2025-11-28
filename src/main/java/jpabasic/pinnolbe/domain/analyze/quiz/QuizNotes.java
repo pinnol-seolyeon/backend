@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Document(collection="quizNotes")
 @Getter
 @NoArgsConstructor
@@ -32,8 +34,11 @@ public class QuizNotes {
         private Long quizId;
         private String question;
         private String userAnswer;
+        private String correctAnswer;
         private Boolean isCorrect;
         private String description;
+        private List<String> options;
+
     }
 
 

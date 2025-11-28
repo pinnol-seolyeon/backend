@@ -3,24 +3,25 @@ package jpabasic.pinnolbe.service.study;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
+import jpabasic.pinnolbe.domain.redis.StudySession;
 import jpabasic.pinnolbe.domain.study.*;
 import jpabasic.pinnolbe.dto.analyze.StudySessionSummaryDto;
 import jpabasic.pinnolbe.dto.study.*;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiResponseResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.ReactionRequestDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.repository.analyze.StudySessionLogRepository;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.study.*;
+import jpabasic.pinnolbe.service.facade.SessionFacade;
 import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -45,7 +46,7 @@ public class StudyService {
   private final AskQuestionTemplate askQuestionTemplate;
   private final StudySessionLogRepository studySessionLogRepository;
   private final WeeklyAnalysisRepository weeklyAnalysisRepository;
-
+    private final SessionFacade sessionFacade;
 
     //학습하고 싶은 단원 선택
     public Map<String,Object> getChapterContents(String chapterId,int level) {
@@ -155,41 +156,19 @@ public class StudyService {
         System.out.println("✔️ 학습 완료 : 다음 진도 sessionLog 생성 완료");
     }
 
-    // 학습 참여도 (이번주 학습 완료 단원 수) 가져오기
-    public StudyStatsDto getStudyStats(String userId) {
-        //이번주 weeklyAnalysis 엔티티 가져오기
-        LocalDate weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
-                .with(DayOfWeek.MONDAY);
-
-        WeeklyAnalysis weeklyAnalysis =
-                weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId,weekStart)
-                        .orElseGet(() -> new WeeklyAnalysis(userId,weekStart));
-
-        List<WeeklyAnalysis.CompletedChapter> completed=weeklyAnalysis.getCompletedChapters();
-        if (completed == null) return new StudyStatsDto(0);
-
-        int total = completed.size();
-
-//        int weekly = (int) completed.stream()
-//                .filter(c -> c.getCompletedAt().toLocalDate().isAfter(weekStart.minusDays(1)))
-//                .count();
-
-        return new StudyStatsDto(total);
-    }
-
 
 
     //3단계 학습하기: AI와 상호작용 후 답변 저장 //수정 요망
-    public AiFeedBackResponseDto getFeedback(User user, FeedBackRequestDto request) {
+    public AiResponseResponseDto getReaction(User user, ReactionRequestDto request) {
         String userId = user.getId();
 
         // AI에 유저의 질문 전달
         try {
-            AiFeedBackResponseDto answer = askQuestionTemplate.feedbackQuestionToAI(request, userId);
-
-            //사용자 세션 가져오기
-//            FeedBackResponseDto session=sessionStore.computeIfAbsent(userId, k->new FeedBackResponseDto());
-//            session.add(request.getQuiz(),request.getUserAnswer(),answer.getResult());
+            //현재 chapter진도 session으로부터 받아오기
+            StudySession studySession=sessionFacade.getCurrentSession();
+            String chapterId=studySession.getChapterId();
+            //ai 답변 생성
+            AiResponseResponseDto answer = askQuestionTemplate.reactionByAI(chapterId,request, userId);
 
             // AI의 답변 내용을 반환
             return answer;

@@ -5,20 +5,20 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
 @Data
 @Getter
 @RequiredArgsConstructor
 public class QuizReviewResponse {
-    private Long sourceQuizId;
+    // private String sourceQuizId;
+    private String format;
     private String twinQuestion;
-    private String correctAnswer;
+    private String twinCorrectAnswer;
     private String explanation;
 
-    public QuizReviewResponse(Long sourceQuizId, String twinQuestion, String explanation) {
-        this.sourceQuizId = sourceQuizId;
+    public QuizReviewResponse(String format, String twinQuestion, String twinCorrectAnswer, String explanation) {
+        this.format = format;
         this.twinQuestion = twinQuestion;
+        this.twinCorrectAnswer = twinCorrectAnswer;
         this.explanation = explanation;
-        this.correctAnswer = "";
     }
 }
