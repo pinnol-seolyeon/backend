@@ -36,7 +36,6 @@ public class StudyLogController {
 
     private final StudyLogService studyLogService;
     private final UserService userService;
-    private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final RadarScoreService radarScoreService;
 
