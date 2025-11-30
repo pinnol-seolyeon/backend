@@ -1,6 +1,7 @@
 package jpabasic.pinnolbe.service;
 
 import jpabasic.pinnolbe.domain.CurrentSituationStatus;
+import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.badge.Badge;
@@ -38,12 +39,27 @@ public class CurrentSituationService {
             throw new CustomException(ErrorCode.CURRENT_SITUATION_NOT_FOUND);
         }
 
+        //현재 studySessionLog 찾기
         StudySessionLog log = studyLogService.findStudySessionLog(sessionId);
-        String currentBookId = log.getBookId();
-        String currentChapterId = log.getChapterId(); //학습 중이거나 앞으로 학습 완료할 단원
-        int currentLevel = log.getLevel();
 
-        Chapter chapter = chapterService.findChapter(currentChapterId);
+        //현재 진도 찾기
+        String currentChapterId=log.getChapterId();
+        int currentLevel=log.getLevel();
+        //현재 학습 중인 chapter
+        Chapter chapter=chapterService.findChapter(currentChapterId);
+        Boolean isCurrent; //true=현재 학습중인 단원, false=이미 완료한 단원(아직 다음단원 학습X)
+
+        //status==NOT_STARTED, level==1 -> 아직 해당 단원 학습 시작 안함
+        if(log.getStatus()== Status.NOT_STARTED && log.getLevel()==1){
+            int completedChapterOrder=chapter.getOrder()-1;
+            //여태까지 학습 완료한 마지막 chapter(위에서 구한 chapter에 대한 학습을 아직 시작하지 않음)
+            chapter=chapterService.findChapterByOrder(log.getBookId(),completedChapterOrder);
+            isCurrent=false;
+        } else {
+			isCurrent = true;
+		}
+
+		String currentBookId=chapter.getBookId();
         int currentOrder = chapter.getOrder();
 
         //현재 학습 중인 교재의 모든 chapter List
@@ -59,8 +75,13 @@ public class CurrentSituationService {
                 badges = badgeService.getBadgeList(user, ch.getChapterId());
                 progress = 100.0;
             } else if (ch.getOrder() == currentOrder) {
-                status = CurrentSituationStatus.STUDYING;
-                progress = getChapterProgress(currentLevel);
+                if(!isCurrent){//isCurrent=false,현재 학습중인 단원X
+                    status=CurrentSituationStatus.COMPLETED;
+                    progress=0.0;
+                }else{
+                    status = CurrentSituationStatus.STUDYING;
+                    progress = getChapterProgress(currentLevel);
+                }
             } else {
                 status = CurrentSituationStatus.NOT_STARTED;
                 progress = 0.0;

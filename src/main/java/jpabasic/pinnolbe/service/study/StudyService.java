@@ -1,5 +1,6 @@
 package jpabasic.pinnolbe.service.study;
 
+import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.StudySessionLog;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
@@ -140,6 +141,7 @@ public class StudyService {
             log.setBookId(chapter.getBookId());
             log.setChapterId(String.valueOf(nextChapter.getId()));
             log.setLevel(1);
+            log.setStatus(Status.NOT_STARTED); //아직 학습 시작안했다는 상태 반영
 
             System.out.println("✔️ log 업데이트: "+ log);
         }else{ //이미 해당 교재의 모든 단원을 마무리함

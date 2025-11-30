@@ -58,5 +58,11 @@ public class ChapterService {
         return slice.map(CurrentSituationResDto.CurrentChapterRes::toDto);
     }
 
+    public Chapter findChapterByOrder(String bookId,int order){
+        Chapter chapter=chapterRepository.findByBookIdAndOrder(bookId,order)
+            .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+        return chapter;
+    }
+
 
 }
