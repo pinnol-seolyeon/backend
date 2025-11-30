@@ -59,15 +59,15 @@ public class BadgeService {
     }
 
     @Transactional
-    public void getSmartGamerBadge(List<QuizAnalyzeDto> request) {
+    public void getSmartGamerBadge(List<QuizAnalyzeDto> request,String chapterId) {
         //스트림의 모든 요소에 대해 getIsCorrect()가 true를 반환해야
         boolean hasAllCorrect=request.stream().allMatch(QuizAnalyzeDto::getIsCorrect);
         if(!hasAllCorrect) return;
 
         //현재 진도 파악
         User user = userService.getUserInfo();
-        StudySession session = studySessionService.getSessionByUser(user);
-        String chapterId = session.getChapterId();
+        // StudySession session = studySessionService.getSessionByUser(user);
+        // String chapterId = session.getChapterId();
 
         BadgeRequestDto dto = new BadgeRequestDto(chapterId, BadgeType.SMART_GAMER);
         getBadge(dto, user.getId());

@@ -93,7 +93,7 @@ public class ReviewController {
         }
         quizService.saveReviewQuizes(request,chapterId,quizType);
         //퀴즈를 다 맞았을 경우 배지 획득
-        badgeService.getSmartGamerBadge(request);
+        badgeService.getSmartGamerBadge(request,chapterId);
 
         //복습하기 끝내기
         reviewService.completeReview(user.getId(),reviewCount,chapterId);
