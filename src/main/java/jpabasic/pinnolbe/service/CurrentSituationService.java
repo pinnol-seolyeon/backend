@@ -51,9 +51,11 @@ public class CurrentSituationService {
 
         //status==NOT_STARTED, level==1 -> 아직 해당 단원 학습 시작 안함
         if(log.getStatus()== Status.NOT_STARTED && log.getLevel()==1){
+            System.out.println("🚨 현재 단원이 학습중인 단원이 아님..! 그러므로 이전 학습완료된 단원 호출");
             int completedChapterOrder=chapter.getOrder()-1;
             //여태까지 학습 완료한 마지막 chapter(위에서 구한 chapter에 대한 학습을 아직 시작하지 않음)
             chapter=chapterService.findChapterByOrder(log.getBookId(),completedChapterOrder);
+            System.out.println("🚨 학습완료한 단원:"+chapter.getOrder());
             isCurrent=false;
         } else {
 			isCurrent = true;
@@ -77,7 +79,7 @@ public class CurrentSituationService {
             } else if (ch.getOrder() == currentOrder) {
                 if(!isCurrent){//isCurrent=false,현재 학습중인 단원X
                     status=CurrentSituationStatus.COMPLETED;
-                    progress=0.0;
+                    progress=100.0;
                 }else{
                     status = CurrentSituationStatus.STUDYING;
                     progress = getChapterProgress(currentLevel);

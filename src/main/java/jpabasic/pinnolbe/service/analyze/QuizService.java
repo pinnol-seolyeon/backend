@@ -121,7 +121,7 @@ public class QuizService {
 
 
     /// 복습하기 틀린문제들 DB에 저장
-    public List<QuizNotes.QuizRecord> saveReviewQuizes(List<QuizAnalyzeDto> results,String chapterId, QuizType quizType) {
+    public List<QuizNotes.QuizRecord> saveReviewQuizzes(List<QuizAnalyzeDto> results,String chapterId, QuizType quizType) {
         User user = userService.getUserInfo();
 
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
