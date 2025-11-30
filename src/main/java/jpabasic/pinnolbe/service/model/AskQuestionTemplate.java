@@ -33,7 +33,7 @@ public class AskQuestionTemplate {
         HttpEntity<AiReactionRequestDto> request = new HttpEntity<>(requestDto, headers);
 
         ResponseEntity<AiResponseResponseDto> response = restTemplate.exchange(
-                fastApiEndpoint+"/content-chat", HttpMethod.POST, request, AiResponseResponseDto.class
+                fastApiEndpoint+"/content-chat?sse=false", HttpMethod.POST, request, AiResponseResponseDto.class
         );
         System.out.println("🧪 FastAPI Raw Response: " + response.getBody());
 
