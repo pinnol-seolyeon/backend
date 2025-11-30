@@ -66,7 +66,7 @@ public class ReviewService {
                             q.getSourceQuizId(), //string
                             q.getFormat(),
                             q.getTwinQuestion(),
-                            q.getTwinCorrectAnswer(),
+                            q.getCorrectAnswer(),
                             q.getExplanation()))
                         .toList();
         return result;
@@ -189,7 +189,7 @@ public class ReviewService {
         int bookLevel=bookService.getBooklevel(bookId);
         List<QuizRecordForAI> aiRecords = records.stream()
             .map(r -> new QuizRecordForAI(
-                r.getQuizId(),
+                r.getQuizId().toString(),
                 r.getQuestion(),
                 r.getUserAnswer(),
                 r.getIsCorrect(),

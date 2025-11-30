@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 public record QuizRecordForAI(
-	Long quizId,
+	String quizId,
 	String question,
 	String userAnswer,
 	Boolean isCorrect,
@@ -16,7 +16,7 @@ public record QuizRecordForAI(
 	String quizDate
 ) {
 
-	public QuizRecordForAI(Long quizId, String question, String userAnswer,
+	public QuizRecordForAI(String quizId, String question, String userAnswer,
 		Boolean isCorrect, String correctAnswer,String description,List<String> options) {
 
 		this(

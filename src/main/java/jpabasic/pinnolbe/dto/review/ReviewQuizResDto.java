@@ -22,7 +22,7 @@ public class ReviewQuizResDto {
         // private String userAnswer; //기존 answer user
         private String format;
         private String twinQuestion;
-        private String twinCorrectAnswer;
+        private String correctAnswer;
         private String explanation;
     }
 }
