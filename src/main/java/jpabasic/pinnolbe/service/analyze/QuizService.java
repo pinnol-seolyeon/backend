@@ -90,21 +90,31 @@ public class QuizService {
     }
 
     /// 틀린문제들 DB에 저장
-    public List<QuizNotes.QuizRecord> saveQuizes(List<QuizAnalyzeDto> results, QuizType quizType) {
+    public List<QuizNotes.QuizRecord> saveQuizzes(List<QuizAnalyzeDto> results, QuizType quizType) {
         User user = userService.getUserInfo();
+        String userId=user.getId();
         //redis session에서 유저 현 진도 불러오기
         StudySession session = sessionFacade.getSessionByUser(user);
         //현재 학습 중인 chapterId
         String chapterId = session.getChapterId();
+
+        //quizNotes 중복 저장 방지 로직
+        QuizNotes existing=quizNotesRepository
+            .findByUserIdAndChapterIdAndQuizType(userId,chapterId,quizType)
+            .orElse(null);
 
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
         List<QuizNotes.QuizRecord> quizzes = results.stream()
                 .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getCorrectAnswer(),r.getIsCorrect(),r.getDescription(),r.getOptions()))
                 .toList();
 
-        //quizNote 객체 생성 후 저장
-        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId, quizzes,quizType);
-        quizNotesRepository.save(quizNotes);
+        QuizNotes quizNotes;
+        if (existing == null) {
+            quizNotes=new QuizNotes(userId,chapterId,quizzes,quizType);
+            quizNotesRepository.save(quizNotes);
+        }else{
+            return quizzes;
+        }
 
         return quizzes;
     }

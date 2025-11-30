@@ -34,7 +34,7 @@ public class QuizAnalyzeController {
         //이번 주 이해도 저장·업데이트
         quizService.upsertUnderstanding(results);
         //오답 저장
-        List<QuizNotes.QuizRecord> result=quizService.saveQuizes(results, QuizType.MAIN_STUDY);
+        List<QuizNotes.QuizRecord> result=quizService.saveQuizzes(results, QuizType.MAIN_STUDY);
         //퀴즈를 다 맞았을 경우 배지 획득
         badgeService.getSmartGamerBadge(results);
         return ApiResponse.success("이해도 및 집중도 저장 완료, 틀린 문제 기록이 저장되었습니다.",result);
