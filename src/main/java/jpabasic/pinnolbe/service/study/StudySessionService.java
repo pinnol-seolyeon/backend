@@ -107,6 +107,7 @@ public class StudySessionService {
             return existing.getId();
         } else {
             StudySessionLog log = new StudySessionLog(userId, chapterId, bookId,level);
+            log.setStatus(Status.ACTIVE);
             String id = studySessionLogRepository.save(log).getId();
             System.out.println("🆕 새로운 StudySessionLog 생성됨, ID=" + id);
             return id;
