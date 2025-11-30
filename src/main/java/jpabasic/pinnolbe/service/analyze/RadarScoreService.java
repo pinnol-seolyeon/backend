@@ -43,13 +43,13 @@ public class RadarScoreService {
         LocalDate lastWeekStart = thisWeekStart.minusWeeks(1);
 
         WeeklyAnalysis thisWeek = weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, thisWeekStart)
-                .orElseThrow(() -> new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
+                .orElse(null);
         WeeklyAnalysis lastWeek = weeklyAnalysisRepository
                 .findByUserIdAndWeekStartDate(userId, lastWeekStart)
                 .orElse(null);
 
         RadarScoreComparisonDto dto = new RadarScoreComparisonDto();
-        dto.setThisWeek(toRadarScore(thisWeek));
+        dto.setThisWeek(thisWeek!=null?toRadarScore(thisWeek):null);
         dto.setLastWeek(lastWeek!=null?toRadarScore(lastWeek):null);
         return dto;
     }
