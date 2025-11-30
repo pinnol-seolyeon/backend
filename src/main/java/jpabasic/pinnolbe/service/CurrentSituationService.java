@@ -45,6 +45,20 @@ public class CurrentSituationService {
         //현재 진도 찾기
         String currentChapterId=log.getChapterId();
         int currentLevel=log.getLevel();
+
+        //해당 교재의 모든 진도를 완료함
+        if(log.getChapterId()==null && log.getBookId()==null){
+            //하드코딩 대신 currentChapterId로 변경해야 함. ✔️
+            Slice<CurrentSituationResDto.CurrentChapterRes> chapters = chapterService.getAllChapters("682829208c776a1ffa92fd4d", page);
+            chapters.getContent().forEach(ch->{
+                ch.setStatus(CurrentSituationStatus.COMPLETED);
+                List<BadgeType> badges = badgeService.getBadgeList(user, ch.getChapterId());
+                ch.setBadgeType(badges);
+                ch.setProgress(100.0);
+            });
+            return chapters;
+        }
+
         //현재 학습 중인 chapter
         Chapter chapter=chapterService.findChapter(currentChapterId);
         Boolean isCurrent; //true=현재 학습중인 단원, false=이미 완료한 단원(아직 다음단원 학습X)
