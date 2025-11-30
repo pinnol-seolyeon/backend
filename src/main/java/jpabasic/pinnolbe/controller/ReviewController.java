@@ -91,7 +91,7 @@ public class ReviewController {
         }else{
             quizType=QuizType.SECOND_REVIEW;
         }
-        quizService.saveReviewQuizes(request,chapterId,quizType);
+        quizService.saveReviewQuizzes(request,chapterId,quizType);
         //퀴즈를 다 맞았을 경우 배지 획득
         badgeService.getSmartGamerBadge(request,chapterId);
 
