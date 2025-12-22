@@ -36,7 +36,6 @@ public class StudyLogController {
 
     private final StudyLogService studyLogService;
     private final UserService userService;
-    private final StudyService studyService;
     private final QueCollectionRepository queCollectionRepository;
     private final RadarScoreService radarScoreService;
 
@@ -44,7 +43,7 @@ public class StudyLogController {
     @Operation(summary="이번주 학습 완료한 단원 개수")
     public ApiResponse<StudyStatsDto> getStudyStats() {
         User user = userService.getUserInfo();
-        StudyStatsDto stats = studyService.getStudyStats(user.getId());
+        StudyStatsDto stats = studyLogService.getStudyStats(user.getId());
         return ApiResponse.success("이번 주 학습 완료한 단원 개수입니다.",stats);
     }
 

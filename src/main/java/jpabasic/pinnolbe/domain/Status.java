@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.domain;
 
 public enum Status {
 
+    NOT_STARTED, //전 단원 학습 완료 후 아직 해당 단원은 시작 안함(세션만 생성)
     ACTIVE, //학습 중
     INACTIVE, //이벤트 인식 안됨
     COMPLETED, //학습 완료

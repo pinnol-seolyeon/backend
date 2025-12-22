@@ -1,6 +1,9 @@
 package jpabasic.pinnolbe.dto.study;
 
+import java.util.List;
+
 import jpabasic.pinnolbe.domain.study.Chapter;
+import jpabasic.pinnolbe.domain.study.QuizItem;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -20,6 +23,7 @@ public class ChapterDto {
     private String objectiveAnswer;
     private String summary;
     private String topic;
+    private List<QuizItem> quizItems;
 
     //static : 객체를 만들지 않아도 사용 가능
     public static ChapterDto convertDto(String chapterId, Chapter chapter){
@@ -34,6 +38,7 @@ public class ChapterDto {
         dto.setObjectiveAnswer(chapter.getObjectiveAnswer());
         dto.setSummary(chapter.getSummary());
         dto.setTopic(chapter.getTopic());
+        dto.setQuizItems(chapter.getQuizzes());
         return dto;
     }
 }

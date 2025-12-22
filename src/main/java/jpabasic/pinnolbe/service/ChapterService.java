@@ -1,14 +1,13 @@
 package jpabasic.pinnolbe.service;
 
-import jpabasic.pinnolbe.domain.Status;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.dto.currentSituation.CurrentSituationResDto;
-import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.study.ChapterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,5 +57,12 @@ public class ChapterService {
 
         return slice.map(CurrentSituationResDto.CurrentChapterRes::toDto);
     }
+
+    public Chapter findChapterByOrder(String bookId,int order){
+        Chapter chapter=chapterRepository.findByBookIdAndOrder(bookId,order)
+            .orElseThrow(()->new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+        return chapter;
+    }
+
 
 }

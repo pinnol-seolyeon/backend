@@ -1,19 +1,15 @@
 package jpabasic.pinnolbe.controller.study;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.dto.study.book.BookListResponseDto;
 import jpabasic.pinnolbe.dto.study.chapter.ChapterListResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.AiFeedBackResponseDto;
-import jpabasic.pinnolbe.dto.study.feedback.FeedBackRequestDto;
+import jpabasic.pinnolbe.dto.study.feedback.AiResponseResponseDto;
+import jpabasic.pinnolbe.dto.study.feedback.ReactionRequestDto;
 import jpabasic.pinnolbe.global.ApiResponse;
-import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyService;
-import jpabasic.pinnolbe.service.study.StudySessionService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,9 +58,9 @@ public class StudyController {
 
     @PostMapping("/ai/content-chat")
     @Operation(summary="[AI] 학습하기 3단계 - 반응: 호핀이 질문에 대한 사용자 답변에 AI 반응 생성")
-    public ApiResponse<AiFeedBackResponseDto> handleFeedback(@RequestBody FeedBackRequestDto request){
+    public ApiResponse<AiResponseResponseDto> handleFeedback(@RequestBody ReactionRequestDto request){
         User user=userService.getUserInfo();
-        AiFeedBackResponseDto res=studyService.getFeedback(user,request);
+        AiResponseResponseDto res=studyService.getReaction(user,request);
         return ApiResponse.success("학습하기에 대한 반응입니다.",res);
     }
 

@@ -85,9 +85,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("RefreshToken", refreshToken, 14 * 24 * 60 * 60));//14일
 
         //첫 로그인 -> 자녀 정보 받기, n번째 로그인 -> 자녀 정보 안받아도됨
-//        boolean isFirstLogin = customUserDetails.isFirstLogin();
-        String targetUrl =  deployUrl + "/main";
-
+        boolean isFirstLogin = customUserDetails.isFirstLogin();
+        String targetUrl;
+        if(isFirstLogin){
+            targetUrl =  deployUrl + "/phoneNumber"; //전화번호 입력받는 URL로 변경
+        }else{
+            targetUrl =  deployUrl + "/main";
+        }
         response.sendRedirect(targetUrl);
 
     }

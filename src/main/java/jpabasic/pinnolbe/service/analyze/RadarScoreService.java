@@ -37,22 +37,39 @@ public class RadarScoreService {
     }
 
     public RadarScoreComparisonDto getThisAndLastWeekRadarScore() {
-        User user = userService.getUserInfo();
-        String userId = user.getId();
+        String userId = userService.getUserInfo().getId();
+        return getRadarScoreInternal(userId);
+    }
+
+    /**
+     * admin 전용
+     */
+    public RadarScoreComparisonDto getRadarScore(String userId) {
+        return getRadarScoreInternal(userId);
+    }
+
+    /**
+     * 공통 로직 묶어서 재사용
+     */
+    private RadarScoreComparisonDto getRadarScoreInternal(String userId) {
         LocalDate thisWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
         LocalDate lastWeekStart = thisWeekStart.minusWeeks(1);
 
-        WeeklyAnalysis thisWeek = weeklyAnalysisRepository.findByUserIdAndWeekStartDate(userId, thisWeekStart)
-                .orElseThrow(() -> new CustomException(ErrorCode.WEEKLY_ANALYSIS_NOT_FOUND));
+        WeeklyAnalysis thisWeek = weeklyAnalysisRepository
+            .findByUserIdAndWeekStartDate(userId, thisWeekStart)
+            .orElse(null);
+
         WeeklyAnalysis lastWeek = weeklyAnalysisRepository
-                .findByUserIdAndWeekStartDate(userId, lastWeekStart)
-                .orElse(null);
+            .findByUserIdAndWeekStartDate(userId, lastWeekStart)
+            .orElse(null);
 
         RadarScoreComparisonDto dto = new RadarScoreComparisonDto();
-        dto.setThisWeek(toRadarScore(thisWeek));
-        dto.setLastWeek(lastWeek!=null?toRadarScore(lastWeek):null);
+        dto.setThisWeek(thisWeek != null ? toRadarScore(thisWeek) : null);
+        dto.setLastWeek(lastWeek != null ? toRadarScore(lastWeek) : null);
+
         return dto;
     }
+
 
     private RadarScoreDto toRadarScore(WeeklyAnalysis analysis) {
         RadarScoreDto dto = new RadarScoreDto();

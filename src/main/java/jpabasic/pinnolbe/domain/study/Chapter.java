@@ -1,5 +1,7 @@
 package jpabasic.pinnolbe.domain.study;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;
@@ -28,6 +30,7 @@ public class Chapter {
     private String objectiveAnswer;
     private String summary;
     private String topic;
+    private List<QuizItem> quizzes;
     
     private int order; //챕터 순서
 }

@@ -3,9 +3,7 @@ package jpabasic.pinnolbe.service.analyze;
 import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.domain.analyze.WeeklyAnalysis;
 import jpabasic.pinnolbe.domain.analyze.quiz.QuizNotes;
-import jpabasic.pinnolbe.domain.badge.BadgeType;
 import jpabasic.pinnolbe.domain.redis.StudySession;
-import jpabasic.pinnolbe.domain.study.Quiz;
 import jpabasic.pinnolbe.dto.quiz.QuizAnalyzeDto;
 import jpabasic.pinnolbe.dto.quiz.QuizType;
 import jpabasic.pinnolbe.dto.quiz.SolvedQuizResDto;
@@ -13,7 +11,6 @@ import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.analyze.WeeklyAnalysisRepository;
 import jpabasic.pinnolbe.repository.analyze.quiz.QuizNotesRepository;
-import jpabasic.pinnolbe.repository.study.QuizRepository;
 import jpabasic.pinnolbe.service.facade.SessionFacade;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,25 +21,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class QuizService {
-    private final QuizRepository quizRepository;
     private final UserService userService;
     private final WeeklyAnalysisRepository weeklyAnalysisRepository;
     private final QuizNotesRepository quizNotesRepository;
     private final SessionFacade sessionFacade;
 
-
-    public List<Quiz> getQuiz(String chapterId, int limit) {
-        List<Quiz> all = quizRepository.findByChapterId(chapterId);
-        System.out.println("✅ 찾은 퀴즈 개수: " + (all == null ? "null" : all.size()));
-        if (all == null) return new ArrayList<>();
-        Collections.shuffle(all);
-        return all.stream().limit(limit).collect(Collectors.toList());
-    }
 
     public void upsertUnderstanding(List<QuizAnalyzeDto> results) {
         User user = userService.getUserInfo();
@@ -103,35 +90,43 @@ public class QuizService {
     }
 
     /// 틀린문제들 DB에 저장
-    public List<QuizNotes.QuizRecord> saveQuizes(List<QuizAnalyzeDto> results, QuizType quizType) {
+    public List<QuizNotes.QuizRecord> saveQuizzes(List<QuizAnalyzeDto> results, QuizType quizType) {
         User user = userService.getUserInfo();
+        String userId=user.getId();
         //redis session에서 유저 현 진도 불러오기
         StudySession session = sessionFacade.getSessionByUser(user);
         //현재 학습 중인 chapterId
         String chapterId = session.getChapterId();
 
+        //quizNotes 중복 저장 방지 로직
+        QuizNotes existing=quizNotesRepository
+            .findByUserIdAndChapterIdAndQuizType(userId,chapterId,quizType)
+            .orElse(null);
+
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
-        //⭐ description 추가해야
-        List<QuizNotes.QuizRecord> quizes = results.stream()
-                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getIsCorrect(), null))
+        List<QuizNotes.QuizRecord> quizzes = results.stream()
+                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getCorrectAnswer(),r.getIsCorrect(),r.getDescription(),r.getOptions()))
                 .toList();
 
-        //quizNote 객체 생성 후 저장
-        QuizNotes quizNotes = new QuizNotes(user.getId(), chapterId, quizes,quizType);
-        quizNotesRepository.save(quizNotes);
+        QuizNotes quizNotes;
+        if (existing == null) {
+            quizNotes=new QuizNotes(userId,chapterId,quizzes,quizType);
+            quizNotesRepository.save(quizNotes);
+        }else{
+            return quizzes;
+        }
 
-        return quizes;
+        return quizzes;
     }
 
 
     /// 복습하기 틀린문제들 DB에 저장
-    public List<QuizNotes.QuizRecord> saveReviewQuizes(List<QuizAnalyzeDto> results,String chapterId, QuizType quizType) {
+    public List<QuizNotes.QuizRecord> saveReviewQuizzes(List<QuizAnalyzeDto> results,String chapterId, QuizType quizType) {
         User user = userService.getUserInfo();
 
         //quizRecord 객체 생성 후 모든 문제 저장, 리스트 반환
-        //⭐ description 추가해야
         List<QuizNotes.QuizRecord> quizes = results.stream()
-                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getIsCorrect(), null))
+                .map(r -> new QuizNotes.QuizRecord(r.getQuizId(), r.getQuestion(), r.getUserAnswer(), r.getCorrectAnswer(),r.getIsCorrect(),r.getDescription(),r.getOptions()))
                 .toList();
 
         //quizNote 객체 생성 후 저장
@@ -176,7 +171,7 @@ public class QuizService {
                 .filter(q -> !q.getIsCorrect())
                 .count();
         int total = quizRecords.size();
-        return ((double) wrongNumbers / total) * 100.0;
+        return 100.0-(((double) wrongNumbers / total) * 100.0);
     }
 
 }

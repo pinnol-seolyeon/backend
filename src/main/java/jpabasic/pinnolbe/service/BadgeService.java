@@ -59,16 +59,21 @@ public class BadgeService {
     }
 
     @Transactional
-    public void getSmartGamerBadge(List<QuizAnalyzeDto> request) {
+    public void getSmartGamerBadge(List<QuizAnalyzeDto> request,String chapterId) {
+        // 1. 전부 맞았는지 확인
         //스트림의 모든 요소에 대해 getIsCorrect()가 true를 반환해야
         boolean hasAllCorrect=request.stream().allMatch(QuizAnalyzeDto::getIsCorrect);
         if(!hasAllCorrect) return;
 
-        //현재 진도 파악
         User user = userService.getUserInfo();
-        StudySession session = studySessionService.getSessionByUser(user);
-        String chapterId = session.getChapterId();
 
+        // 2. chapterId가 null이면 RedisSession 세션에서 가져오기
+        if(chapterId==null){
+            StudySession session = studySessionService.getSessionByUser(user);
+            chapterId = session.getChapterId();
+        }
+        
+        // 3. 실제 배지 발급
         BadgeRequestDto dto = new BadgeRequestDto(chapterId, BadgeType.SMART_GAMER);
         getBadge(dto, user.getId());
 
