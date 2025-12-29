@@ -61,6 +61,8 @@ public class UserService {
         try {
             user.setPhoneNumber(dto.getPhoneNumber());
             user.setAgreement(dto.getAgreement());
+            user.setParentsName(dto.getName());
+
             userRepository.save(user);
         }catch(Exception e){
             throw new RuntimeException("유저 자녀 정보를 저장하는 중 오류 발생");

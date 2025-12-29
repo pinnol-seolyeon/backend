@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @PatchMapping("/parents/phone-number")
-    @Operation(summary="부모님 전화번호 받기")
+    @Operation(summary="부모님 성함,전화번호 받기")
     public ApiResponse<String> registerParent(@RequestBody PhoneRequestDto dto) {
         User user = userService.getUserInfo();     // 로그인한 부모
         userService.inputUserInfo(user, dto);      // 전화번호 업데이트

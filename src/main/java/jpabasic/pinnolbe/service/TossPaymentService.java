@@ -38,12 +38,6 @@ public class TossPaymentService {
     @Value("${payments.toss.secret-key}")
     private String testSecretApiKey;
 
-    @Value("${payments.toss.success-url}")
-    private String successCallBackUrl;
-
-    @Value("${payments.toss.fail-url}")
-    private String failCallBackUrl;
-
     @Value("${payments.toss.original-url}")
     private String tossOriginalUrl;
 

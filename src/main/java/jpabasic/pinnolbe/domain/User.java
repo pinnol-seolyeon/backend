@@ -19,6 +19,7 @@ import java.util.List;
 public class User {
     @Id
     private String id;
+
     //암호화된 name
     private String username;
 
@@ -26,8 +27,11 @@ public class User {
 
     private String role;
 
-    //가입자(아이)의 이름
+    //가입자(아이)의 이름-카카오톡
     private String name;
+
+    //핀놀 닉네임
+    private String nickname;
 
     //현재 학습중인 교재 저장
     @Nullable
@@ -42,6 +46,10 @@ public class User {
     //부모 전화번호
     @Nullable
     private String phoneNumber;
+
+    //부모 이름
+    @Nullable
+    private String parentsName;
 
     //개인정보 수집 이용 동의여부
     @Nullable
