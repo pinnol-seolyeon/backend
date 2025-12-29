@@ -72,7 +72,11 @@ public enum ErrorCode {
     PAYMENT_ERROR_ORDER_AMOUNT(HttpStatus.CONFLICT,"payment-009", "DB에 저장된 order amount와 일치하지 않아요."),
 
     //DB관련
-    DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요.");
+    DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요."),
+
+    //주문자 정보 관련
+    ORDERER_NOT_FOUND(HttpStatus.NOT_FOUND,"order-001","관련 주문자 정보를 찾을 수 없어요.");
+
 
     private final HttpStatus status;
     private final String code;

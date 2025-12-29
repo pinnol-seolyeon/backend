@@ -1,12 +1,17 @@
 package jpabasic.pinnolbe.service;
 
+import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.domain.payment.OrdererProfile;
 import jpabasic.pinnolbe.domain.payment.Payment;
+import jpabasic.pinnolbe.dto.payment.OrdererEditReqDto;
+import jpabasic.pinnolbe.dto.payment.OrdererResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentFailResDto;
 import jpabasic.pinnolbe.dto.payment.PaymentRequestDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResHandleCardDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
+import jpabasic.pinnolbe.repository.payment.OrdererProfileRepository;
 import jpabasic.pinnolbe.repository.payment.PaymentRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +39,7 @@ public class TossPaymentService {
 
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final OrdererProfileRepository ordererProfileRepository;
     @Value("${payments.toss.secret-key}")
     private String testSecretApiKey;
 
@@ -167,6 +172,33 @@ public class TossPaymentService {
             );
         PaymentResHandleCardDto result=response.getBody();
         return result;
+    }
+
+    /*
+     * 주문자 정보 불러오기
+     */
+    @Transactional
+    public OrdererResDto orderInfo(User user) {
+
+        OrdererProfile profile = ordererProfileRepository.findByUserId(user.getId())
+            .orElseGet(() -> ordererProfileRepository.save(OrdererProfile.create(user)));
+
+        return OrdererResDto.toDto(profile);
+    }
+
+
+    /*
+     * 주문자 정보 수정 후 저장
+     */
+    @Transactional
+    public OrdererResDto editOrderInfo(String ordererId, OrdererEditReqDto request){
+        OrdererProfile profile=ordererProfileRepository.findById(ordererId)
+            .orElseThrow(()->new CustomException(ErrorCode.ORDERER_NOT_FOUND));
+
+        profile.update(request);
+        ordererProfileRepository.save(profile);
+
+        return OrdererResDto.toDto(profile);
     }
 
 

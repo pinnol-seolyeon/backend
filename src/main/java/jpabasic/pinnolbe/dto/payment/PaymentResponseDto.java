@@ -17,8 +17,12 @@ public class PaymentResponseDto {
     private Integer quantity; //수량
     private String orderId; //주문 고유 ID
     private String orderName; //주문 상품 이름
+
+
     private String customerEmail; //구매자 이메일
     private String customerName; //구매자 이름
+
+
     private String approvedAt;
     private String paySuccessYn; //결제 성공 여부
     private String status; //DONE, CANCELED

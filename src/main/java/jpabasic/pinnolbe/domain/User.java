@@ -2,6 +2,7 @@ package jpabasic.pinnolbe.domain;
 
 import com.mongodb.lang.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jpabasic.pinnolbe.domain.payment.Payment;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -33,9 +34,9 @@ public class User {
     //핀놀 닉네임
     private String nickname;
 
-    //현재 학습중인 교재 저장
-    @Nullable
-    private String studyId;
+    //유저 전화번호
+    @Column(name="phone_number")
+    private String phoneNumber;
 
     @Nullable
     private String studySessionLogId; //최근 학습 상태(진도)
@@ -45,10 +46,12 @@ public class User {
 
     //부모 전화번호
     @Nullable
-    private String phoneNumber;
+    @Column(name = "parents_phone_number")
+    private String parentsPhoneNumber;
 
     //부모 이름
     @Nullable
+    @Column(name="parents_name")
     private String parentsName;
 
     //개인정보 수집 이용 동의여부
