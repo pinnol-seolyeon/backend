@@ -44,7 +44,7 @@ public class PaymentController {
     @GetMapping("/success")
     @Operation(summary="결제 성공 리다이렉트",description="결제 성공 시 최종 결제 승인 요청을 보냄")
     public ApiResponse<PaymentResHandleCardDto> successPayment(
-            @Parameter(description="우리가 정한 주문 고유번호",required=true) @RequestParam(name="orderId") String orderId,
+            @Parameter(description="우리가 정한 주문 고유번호",required=true,example="a123456") @RequestParam(name="orderId") String orderId,
             @Parameter(description="토스페이먼츠에서 정한 결제 구분용 키 ",required=true) @RequestParam(name="paymentKey") String paymentKey,
             @Parameter(description="실제 결제 금액",required=true) @RequestParam(name="amount") Long amount
             ){
