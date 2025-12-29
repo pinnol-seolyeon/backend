@@ -8,10 +8,13 @@ import jpabasic.pinnolbe.dto.payment.PaymentResHandleCardDto;
 import jpabasic.pinnolbe.dto.payment.PaymentResponseDto;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.TossPaymentService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/payment")
+@Slf4j
 public class PaymentController {
 
     private final TossPaymentService tossPaymentService;
@@ -48,8 +51,7 @@ public class PaymentController {
             @Parameter(description="토스페이먼츠에서 정한 결제 구분용 키 ",required=true) @RequestParam(name="paymentKey") String paymentKey,
             @Parameter(description="실제 결제 금액",required=true) @RequestParam(name="amount") Long amount
             ){
-
-        tossPaymentService.verifyRequest(paymentKey,orderId,amount);
+        log.info("[SUCCESS URL HIT] orderId={}, paymentKey={}", orderId, paymentKey);
         PaymentResHandleCardDto result=tossPaymentService.requestFinalPayment(paymentKey,orderId,amount);
         return ApiResponse.success("결제 성공",result);
     }

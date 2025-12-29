@@ -39,7 +39,7 @@ jwt:
 payments:
   toss:
     secret-key: ${PAYMENT_SECRET_KEY}
-    success-url: http://localhost:8080/success
-    fail-url: http://localhost:8080/fail
-    original-url: https://api.tosspayments.com/v1/payments/
+    success-url: http://localhost:8080/api/payment/success
+    fail-url: http://localhost:8080/api/payment/fail
+    original-url: https://api.tosspayments.com/v1/payments/confirm
 #    client-key: ${PAYMENT_CLIENT_KEY}
