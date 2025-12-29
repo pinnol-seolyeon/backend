@@ -57,18 +57,31 @@ public enum ErrorCode {
 
     //Review 관련
     REVIEW_ALREADY_COMPLETED(HttpStatus.CONFLICT,"review-001","이미 복습된 복습이에요"),
-    FIRST_REVIEW_NOT_COMPLETED(HttpStatus.BAD_REQUEST,"review-002","1차 복습이 완료되지 않아 2차 복습을 할 수 없어요.");
+    FIRST_REVIEW_NOT_COMPLETED(HttpStatus.BAD_REQUEST,"review-002","1차 복습이 완료되지 않아 2차 복습을 할 수 없어요."),
 
 
+    //결제 관련
+    PAYMENT_ERROR(HttpStatus.NOT_FOUND,"payment-001","결제 정보를 찾을 수 없습니다."),
+    PAYMENT_ERROR_ORDER_PRICE(HttpStatus.BAD_REQUEST,"payment-002","요청 금액이 실제 금액과 일치하지 않습니다."),
+    PAYMENT_ERROR_ORDER_PAY_TYPE(HttpStatus.BAD_REQUEST,"payment-003","결제 타입이 올바르지 않습니다."),
+    PAYMENT_ERROR_ORDER_NAME(HttpStatus.BAD_REQUEST,"payment-004","결제 이름이 올바르지 않습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"payment-005","해당 결제 정보가 없습니다."),
+    PAYMENT_CANCEL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"payment-006", "결제 취소 중 오류가 발생했어요."),
+    PAYMENT_ERROR_ORDER_NOTFOUND(HttpStatus.NOT_FOUND,"payment-007", "해당 주문을 찾을 수가 없어요."),
+    PAYMENT_USER_EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"payment-008", "결제에 사용할 유저 이메일을 찾을 수 없어요."),
+    PAYMENT_ERROR_ORDER_AMOUNT(HttpStatus.CONFLICT,"payment-009", "DB에 저장된 order amount와 일치하지 않아요."),
 
+    //DB관련
+    DB_ERROR_SAVE(HttpStatus.INTERNAL_SERVER_ERROR,"database-001","데이터 베이스 저장 과정에서 오류가 발생했어요."),
 
-
-
-
+    //주문자 정보 관련
+    ORDERER_NOT_FOUND(HttpStatus.NOT_FOUND,"order-001","관련 주문자 정보를 찾을 수 없어요.");
 
 
     private final HttpStatus status;
     private final String code;
     private final String message;
+
+
 
 }

@@ -8,4 +8,5 @@ public interface OAuth2Response {
 
     String getName();
 
+
 }

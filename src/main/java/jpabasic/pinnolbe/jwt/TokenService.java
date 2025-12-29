@@ -22,9 +22,7 @@ public class TokenService {
     public String reissueAccessToken(String refreshToken, HttpServletResponse response) {
 
         String username = jwtUtil.getUsername(refreshToken);
-        System.out.println("😎username: " + username);
         String role = jwtUtil.getRole(refreshToken);
-        System.out.println("😎role: " + role);
 
         //오류 발생
         RefreshToken savedToken = refreshTokenRepository.findByUsername(username)
