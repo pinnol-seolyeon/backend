@@ -21,7 +21,7 @@ bin/
 
 
 ### IntelliJ IDEA ###
-/src/main/resources/static
+/src/main/resources/static/credentials.json
 .idea
 *.iws
 *.iml
