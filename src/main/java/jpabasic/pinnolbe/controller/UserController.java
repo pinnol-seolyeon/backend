@@ -2,17 +2,14 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
 import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
 import jpabasic.pinnolbe.dto.user.UserInfoDto;
 import jpabasic.pinnolbe.global.ApiResponse;
-import jpabasic.pinnolbe.jwt.JwtUtil;
-import jpabasic.pinnolbe.repository.UserRepository;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,14 +30,24 @@ public class UserController {
         return ApiResponse.success("보호자 정보 등록 완료",null);
     }
 
-    //유저 정보 가져오기(헤더용)
     @GetMapping
+    @Operation(summary="유저 정보 가져오기(헤더용)")
     public ResponseEntity<UserInfoDto> getUserInfoDto() {
         User user=userService.getUserInfo();
         String userId=user.getId();
         UserInfoDto userInfo=userService.getUserInfoDto(user,userId);
         return ResponseEntity.ok(userInfo);
     }
+
+    @GetMapping
+    @Operation(summary="유저 정보 조회")
+    public ApiResponse<MyPageUserResponse> getMyPageUserInfo(){
+        User user=userService.getUserInfo();
+        return ApiResponse.success("유저 정보 조회 완료",userService.getMyPageUserInfo(user));
+    }
+
+
+
 
 
 }

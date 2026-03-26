@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.domain.User;
+import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
 import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
 import jpabasic.pinnolbe.dto.user.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
@@ -44,6 +45,11 @@ public class UserService {
         User user=userRepository.findByUsername(username); //DB에서 최신 정보 조회
 
         return user;
+    }
+
+    @Transactional(readOnly = true)
+    public MyPageUserResponse getMyPageUserInfo(User user){
+        return MyPageUserResponse.of(user);
     }
 
     //첫 로그인 시 자녀 정보 입력하기
