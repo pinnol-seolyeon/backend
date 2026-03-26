@@ -4,15 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jpabasic.pinnolbe.domain.RefreshToken;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
-import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
-import jpabasic.pinnolbe.dto.user.UserInfoDto;
+import jpabasic.pinnolbe.dto.user.*;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
-import jpabasic.pinnolbe.dto.user.UserUpdateRequest;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.repository.RewardRepository;
 import jpabasic.pinnolbe.repository.UserRepository;
+import jpabasic.pinnolbe.service.MembershipService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -27,11 +25,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MembershipService membershipService;
 
     public UserService(UserRepository userRepository,
-                       RefreshTokenRepository refreshTokenRepository) {
+                       RefreshTokenRepository refreshTokenRepository, MembershipService membershipService) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.membershipService = membershipService;
     }
 
 
@@ -50,7 +50,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyPageUserResponse getMyPageUserInfo(User user){
-        return MyPageUserResponse.of(user);
+        UserMembershipSummaryResponse response=membershipService.getMembershipSummary(user.getId());
+        return MyPageUserResponse.of(user,response);
     }
 
     //첫 로그인 시 자녀 정보 입력하기
@@ -78,13 +79,16 @@ public class UserService {
 
     @Transactional
     public MyPageUserResponse updateUserInfo(User user, UserUpdateRequest request) {
+        UserMembershipSummaryResponse response=membershipService.getMembershipSummary(user.getId());
+
         // null 체크를 통해 수정 요청이 들어온 필드만 업데이트 (선택적 수정)
         if (request.userName() != null) user.updateName(request.userName());
         if (request.userPhoneNumber() != null) user.updatePhoneNumber(request.userPhoneNumber());
         if (request.parentsName() != null) user.updateParentsInfo(request.parentsName(),request.parentsPhoneNumber());
 
+
         // 수정된 엔티티를 다시 DTO로 변환하여 반환
-        return MyPageUserResponse.of(user);
+        return MyPageUserResponse.of(user,response);
     }
 
 

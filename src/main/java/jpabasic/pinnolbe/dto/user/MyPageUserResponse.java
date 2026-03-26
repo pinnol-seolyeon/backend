@@ -19,19 +19,23 @@ public record MyPageUserResponse (
         String parentsName,
         @Schema(description = "부모님 전화번호",example="010-1234-1234")
         String parentsPhoneNumber,
-        @Schema(description = "이용권 내역")
-        List<Payment> paymentList
+        @Schema(description = "결제 내역")
+        List<Payment> paymentList,
+        @Schema(description = "이용권 관련 내역")
+        UserMembershipSummaryResponse membership
 
 
 ){
 
-    public static MyPageUserResponse of(User user){
+    public static MyPageUserResponse of(User user,UserMembershipSummaryResponse response){
         return new MyPageUserResponse(
                 user.getName(),
                 user.getPhoneNumber(),
                 user.getParentsName(),
                 user.getParentsPhoneNumber(),
-                user.getPayments()
+                user.getPayments(),
+                response
+
         );
     }
 
