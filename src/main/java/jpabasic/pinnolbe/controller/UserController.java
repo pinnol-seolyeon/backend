@@ -41,14 +41,14 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary="유저 정보 조회")
+    @Operation(summary="[마이페이지] 유저 정보 조회")
     public ApiResponse<MyPageUserResponse> getMyPageUserInfo(){
         User user=userService.getUserInfo();
         return ApiResponse.success("유저 정보 조회 완료",userService.getMyPageUserInfo(user));
     }
 
     @PatchMapping
-    @Operation(summary = "유저 정보 수정",description = "마이페이지에서 유저의 프로필 정보를 수정합니다.")
+    @Operation(summary = "[마이페이지] 유저 정보 수정",description = "마이페이지에서 유저의 프로필 정보를 수정합니다.")
     public ApiResponse<MyPageUserResponse> updateMyPageUserInfo(
             @RequestBody UserUpdateRequest request
             ){

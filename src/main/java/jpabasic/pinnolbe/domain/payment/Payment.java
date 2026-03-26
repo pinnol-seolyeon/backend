@@ -24,7 +24,7 @@ public class Payment extends BaseEntity {
     private Long amount;
     private Integer quantity;
     private String orderId;
-    private String orderName;
+    private String orderName; //MONTH
     private String status; //DONE, CANCELED
     private String method; //CARD, EASY_PAY
     private String approvedAt;
@@ -57,5 +57,23 @@ public class Payment extends BaseEntity {
                 .status(status)
                 .method(method)
                 .build();
+    }
+
+    /**
+     * 결제 승인 완료 처리
+     */
+    public void completePayment(String paymentKey, String approvedAt, String method, String status) {
+        this.paymentKey = paymentKey;
+        this.approvedAt = approvedAt;
+        this.method = method;
+        this.status = status;
+    }
+
+    /**
+     * 결제 실패 처리
+     */
+    public void failPayment(String reason) {
+        this.status = "FAILED";
+        this.payFailReason = reason;
     }
 }
