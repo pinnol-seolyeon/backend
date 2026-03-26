@@ -5,6 +5,7 @@ import jpabasic.pinnolbe.domain.User;
 import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
 import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
 import jpabasic.pinnolbe.dto.user.UserInfoDto;
+import jpabasic.pinnolbe.dto.user.UserUpdateRequest;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,16 @@ public class UserController {
     public ApiResponse<MyPageUserResponse> getMyPageUserInfo(){
         User user=userService.getUserInfo();
         return ApiResponse.success("유저 정보 조회 완료",userService.getMyPageUserInfo(user));
+    }
+
+    @PatchMapping
+    @Operation(summary = "유저 정보 수정",description = "마이페이지에서 유저의 프로필 정보를 수정합니다.")
+    public ApiResponse<MyPageUserResponse> updateMyPageUserInfo(
+            @RequestBody UserUpdateRequest request
+            ){
+        User user=userService.getUserInfo();
+        MyPageUserResponse updatedUser=userService.updateUserInfo(user,request);
+        return ApiResponse.success("유저 정보 수정 완료",updatedUser);
     }
 
 

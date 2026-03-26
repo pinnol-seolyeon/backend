@@ -8,6 +8,7 @@ import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
 import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
 import jpabasic.pinnolbe.dto.user.UserInfoDto;
 import jpabasic.pinnolbe.dto.login.oauth2.CustomOAuth2User;
+import jpabasic.pinnolbe.dto.user.UserUpdateRequest;
 import jpabasic.pinnolbe.jwt.JwtUtil;
 import jpabasic.pinnolbe.repository.RefreshTokenRepository;
 import jpabasic.pinnolbe.repository.RewardRepository;
@@ -75,8 +76,24 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public MyPageUserResponse updateUserInfo(User user, UserUpdateRequest request) {
+        // null 체크를 통해 수정 요청이 들어온 필드만 업데이트 (선택적 수정)
+        if (request.userName() != null) user.updateName(request.userName());
+        if (request.userPhoneNumber() != null) user.updatePhoneNumber(request.userPhoneNumber());
+        if (request.parentsName() != null) user.updateParentsInfo(request.parentsName(),request.parentsPhoneNumber());
 
-    //유저 정보 받아오기
+        // 수정된 엔티티를 다시 DTO로 변환하여 반환
+        return MyPageUserResponse.of(user);
+    }
+
+
+    /**
+     * 유저 정보 받아오기
+     * @param user
+     * @param userId
+     * @return
+     */
     @Transactional
     public UserInfoDto getUserInfoDto(User user,String userId){
 

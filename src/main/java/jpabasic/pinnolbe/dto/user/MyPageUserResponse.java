@@ -34,4 +34,6 @@ public record MyPageUserResponse (
                 user.getPayments()
         );
     }
+
+
 }

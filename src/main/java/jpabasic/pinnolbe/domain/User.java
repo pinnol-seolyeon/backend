@@ -68,6 +68,34 @@ public class User {
         payments.add(payment);
     }
 
+    /**
+     * 유저 이름 수정
+     * @param name
+     */
+    public void updateName(String name){
+        if(name!=null && !name.isBlank()){
+            this.username=name;
+        }
+    }
+
+    /**
+     * 유저 전화번호 수정
+     * @param phoneNumber
+     */
+    public void updatePhoneNumber(String phoneNumber){
+        if(phoneNumber!=null && !phoneNumber.isBlank()){
+            this.phoneNumber=phoneNumber;
+        }
+    }
+
+    /**
+     * 보호자 정보 수정 (함께 묶어서 처리하는 경우가 많습니다)
+     */
+    public void updateParentsInfo(String parentsName, String parentsPhoneNumber) {
+        if (parentsName != null) this.parentsName = parentsName;
+        if (parentsPhoneNumber != null) this.parentsPhoneNumber = parentsPhoneNumber;
+    }
+
 
 
 }
