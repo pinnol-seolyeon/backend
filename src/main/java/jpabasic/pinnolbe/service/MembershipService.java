@@ -3,6 +3,8 @@ package jpabasic.pinnolbe.service;
 import jpabasic.pinnolbe.domain.Membership;
 import jpabasic.pinnolbe.domain.payment.Payment;
 import jpabasic.pinnolbe.dto.user.UserMembershipSummaryResponse;
+import jpabasic.pinnolbe.global.ErrorCode;
+import jpabasic.pinnolbe.global.exception.user.CustomException;
 import jpabasic.pinnolbe.repository.MembershipRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,6 +77,17 @@ public class MembershipService {
     private String formatPeriod(LocalDateTime start, LocalDateTime end) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         return start.format(formatter) + " ~ " + end.format(formatter);
+    }
+
+    /**
+     * 홀딩 시작
+     * @param userId
+     */
+    @Transactional
+    public void holdMembership(String userId){
+        Membership activeMembership=membershipRepository.findCurrentActive(userId,LocalDateTime.now())
+                .orElseThrow(()->new CustomException(ErrorCode.NO_ACTIVE_MEMBERSHIP));
+        activeMembership.startHolding();
     }
 
 

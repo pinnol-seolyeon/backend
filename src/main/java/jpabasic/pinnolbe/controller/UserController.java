@@ -7,6 +7,7 @@ import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
 import jpabasic.pinnolbe.dto.user.UserInfoDto;
 import jpabasic.pinnolbe.dto.user.UserUpdateRequest;
 import jpabasic.pinnolbe.global.ApiResponse;
+import jpabasic.pinnolbe.service.MembershipService;
 import jpabasic.pinnolbe.service.login.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final MembershipService membershipService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, MembershipService membershipService) {
         this.userService = userService;
+        this.membershipService = membershipService;
     }
 
     @PatchMapping("/parents/phone-number")
@@ -55,6 +58,13 @@ public class UserController {
         User user=userService.getUserInfo();
         MyPageUserResponse updatedUser=userService.updateUserInfo(user,request);
         return ApiResponse.success("유저 정보 수정 완료",updatedUser);
+    }
+
+    @PostMapping("/membership/{membershipId}/hold")
+    @Operation(summary = "사용권 홀딩 시작",description = "특정 사용권의 기간 차감을 홀딩시킨다.")
+    public ApiResponse<Void> startHolding(@PathVariable String membershipId){
+        User user=userService.getUserInfo();
+        return ApiResponse.success("홀딩이 완료되었어요.",membershipService.holdMembership(user.getId()));
     }
 
 
