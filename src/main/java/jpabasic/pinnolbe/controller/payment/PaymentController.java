@@ -31,7 +31,8 @@ public class PaymentController {
 	public ApiResponse<PaymentResponseDto> requestPayments(
 		@Parameter(description = "요청 객체", required = true) @RequestBody PaymentRequestDto paymentReq
 	) {
-		PaymentResponseDto result = tossPaymentService.requestPayments(paymentReq);
+		User user=userService.getUserInfo();
+		PaymentResponseDto result = tossPaymentService.requestPayments(paymentReq,user);
 		return ApiResponse.success("결제 승인 완료", result);
 	}
 

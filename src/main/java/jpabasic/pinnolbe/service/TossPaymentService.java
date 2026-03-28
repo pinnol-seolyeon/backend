@@ -40,6 +40,7 @@ public class TossPaymentService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     private final OrdererProfileRepository ordererProfileRepository;
+    private final MembershipService membershipService;
     @Value("${payments.toss.secret-key}")
     private String testSecretApiKey;
 
@@ -71,13 +72,13 @@ public class TossPaymentService {
      * 결제 승인: 유저 이메일 검증
      */
     @Transactional(readOnly = true)
-    public PaymentResponseDto requestPayments(PaymentRequestDto paymentRequestDto) {
+    public PaymentResponseDto requestPayments(PaymentRequestDto paymentRequestDto,User user) {
 
         String customerEmail=paymentRequestDto.getCustomerEmail();
 
         PaymentResponseDto paymentRes;
         try{
-            Payment payment=paymentRequestDto.toEntity();
+            Payment payment=paymentRequestDto.toEntity(user.getId());
             userRepository.findByEmail(customerEmail)
                     .ifPresentOrElse(
                             M->M.addPayment(payment)
@@ -128,17 +129,22 @@ public class TossPaymentService {
         log.info("[CONFIRM RESPONSE] {}", result);
 
         if(!"DONE".equals(result.getStatus())){
+            payment.failPayment("Toss Confirm 실패");
+            paymentRepository.save(payment);
             throw new CustomException(ErrorCode.PAYMENT_ERROR);
         }
 
-        //confirm 성공 시 DB 업데이트
-        payment.setPaymentKey(result.getPaymentKey());
-        // payment.setPaySuccessYn("Y");
-        payment.setApprovedAt(result.getApprovedAt().toString());
-        payment.setMethod(result.getMethod()); //결제 방식
-        payment.setStatus(result.getStatus()); //결제 성공 여부
+        //결제 정보 업데이트
+        payment.completePayment(
+                result.getPaymentKey(),
+                result.getApprovedAt().toString(),
+                result.getMethod(),
+                result.getStatus()
+        );
         paymentRepository.save(payment);
 
+        //학습권 발급 로직 실행
+        membershipService.issueStudyTicket(payment);
         return result;
     }
 

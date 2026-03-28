@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema
 public class PhoneRequestDto {
 
     @Schema(description="보호자 전화번호 (- 포함)", example="010-1234-1234")

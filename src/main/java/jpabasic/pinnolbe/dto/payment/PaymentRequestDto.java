@@ -30,13 +30,14 @@ public class PaymentRequestDto {
     @Schema(description = "구매자 이름",example="강민서")
     private String customerName;
 
-    public Payment toEntity(){
+    public Payment toEntity(String userId){
         return Payment.builder()
                 .payType(payType)
                 .orderId(UUID.randomUUID().toString())
                 .amount(amount)
                 .quantity(quantity)
                 .orderName(orderName)
+                .userId(userId)
                 .customerEmail(customerEmail)
                 .customerName(customerName)
                 .build();
