@@ -5,8 +5,10 @@ import jpabasic.pinnolbe.domain.payment.Payment;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -23,52 +25,39 @@ public class Membership extends BaseEntity{
     private String id;
 
     private String userId;
-    private LocalDateTime startDate; //시작일
-    private LocalDateTime endDate; //종료일
-
-    private boolean active; //현재 사용 가능한지 여부
-
+    private LocalDate startDate; //시작일
+    private LocalDate endDate; //종료일
+    private boolean active; //현재 사용 중인지 여부
     private boolean isHolding; //현재 홀딩 상태 여부
-    private List<HoldingHistory> holdingHistories=new ArrayList<>();
-
-    // 학습권 만료 여부 확인 로직
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(endDate);
-    }
+    private List<HoldingPeriod> holdingPeriods =new ArrayList<>();
 
     /**
      * 홀딩 시작
      */
     public void startHolding() {
-//        if (this.isHolding) throw new CustomException(ErrorCode.ALREADY_HOLDING);
         this.isHolding = true;
-        this.holdingHistories.add(new HoldingHistory(LocalDateTime.now()));
+        this.holdingPeriods.add(new HoldingPeriod(LocalDate.now()));
     }
 
     /**
      * 홀딩 해제 및 종료일 연장
      */
-    public void resumeMembership() {
-        if (!this.isHolding) return;
-
-        // 가장 최근 홀딩 기록을 찾아 기간 계산
-        HoldingHistory lastHistory = holdingHistories.get(holdingHistories.size() - 1);
-        lastHistory.close(LocalDateTime.now());
-
-        // 홀딩한 기간(일수)만큼 endDate 연장
-        long holdingDays = ChronoUnit.DAYS.between(lastHistory.getStartDate(), lastHistory.getEndDate());
-        this.endDate = this.endDate.plusDays(holdingDays);
-
-        this.isHolding = false;
+    public void resumeMembership(LocalDate start, LocalDate end) {
+        HoldingPeriod targetPeriod=this.holdingPeriods.stream()
+                .filter(h->h.getHoldStartDate().equals(start) && h.getHoldEndDate().equals(end))
+                .findFirst()
+                .orElseThrow(()->new CustomException(ErrorCode.HOLD_PERIOD_NOT_FOUND));
+        this.endDate=this.endDate.minusDays(targetPeriod.getDurationDays());
+        this.holdingPeriods.remove(targetPeriod);
     }
 
     /**
      * 결제 정보를 기반으로 새 티켓을 생성하는 팩토리 메서드
      */
-    public static Membership createFromPayment(Payment payment, LocalDateTime lastEndDate) {
+    public static Membership createFromPayment(Payment payment, LocalDate lastEndDate) {
         //시작일 결정
-        LocalDateTime start = (lastEndDate != null && lastEndDate.isAfter(LocalDateTime.now()))
-                ? lastEndDate : LocalDateTime.now();
+        LocalDate start = (lastEndDate != null && lastEndDate.isAfter(LocalDate.now()))
+                ? lastEndDate : LocalDate.now();
 
         //기간 계산
         int months = (payment.getQuantity() != null) ? payment.getQuantity() : 1;
@@ -78,6 +67,29 @@ public class Membership extends BaseEntity{
                 .startDate(start)
                 .endDate(start.plusMonths(months))
                 .build();
+    }
+
+    public void addScheduledHolding(LocalDate start, LocalDate end) {
+        // 1. 검증 로직 (엔티티 내부에서 수행)
+        if (start.isBefore(LocalDate.now())) {
+            throw new CustomException(ErrorCode.CANNOT_HOLD_PAST_DATE);
+        }
+        if (start.isAfter(this.endDate)) {
+            throw new CustomException(ErrorCode.INVALID_HOLD_START_DATE);
+        }
+
+        boolean isOverlapped = this.holdingPeriods.stream()
+                .anyMatch(h -> !start.isAfter(h.getHoldEndDate()) && !end.isBefore(h.getHoldStartDate()));
+        if (isOverlapped) {
+            throw new CustomException(ErrorCode.OVERLAPPED_HOLD_PERIOD);
+        }
+
+        // 2. 기간 계산 및 상태 변경
+        long diffDays = ChronoUnit.DAYS.between(start, end) + 1;
+        this.holdingPeriods.add(new HoldingPeriod(start, end, diffDays));
+
+        // 3. [중요] 필드에 직접 할당해야 저장됩니다!
+        this.endDate = this.endDate.plusDays(diffDays);
     }
 
 }

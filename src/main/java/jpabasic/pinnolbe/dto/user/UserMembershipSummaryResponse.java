@@ -1,12 +1,11 @@
 package jpabasic.pinnolbe.dto.user;
 
 import lombok.Builder;
-import lombok.Getter;
 
 
 @Builder
 public record UserMembershipSummaryResponse (
-        String ticketName,
+        String membershipName,
         int totalQuantity,
         String usagePeriod,
         String totalMonthsText

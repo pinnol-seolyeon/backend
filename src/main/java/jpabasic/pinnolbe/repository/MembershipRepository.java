@@ -15,6 +15,11 @@ public interface MembershipRepository extends MongoRepository<Membership,String>
     Optional<Membership> findTopByUserIdOrderByEndDateDesc(String userId);
 
     List<Membership> findAllByUserIdAndActiveTrue(String userId);
+
+    /**
+     * 현재 활성화된 멤버십 조회
+     */
+    Optional<Membership> findByUserIdAndActiveTrue(String userId);
 }
 
 

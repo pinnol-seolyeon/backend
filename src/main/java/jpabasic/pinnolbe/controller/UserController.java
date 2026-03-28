@@ -2,10 +2,7 @@ package jpabasic.pinnolbe.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jpabasic.pinnolbe.domain.User;
-import jpabasic.pinnolbe.dto.user.MyPageUserResponse;
-import jpabasic.pinnolbe.dto.user.PhoneRequestDto;
-import jpabasic.pinnolbe.dto.user.UserInfoDto;
-import jpabasic.pinnolbe.dto.user.UserUpdateRequest;
+import jpabasic.pinnolbe.dto.user.*;
 import jpabasic.pinnolbe.global.ApiResponse;
 import jpabasic.pinnolbe.service.MembershipService;
 import jpabasic.pinnolbe.service.login.UserService;
@@ -60,12 +57,24 @@ public class UserController {
         return ApiResponse.success("유저 정보 수정 완료",updatedUser);
     }
 
-    @PostMapping("/membership/{membershipId}/hold")
-    @Operation(summary = "사용권 홀딩 시작",description = "특정 사용권의 기간 차감을 홀딩시킨다.")
-    public ApiResponse<Void> startHolding(@PathVariable String membershipId){
+    @PostMapping("/membership/hold")
+    @Operation(summary = "사용권 홀딩 시작",description = "특정 사용권의 기간 차감을 일시 정지시킨다.")
+    public ApiResponse<Void> startHolding(
+            @RequestBody HoldingRequest request){
         User user=userService.getUserInfo();
-        return ApiResponse.success("홀딩이 완료되었어요.",membershipService.holdMembership(user.getId()));
+        membershipService.holdMembership(user.getId(),request);
+        return ApiResponse.success("홀딩이 완료되었어요.종료일이 연장되었어요.",null);
     }
+
+    @PostMapping("/membership/cancel/hold")
+    @Operation(summary = "사용권 홀딩 해제",description = "홀딩된 사용권을 재개시킨다.")
+    public ApiResponse<Void> resumeMembership(
+            @RequestBody HoldingRequest request){
+        User user=userService.getUserInfo();
+        membershipService.resumeMembership(user.getId(),request);
+        return ApiResponse.success("기존에 설정해놨던 홀딩을 해제했어요.",null);
+    }
+
 
 
 
