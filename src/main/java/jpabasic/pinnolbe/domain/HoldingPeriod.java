@@ -13,7 +13,4 @@ public class HoldingPeriod {
     private LocalDate holdEndDate;
     private long durationDays;
 
-    public HoldingPeriod(LocalDate holdStartDate) {
-        this.holdStartDate = holdStartDate;
-    }
 }

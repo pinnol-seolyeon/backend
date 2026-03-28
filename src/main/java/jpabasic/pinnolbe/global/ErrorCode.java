@@ -77,12 +77,13 @@ public enum ErrorCode {
     //주문자 정보 관련
     ORDERER_NOT_FOUND(HttpStatus.NOT_FOUND,"order-001","관련 주문자 정보를 찾을 수 없어요."),
 
-    //홀딩 관련
+    //멤버십 관련
     INVALID_HOLD_PERIOD(HttpStatus.CONFLICT,"membership-001","홀딩 일자를 잘못 설정했어요."),
     NO_MEMBERSHIP(HttpStatus.NOT_FOUND,"membership-002","홀딩할 사용권이 없어요."),
     CANNOT_HOLD_PAST_DATE(HttpStatus.BAD_REQUEST,"membership-003","이미 지난 시간은 홀딩할 수 없어요."),
     INVALID_HOLD_START_DATE(HttpStatus.CONFLICT,"membership-004","홀딩 시작일자를 잘못 설정했어요."),
-    OVERLAPPED_HOLD_PERIOD(HttpStatus.CONFLICT,"membership-005","해당 날짜는 이미 홀딩설정 되어있는 날짜입니다.");
+    OVERLAPPED_HOLD_PERIOD(HttpStatus.CONFLICT,"membership-005","해당 날짜는 이미 홀딩설정 되어있는 날짜입니다."),
+    HOLD_PERIOD_NOT_FOUND(HttpStatus.NOT_FOUND,"membership-006","해당 홀딩 일자를 찾을 수 없어요.");
 
     private final HttpStatus status;
     private final String code;

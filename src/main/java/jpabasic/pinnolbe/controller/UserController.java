@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/user")
 @Slf4j
@@ -40,14 +42,21 @@ public class UserController {
         return ResponseEntity.ok(userInfo);
     }
 
-    @GetMapping
+    @GetMapping("/mypage/userInfo")
     @Operation(summary="[마이페이지] 유저 정보 조회")
     public ApiResponse<MyPageUserResponse> getMyPageUserInfo(){
         User user=userService.getUserInfo();
         return ApiResponse.success("유저 정보 조회 완료",userService.getMyPageUserInfo(user));
     }
 
-    @PatchMapping
+    @GetMapping("/mypage/membership")
+    @Operation(summary="[마이페이지] 정기권 내역 조회")
+    public ApiResponse<UserMembershipSummaryResponse> getMyPageMembership(){
+        User user=userService.getUserInfo();
+        return ApiResponse.success("유저 정보 조회 완료",membershipService.getMembershipSummary(user.getId()));
+    }
+
+    @PatchMapping("/mypage/userInfo")
     @Operation(summary = "[마이페이지] 유저 정보 수정",description = "마이페이지에서 유저의 프로필 정보를 수정합니다.")
     public ApiResponse<MyPageUserResponse> updateMyPageUserInfo(
             @RequestBody UserUpdateRequest request
@@ -68,11 +77,17 @@ public class UserController {
 
     @PostMapping("/membership/cancel/hold")
     @Operation(summary = "사용권 홀딩 해제",description = "홀딩된 사용권을 재개시킨다.")
-    public ApiResponse<Void> resumeMembership(
-            @RequestBody HoldingRequest request){
+    public ApiResponse<Void> resumeMembership(){
         User user=userService.getUserInfo();
-        membershipService.resumeMembership(user.getId(),request);
+        membershipService.resumeMembership(user.getId());
         return ApiResponse.success("기존에 설정해놨던 홀딩을 해제했어요.",null);
+    }
+
+    @GetMapping("/history")
+    @Operation(summary="멤버십 및 홀딩 전체 이력 조회")
+    public ApiResponse<List<MembershipHistoryResponse>> getMembershipHistory(){
+        User user=userService.getUserInfo();
+        return ApiResponse.success("이력 조회가 완료되었습니다.",membershipService.getAllHistory(user.getId()));
     }
 
 

@@ -15,14 +15,11 @@ public record HoldingRequest (
         @Schema(description = "홀딩 시작일자",example = "2026-03-01")
         LocalDate startDate,
         @Schema(description = "홀딩 마지막일자",example = "2026-03-03")
-        LocalDate endDate,
-        @Schema(description = "홀딩 기간",example = "2")
-        long durationDays
+        LocalDate endDate
+
 ){
     public static HoldingRequest of(LocalDate start,LocalDate end){
         if(start.isAfter(end)) throw new CustomException(ErrorCode.INVALID_HOLD_PERIOD);
-        long days= ChronoUnit.DAYS.between(start,end);
-        return new HoldingRequest(start,end,days);
-
+        return new HoldingRequest(start,end);
     }
 }

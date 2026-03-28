@@ -50,24 +50,21 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyPageUserResponse getMyPageUserInfo(User user){
-        UserMembershipSummaryResponse response=membershipService.getMembershipSummary(user.getId());
-        return MyPageUserResponse.of(user,response);
+        return MyPageUserResponse.of(user);
     }
 
     //첫 로그인 시 자녀 정보 입력하기
     @Transactional
     public void inputUserInfo(User user, PhoneRequestDto dto){
-
         if(user==null){
             throw new IllegalArgumentException("유저 정보 ✖️");
         }
-
         if(dto==null){
             throw new IllegalArgumentException("자녀 정보 ✖️");
         }
 
         try {
-            user.setPhoneNumber(dto.getPhoneNumber());
+            user.setParentsPhoneNumber(dto.getPhoneNumber());
             user.setAgreement(dto.getAgreement());
             user.setParentsName(dto.getName());
 
@@ -88,7 +85,7 @@ public class UserService {
 
 
         // 수정된 엔티티를 다시 DTO로 변환하여 반환
-        return MyPageUserResponse.of(user,response);
+        return MyPageUserResponse.of(user);
     }
 
 
