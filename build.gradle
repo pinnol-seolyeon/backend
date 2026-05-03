@@ -44,6 +44,8 @@ repositories {
 		implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 		implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE' //S3
 
+		implementation 'com.github.maricn:logback-slack-appender:1.4.0'
+
 		// 1) Google Cloud 공통 BOM을 먼저 선언
 		implementation platform('com.google.cloud:libraries-bom:26.1.0') // 버전은 예시. 최신 버전은 https://github.com/googleapis/java-cloud-bom 에서 확인 :contentReference[oaicite:0]{index=0}
 
@@ -56,6 +58,9 @@ repositories {
 		//Redis
 		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 		implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+		//AOP
+		implementation 'org.springframework.boot:spring-boot-starter-aop'
 
 	//excel parsing
 	implementation 'org.apache.poi:poi-ooxml:5.2.5'
