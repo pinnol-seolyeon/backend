@@ -16,7 +16,6 @@ logging:
   level:
     org.springframework.web: INFO
     org.springframework.web.servlet.DispatcherServlet: WARN
-
 cloud:
   aws:
     s3:
@@ -43,3 +42,8 @@ payments:
     fail-url: http://localhost:8080/api/payment/fail
     original-url: https://api.tosspayments.com/v1/payments/confirm
 #    client-key: ${PAYMENT_CLIENT_KEY}
+
+slack:
+  webhook:
+    all: ${SLACK_WEBHOOK_URL}
+    error: ${SLACK_WEBHOOK_URL}
