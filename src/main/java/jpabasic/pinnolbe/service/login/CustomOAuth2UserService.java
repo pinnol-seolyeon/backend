@@ -69,7 +69,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDto.setUsername(existData.getUsername());
             userDto.setName(oAuth2Response.getName());
             userDto.setRole(existData.getRole());;
-
+            userDto.setPhoneNumber(existData.getPhoneNumber());
             userRepository.save(existData);
 
             System.out.println("✅로그인 완료");

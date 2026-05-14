@@ -48,6 +48,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     //첫 로그인인지 확인
     public boolean isFirstLogin(){
+        System.out.println("🚨user phone number:"+userDto.getPhoneNumber());
         return userDto.getPhoneNumber()==null;
     }
 }
