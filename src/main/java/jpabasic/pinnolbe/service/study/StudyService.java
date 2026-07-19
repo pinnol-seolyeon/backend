@@ -23,9 +23,6 @@ import jpabasic.pinnolbe.service.model.AskQuestionTemplate;
 import lombok.RequiredArgsConstructor;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -223,13 +220,13 @@ public class StudyService {
     /**
      * 단원 리스트 제공
      */
-    public ChapterListResponseDto getChapterList(User user, String bookId,int page){
+    public ChapterListResponseDto getChapterList(User user, String bookId){
         String currentChapterId;
         StudySessionLog log;
         int currentLevel;
 
         //해당 교재의 모든 chapter List
-        Slice<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId,page,5);
+        List<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId);
 
         //현재 진행 중인 chapter
         String sessionLogId=user.getStudySessionLogId();
@@ -254,11 +251,12 @@ public class StudyService {
         return result;
     }
 
-    public Slice<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
+    public List<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId) {
+        List<Chapter> chapters = chapterRepository.findByBookId(bookId, Sort.by("id").ascending());
 
-        return slice.map(ChapterListResponseDto.ChapterResponseDto::fromEntity);
+        return chapters.stream()
+                .map(ChapterListResponseDto.ChapterResponseDto::fromEntity)
+                .toList();
     }
 
 }

@@ -9,9 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -49,13 +46,13 @@ public class ChapterService {
     }
 
 
-    public Slice<CurrentSituationResDto.CurrentChapterRes> getAllChapters(String bookId, int page) {
-        int size=6;
+    public List<CurrentSituationResDto.CurrentChapterRes> getAllChapters(String bookId) {
         //전체 chapter
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Slice<Chapter> slice = chapterRepository.findByBookId(bookId, pageable);
+        List<Chapter> chapters = chapterRepository.findByBookId(bookId, Sort.by("id").ascending());
 
-        return slice.map(CurrentSituationResDto.CurrentChapterRes::toDto);
+        return chapters.stream()
+                .map(CurrentSituationResDto.CurrentChapterRes::toDto)
+                .toList();
     }
 
     public Chapter findChapterByOrder(String bookId,int order){

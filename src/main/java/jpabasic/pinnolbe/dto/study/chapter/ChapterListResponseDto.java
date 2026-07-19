@@ -1,17 +1,12 @@
 package jpabasic.pinnolbe.dto.study.chapter;
 
-import jpabasic.pinnolbe.domain.study.Book;
 import jpabasic.pinnolbe.domain.study.Chapter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Slice;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -23,9 +18,9 @@ public class ChapterListResponseDto {
     private String sessionLogId;
     private String currentChapterId;
     private Integer currentLevel; //이어서 학습할 단계
-    private Slice<ChapterResponseDto> chapterList; //chapterId,chapterTitle
+    private List<ChapterResponseDto> chapterList; //chapterId,chapterTitle
 
-    public ChapterListResponseDto(String sessionLogId,String currentChapterId,Integer currentLevel,Slice<ChapterResponseDto> chapterList) {
+    public ChapterListResponseDto(String sessionLogId,String currentChapterId,Integer currentLevel,List<ChapterResponseDto> chapterList) {
         this.chapterList = chapterList;
         this.currentChapterId=currentChapterId;
         this.currentLevel=currentLevel;

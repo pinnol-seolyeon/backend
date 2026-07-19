@@ -10,11 +10,8 @@ import jpabasic.pinnolbe.domain.study.Chapter;
 import jpabasic.pinnolbe.dto.currentSituation.CurrentSituationResDto;
 import jpabasic.pinnolbe.global.ErrorCode;
 import jpabasic.pinnolbe.global.exception.user.CustomException;
-import jpabasic.pinnolbe.service.analyze.WeeklyAnalysisService;
 import jpabasic.pinnolbe.service.study.StudyLogService;
-import jpabasic.pinnolbe.service.study.StudyService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +30,7 @@ public class CurrentSituationService {
         this.badgeService = badgeService;
     }
 
-    public Slice<CurrentSituationResDto.CurrentChapterRes> getCurrentSituation(User user, int page) {
+    public List<CurrentSituationResDto.CurrentChapterRes> getCurrentSituation(User user) {
         String sessionId = user.getStudySessionLogId();
         if (sessionId == null) {
             throw new CustomException(ErrorCode.CURRENT_SITUATION_NOT_FOUND);
@@ -49,8 +46,8 @@ public class CurrentSituationService {
         //해당 교재의 모든 진도를 완료함
         if(log.getChapterId()==null && log.getBookId()==null){
             //하드코딩 대신 currentChapterId로 변경해야 함. ✔️
-            Slice<CurrentSituationResDto.CurrentChapterRes> chapters = chapterService.getAllChapters("682829208c776a1ffa92fd4d", page);
-            chapters.getContent().forEach(ch->{
+            List<CurrentSituationResDto.CurrentChapterRes> chapters = chapterService.getAllChapters("682829208c776a1ffa92fd4d");
+            chapters.forEach(ch->{
                 ch.setStatus(CurrentSituationStatus.COMPLETED);
                 List<BadgeType> badges = badgeService.getBadgeList(user, ch.getChapterId());
                 ch.setBadgeType(badges);
@@ -79,8 +76,8 @@ public class CurrentSituationService {
         int currentOrder = chapter.getOrder();
 
         //현재 학습 중인 교재의 모든 chapter List
-        Slice<CurrentSituationResDto.CurrentChapterRes> chapters = chapterService.getAllChapters(currentBookId, page);
-        chapters.getContent().forEach(ch -> {
+        List<CurrentSituationResDto.CurrentChapterRes> chapters = chapterService.getAllChapters(currentBookId);
+        chapters.forEach(ch -> {
             CurrentSituationStatus status;
             double progress;
             List<BadgeType> badges = null;

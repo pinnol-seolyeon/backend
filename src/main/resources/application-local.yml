@@ -3,8 +3,8 @@ spring:
     mongodb:
       uri: ${DEVELOP_MONGODB_URL}   # 개발용 MongoDB URI
     redis:
-      host: redis
-      port: 6379
+      host: ${SPRING_DATA_REDIS_HOST:${SPRING_REDIS_HOST:localhost}}
+      port: ${SPRING_DATA_REDIS_PORT:${SPRING_REDIS_PORT:6379}}
   security:
     oauth2:
       client:

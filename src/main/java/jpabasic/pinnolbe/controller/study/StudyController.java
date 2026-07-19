@@ -42,13 +42,12 @@ public class StudyController {
     @Operation(summary="교재 선택 후, 해당 교재의 챕터 리스트 및 현재 학습 중인 챕터/레벨 제공",
                 description = " isAvailable=false는 이번 주 할당량 학습 완료를 뜻한다. ")
     public ApiResponse<ChapterListResponseDto> getChapterTitle(
-            @RequestParam String bookId,
-            @RequestParam(defaultValue="0") int page){
+            @RequestParam String bookId){
         User user=userService.getUserInfo();
 
         WeeklyAnalysis analysis=weeklyAnalysisService.findThisWeekAnalysis(user.getId());
         int size=analysis.getCompletedChapters().size();
-        ChapterListResponseDto result=studyService.getChapterList(user,bookId,page);
+        ChapterListResponseDto result=studyService.getChapterList(user,bookId);
         if(size>=5){ //✔️출시: (size>=2)으로
             result.setIsAvailable(false);
             return ApiResponse.success("이미 이번 주 할당량 학습을 모두 완료하였어요.", result);
