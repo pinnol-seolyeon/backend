@@ -201,7 +201,7 @@ public class StudyService {
         String sessionLogId=user.getStudySessionLogId();
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 교재 자동 설정");
-            currentBookId = "682829208c776a1ffa92fd4d"; // 첫 교재 하드코딩
+            currentBookId = "6a7aab2eb7ef7f0d9a45274c"; // 첫 교재 하드코딩
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
@@ -209,7 +209,7 @@ public class StudyService {
                 log = optLog.get();
                 currentBookId = log.getBookId();
             } else {
-                currentBookId = "682829208c776a1ffa92fd4d"; // fallback
+                currentBookId = "6a7aab2eb7ef7f0d9a45274c"; // fallback
             }
         }
         //dto로 변환
@@ -233,7 +233,7 @@ public class StudyService {
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
             currentChapterId = "6921983aeafe5ab256a0843a"; // 첫 교재,첫 챕터 하드코딩
-            currentLevel = 1;
+            currentLevel = 0;
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
             if (optLog.isPresent()) {
@@ -243,7 +243,7 @@ public class StudyService {
                 currentLevel = log.getLevel();
             } else {
                 currentChapterId = "6921983aeafe5ab256a0843a"; // fallback
-                currentLevel = 1;
+                currentLevel = 0;
             }
         }
         //dto로 변환
