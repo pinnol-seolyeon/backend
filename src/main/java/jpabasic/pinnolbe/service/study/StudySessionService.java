@@ -121,9 +121,9 @@ public class StudySessionService {
      */
     @Transactional
     public StudySessionLogResponseDto sessionUpdate(User user, StudySessionSummaryDto summary) {
-        System.out.println("🌀 [sessionUpdate] 호출됨, userId=" + summary.getUserId() + ", status=" + summary.getStatus());
+        System.out.println("🌀 [sessionUpdate] 호출됨, userId=" + user.getId() + ", status=" + summary.getStatus());
         int level=summary.getLevel();
-        String userId=summary.getUserId();
+        String userId=user.getId();
         String key = SESSION_PREFIX + userId+":"+summary.getChapterId()+":"+level;
         String indexKey=INDEX_SESSION_PREFIX+userId;
         String inactiveIndexKey=INDEX_INACTIVE_SESSION_PREFIX;
@@ -132,6 +132,7 @@ public class StudySessionService {
         if (session == null) {
             System.out.println("⚠️ Redis 세션이 존재하지 않아 새로 생성함");
             startLevel(user, summary.getLevel(), summary.getChapterId(),summary.getBookId());
+            session = getStudySession(key);
         }
 
         LocalDateTime lastActive=summary.getLastActive();

@@ -37,6 +37,7 @@ import static jpabasic.pinnolbe.dto.study.ChapterDto.convertDto;
 @Service
 @RequiredArgsConstructor
 public class StudyService {
+  private static final int FIRST_STUDY_LEVEL = 1;
 
   private final BookRepository bookRepository;
   private final ChapterRepository chapterRepository;
@@ -112,7 +113,7 @@ public class StudyService {
     //학습 완료
     public void finishChapter(User user,StudySessionSummaryDto summaryDto){
         String chapterId=summaryDto.getChapterId();
-        String userId= summaryDto.getUserId();
+        String userId= user.getId();
         StudySessionLog log;
         Chapter chapter=getChapterByString(chapterId);
         Chapter nextChapter;
@@ -134,7 +135,7 @@ public class StudyService {
             nextChapter=nextChapterOpt.get();
 
             log=new StudySessionLog();
-            log.setUserId(summaryDto.getUserId());
+            log.setUserId(userId);
             log.setBookId(chapter.getBookId());
             log.setChapterId(String.valueOf(nextChapter.getId()));
             log.setLevel(1);
@@ -142,10 +143,25 @@ public class StudyService {
 
             System.out.println("✔️ log 업데이트: "+ log);
         }else{ //이미 해당 교재의 모든 단원을 마무리함
+            Optional<Book> nextBookOpt = getNextBook(chapter.getBookId());
             log=new StudySessionLog();
-            log.setUserId(summaryDto.getUserId());
-            log.setBookId(null);
-            log.setChapterId(null);
+            log.setUserId(userId);
+
+            if (nextBookOpt.isPresent()) {
+                Book nextBook = nextBookOpt.get();
+                String nextChapterId = getFirstChapterId(nextBook.getId());
+                log.setBookId(nextBook.getId());
+                log.setChapterId(nextChapterId);
+                log.setLevel(FIRST_STUDY_LEVEL);
+                log.setStatus(Status.NOT_STARTED);
+                System.out.println("✔️ 다음 교재로 이동: bookLevel=" + nextBook.getBookLevel()
+                        + ", bookId=" + nextBook.getId()
+                        + ", chapterId=" + nextChapterId);
+            } else {
+                log.setBookId(null);
+                log.setChapterId(null);
+                System.out.println("✔️ 모든 교재 학습 완료");
+            }
         }
         StudySessionLog sessionLog=studySessionLogRepository.save(log);
         String id=sessionLog.getId();
@@ -190,30 +206,41 @@ public class StudyService {
      * 책 리스트 제공
      */
     public BookListResponseDto getBookList(User user){
-        StudySessionLog log;
         String currentBookId;
+        Integer currentBookLevel;
+        String currentSessionLogId = null;
 
         //모든 책 리스트
-        List<Book> books=bookRepository.findAll();
+        List<Book> books=bookRepository.findAll(Sort.by(Sort.Order.asc("bookLevel"), Sort.Order.asc("id")));
         List<Map<String,String>> bookList=BookListResponseDto.toDto(books);
 
         //현재 진행 중인 교재
         String sessionLogId=user.getStudySessionLogId();
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 교재 자동 설정");
-            currentBookId = "6a7aab2eb7ef7f0d9a45274c"; // 첫 교재 하드코딩
+            Book firstBook = getFirstBook(books);
+            currentBookId = firstBook.getId();
+            currentBookLevel = firstBook.getBookLevel();
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
-            if (optLog.isPresent()) {
+            if (optLog.isPresent() && optLog.get().getBookId() != null) {
                 System.out.println("✔️ 현재 진행중인 교재가 있음");
-                log = optLog.get();
+                StudySessionLog log = optLog.get();
+                currentSessionLogId = sessionLogId;
                 currentBookId = log.getBookId();
+                currentBookLevel = getBookByString(currentBookId).getBookLevel();
+            } else if (optLog.isPresent()) {
+                currentSessionLogId = sessionLogId;
+                currentBookId = null;
+                currentBookLevel = null;
             } else {
-                currentBookId = "6a7aab2eb7ef7f0d9a45274c"; // fallback
+                Book firstBook = getFirstBook(books);
+                currentBookId = firstBook.getId();
+                currentBookLevel = firstBook.getBookLevel();
             }
         }
         //dto로 변환
-        BookListResponseDto result=new BookListResponseDto(sessionLogId,currentBookId,bookList);
+        BookListResponseDto result=new BookListResponseDto(currentSessionLogId,currentBookId,currentBookLevel,bookList);
         return result;
     }
 
@@ -221,9 +248,9 @@ public class StudyService {
      * 단원 리스트 제공
      */
     public ChapterListResponseDto getChapterList(User user, String bookId){
-        String currentChapterId;
-        StudySessionLog log;
-        int currentLevel;
+        String currentChapterId = null;
+        Integer currentLevel = null;
+        String currentSessionLogId = null;
 
         //해당 교재의 모든 chapter List
         List<ChapterListResponseDto.ChapterResponseDto> chapters=getChaptersByBook(bookId);
@@ -232,32 +259,67 @@ public class StudyService {
         String sessionLogId=user.getStudySessionLogId();
         if (sessionLogId == null) {
             System.out.println("첫 학습이어서 첫번째 챕터로 자동 설정");
-            currentChapterId = "6a7abc15d42a2bcea5395618"; // 첫 교재,첫 챕터 하드코딩
-            currentLevel = 0;
+            Book firstBook = getFirstBook();
+            if (firstBook.getId().equals(bookId)) {
+                currentChapterId = getFirstChapterId(bookId);
+                currentLevel = FIRST_STUDY_LEVEL;
+            }
         } else {
             Optional<StudySessionLog> optLog = studySessionLogRepository.findById(sessionLogId);
-            if (optLog.isPresent()) {
-                log = optLog.get();
+            if (optLog.isPresent() && bookId.equals(optLog.get().getBookId())) {
+                StudySessionLog log = optLog.get();
                 System.out.println("currentChapterId 가져오기");
+                currentSessionLogId = sessionLogId;
                 currentChapterId = log.getChapterId();
                 currentLevel = log.getLevel();
-            } else {
-                currentChapterId = "6a7abc15d42a2bcea5395618"; // fallback
-                currentLevel = 0;
+            } else if (optLog.isEmpty()) {
+                Book firstBook = getFirstBook();
+                if (firstBook.getId().equals(bookId)) {
+                    currentChapterId = getFirstChapterId(bookId);
+                    currentLevel = FIRST_STUDY_LEVEL;
+                }
             }
         }
         //dto로 변환
-        ChapterListResponseDto result=new ChapterListResponseDto(sessionLogId,currentChapterId,currentLevel,chapters);
+        ChapterListResponseDto result=new ChapterListResponseDto(currentSessionLogId,currentChapterId,currentLevel,chapters);
         return result;
     }
 
     public List<ChapterListResponseDto.ChapterResponseDto> getChaptersByBook(String bookId) {
-        List<Chapter> chapters = chapterRepository.findByBookId(bookId, Sort.by("id").ascending());
+        List<Chapter> chapters = chapterRepository.findByBookId(bookId, Sort.by("order").ascending());
 
         return chapters.stream()
                 .map(ChapterListResponseDto.ChapterResponseDto::fromEntity)
                 .toList();
     }
 
-}
+    private Book getFirstBook() {
+        return getFirstBook(bookRepository.findAll(Sort.by(Sort.Order.asc("bookLevel"), Sort.Order.asc("id"))));
+    }
 
+    private Book getFirstBook(List<Book> books) {
+        return books.stream()
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
+    private Book getBookByString(String bookId) {
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
+    private String getFirstChapterId(String bookId) {
+        return chapterRepository.findByBookId(bookId, Sort.by("order").ascending()).stream()
+                .findFirst()
+                .map(chapter -> chapter.getId().toString())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAPTER_NOT_FOUND));
+    }
+
+    private Optional<Book> getNextBook(String currentBookId) {
+        Book currentBook = getBookByString(currentBookId);
+        return bookRepository.findAll(Sort.by(Sort.Order.asc("bookLevel"), Sort.Order.asc("id"))).stream()
+                .filter(book -> book.getBookLevel() > currentBook.getBookLevel())
+                .min(Comparator.comparingInt(Book::getBookLevel));
+    }
+
+}
